@@ -1,5 +1,5 @@
 import express from "express";
-import Chat from "../models/chatModel";
+import Chat from "../models/chatModel.js";
 const chatRouter = express.Router();
 chatRouter.post("/", async (req, res) => {
     const { userId1, userId2 } = req.body;

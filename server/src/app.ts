@@ -1,6 +1,7 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
-import userRouter from "./routes/userRoute";
+import userRouter from "./routes/userRoute.js";
+import { errorHandler } from "./errors/errorHandler.js";
 
 const app = express();
 
@@ -17,9 +18,10 @@ app.use(limiter);
 //routes
 app.use("/auth", userRouter);
 
-// Routes
+app.use(errorHandler);
+
 app.get("/", (_, res) => {
-  res.send("Server is up and running! update");
+  res.send("Server is up and running!");
 });
 
 export default app;

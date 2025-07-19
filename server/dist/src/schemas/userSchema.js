@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import profileSchema from "./profileSchema";
+import profileSchema from "./profileSchema.js";
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true, trim: true },
     email: {
@@ -15,7 +15,10 @@ const userSchema = new mongoose.Schema({
             return this.provider === "local";
         },
     },
-    profile: profileSchema,
+    profile: {
+        type: profileSchema,
+        required: true,
+    },
     provider: {
         type: String,
         enum: ["local", "google", "github"],
