@@ -1,5 +1,6 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
+import userRouter from "./routes/userRoute";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(limiter);
 
 //routes
+app.use("/auth", userRouter);
 
 // Routes
 app.get("/", (_, res) => {
