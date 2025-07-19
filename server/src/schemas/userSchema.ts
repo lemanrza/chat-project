@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import profileSchema from "./profileSchema";
+import profileSchema from "./profileSchema.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -18,7 +18,10 @@ const userSchema = new mongoose.Schema(
       },
     },
 
-    profile: profileSchema,
+    profile: {
+      type: profileSchema,
+      required: true,
+    },
 
     provider: {
       type: String,
