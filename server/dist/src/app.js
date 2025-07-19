@@ -1,5 +1,6 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
+import userRouter from "./routes/userRoute";
 const app = express();
 // Rate limiter middleware
 const limiter = rateLimit({
@@ -10,6 +11,7 @@ const limiter = rateLimit({
 app.use(express.json());
 app.use(limiter);
 //routes
+app.use("/auth", userRouter);
 // Routes
 app.get("/", (_, res) => {
     res.send("Server is up and running! update");
