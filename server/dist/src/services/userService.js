@@ -1,12 +1,9 @@
 import bcrypt from "bcrypt";
 import UserModel from "../models/userModel.js";
-<<<<<<< HEAD
 import { verifyAccessToken } from "../utils/jwt.js";
-=======
 // import config from "../config/config.js";
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 10 * 60 * 1000;
->>>>>>> d41ad8225c96c6d3b81e52740db065599d081806
 export const getAll = async () => await UserModel.find().select("-password");
 export const getOne = async (id) => await UserModel.findById(id).select("-password");
 export const getByEmail = async (email) => await UserModel.find({ email: email }).select("-password");
