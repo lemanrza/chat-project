@@ -2,6 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import { getAll, getByEmail, getOne, login, register } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
+import { generateAccessToken } from "../utils/jwt.js";
+import { sendVerificationEmail } from "../utils/sendMail.js";
+import cloudinary from "cloudinary";
 
 export const getUsers = async (
   _: Request,
@@ -68,28 +71,55 @@ export const getUserByEmail = async (
   }
 };
 
+// Extend Request type to include file property
+interface MulterRequest extends Request {
+  file?: Express.Multer.File;
+}
 
-export const registerUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const registerUser = async (req: MulterRequest, res: Response, next: NextFunction) => {
   try {
-    const saltRounds = 10;
+    // Password hash
     const { password } = req.body;
-
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    if (req.file) {
+      const uploadedImage = await cloudinary.v2.uploader.upload(
+        req.file.path,
+        {
+          folder: "user_profiles",
+        }
+      );
+
+      req.body.profile = uploadedImage.secure_url;
+      req.body.public_id = uploadedImage.public_id;
+    }
 
     const response = await register({
       ...req.body,
       password: hashedPassword,
     });
 
-    if (!response.success) throw new Error(response.message);
+    if (!response.success) {
+      throw new Error(response.message);
+    }
+
+    // Send email service ...
+    const token = generateAccessToken(
+      {
+        id: response.data._id,
+        email: req.body.email,
+        fullName: req.body.profile.displayName,
+      },
+      "6h"
+    );
+
+    const verificationLink = `${process.env.SERVER_URL}/auth/verify-email?token=${token}`;
+    sendVerificationEmail(req.body.email, req.body.profile.displayName, verificationLink);
 
     res.status(201).json({
-      message: "User register successfully",
-      data: formatMongoData(response.data),
+      message: "User registered successfully | Verify your email",
+      data: response.data,
     });
   } catch (error) {
     next(error);
@@ -99,7 +129,7 @@ export const registerUser = async (
 export const loginUser = async (
   req: Request,
   res: Response,
-  _: NextFunction
+  next: NextFunction
 ) => {
   try {
     const credentials = {
