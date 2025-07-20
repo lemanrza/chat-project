@@ -27,7 +27,7 @@ const NotFound = () => {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl px-10 py-12 flex flex-col items-center"
       >
-        <h1 className="text-6xl font-extrabold text-[#8e2de2] mb-4">404</h1>
+        <h1 className="text-6xl font-extrabold text-[#8e2de2] mb-4">'404'</h1>
         <p className="text-xl text-gray-700 mb-6">Oops! Page not found.</p>
         <a href="/" className="bg-[#8e2de2] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#6c1cb0] transition">Go Home</a>
       </motion.div>
