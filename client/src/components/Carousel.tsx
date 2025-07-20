@@ -51,7 +51,7 @@ const Carousel: React.FC = () => {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 30, scale: 0.95 }}
                             transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="mt-8 px-8 py-3 bg-blue-500 rounded-xl shadow-lg text-white text-xl font-bold uppercase tracking-wide transition-all duration-200 hover:scale-105 hover:bg-gradient-to-r hover:shadow-2xl focus:outline-none"
+                            className="mt-8 px-8 py-3 bg-blue-500 rounded-sm shadow-lg text-white text-xl font-bold uppercase tracking-wide transition-all duration-200 hover:scale-100 hover:bg-gradient-to-r hover:shadow-2xl focus:outline-none"
                         >
                             CONTINUE
                         </motion.button>
