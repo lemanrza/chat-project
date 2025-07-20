@@ -10,5 +10,6 @@ export default {
   GMAIL_USER: process.env.GMAIL_USER,
   GMAIL_PASS: process.env.GMAIL_PASS,
   JWT_REFRESH_SECRET_KEY: process.env.JWT_REFRESH_SECRET_KEY,
-  JWT_ACCESS_SECRET_KEY: process.env.JWT_ACCESS_SECRET_KEY
+  JWT_ACCESS_SECRET_KEY: process.env.JWT_ACCESS_SECRET_KEY,
+  SERVER_URL: process.env.SERVER_URL || "http://localhost:3000",
 };
