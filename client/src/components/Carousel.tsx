@@ -111,7 +111,6 @@ const Carousel: React.FC<CarouselProps> = ({ onComplete }) => {
             />
           ))}
         </motion.div>
-
         <AnimatePresence>
           {active === slides.length - 1 && (
             <motion.button
@@ -134,6 +133,7 @@ const Carousel: React.FC<CarouselProps> = ({ onComplete }) => {
       </div>
     </div>
   );
+
 };
 
 export default Carousel;

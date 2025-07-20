@@ -1,9 +1,10 @@
-import { getAll, getByEmail, getOne, login, register, } from "../services/userService.js";
+import { getAll, getByEmail, getOne, login, register, unlockAcc, } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken } from "../utils/jwt.js";
 import { sendVerificationEmail } from "../utils/sendMail.js";
 import cloudinary from "cloudinary";
+import config from "../config/config.js";
 export const getUsers = async (_, res, next) => {
     try {
         const users = await getAll();
@@ -119,5 +120,15 @@ export const loginUser = async (req, res, next) => {
             message: error.message || "internal server error",
             statusCode: error.statusCode || 500,
         });
+    }
+};
+export const unlockAccount = async (req, res, next) => {
+    try {
+        const { token } = req.query;
+        const response = await unlockAcc(token);
+        res.redirect(`${config.CLIENT_URL}/auth/login?message=${response.message}`);
+    }
+    catch (error) {
+        next(error);
     }
 };

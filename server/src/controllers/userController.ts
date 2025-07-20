@@ -5,12 +5,14 @@ import {
   getOne,
   login,
   register,
+  unlockAcc,
 } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken } from "../utils/jwt.js";
 import { sendVerificationEmail } from "../utils/sendMail.js";
 import cloudinary from "cloudinary";
+import config from "../config/config.js";
 
 export const getUsers = async (
   _: Request,
@@ -82,7 +84,11 @@ interface MulterRequest extends Request {
   file?: Express.Multer.File;
 }
 
-export const registerUser = async (req: MulterRequest, res: Response, next: NextFunction) => {
+export const registerUser = async (
+  req: MulterRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     // Password hash
     const { password } = req.body;
@@ -90,12 +96,9 @@ export const registerUser = async (req: MulterRequest, res: Response, next: Next
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     if (req.file) {
-      const uploadedImage = await cloudinary.v2.uploader.upload(
-        req.file.path,
-        {
-          folder: "user_profiles",
-        }
-      );
+      const uploadedImage = await cloudinary.v2.uploader.upload(req.file.path, {
+        folder: "user_profiles",
+      });
 
       req.body.profile = uploadedImage.secure_url;
       req.body.public_id = uploadedImage.public_id;
@@ -121,7 +124,11 @@ export const registerUser = async (req: MulterRequest, res: Response, next: Next
     );
 
     const verificationLink = `${process.env.SERVER_URL}/auth/verify-email?token=${token}`;
-    sendVerificationEmail(req.body.email, req.body.profile.displayName, verificationLink);
+    sendVerificationEmail(
+      req.body.email,
+      req.body.profile.displayName,
+      verificationLink
+    );
 
     res.status(201).json({
       message: "User registered successfully | Verify your email",
@@ -161,5 +168,21 @@ export const loginUser = async (
       message: error.message || "internal server error",
       statusCode: error.statusCode || 500,
     });
+  }
+};
+
+export const unlockAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { token } = req.query;
+
+    const response = await unlockAcc(token);
+
+    res.redirect(`${config.CLIENT_URL}/auth/login?message=${response.message}`);
+  } catch (error) {
+    next(error);
   }
 };

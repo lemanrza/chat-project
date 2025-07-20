@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -45,9 +46,12 @@ const Welcome: React.FC = () => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
+
       className="min-h-screen bg-gray-100 flex items-center justify-center"
     >
       <Carousel onComplete={handleIntroComplete} language={selectedLanguage} />
+
+
     </motion.div>
   );
 };
