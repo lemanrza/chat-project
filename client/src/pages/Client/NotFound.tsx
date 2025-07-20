@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Home, ArrowLeft } from 'lucide-react';
@@ -22,6 +23,7 @@ const NotFound: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Page Not Found</h1>
           <p className="text-gray-600">The page you're looking for doesn't exist.</p>
         </motion.div>
+
 
         <motion.div
           initial={{ opacity: 0 }}
