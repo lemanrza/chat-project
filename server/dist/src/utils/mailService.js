@@ -1,27 +1,17 @@
-import nodemailer, { SentMessageInfo } from "nodemailer";
+import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
-
-interface EmailOptions {
-    toEmail: string;
-    userFullName: string;
-    verificationLink?: string;
-    unlockAccountLink?: string;
-    resetPasswordLink?: string;
-}
-
 const transporter = nodemailer.createTransport({
     service: "gmail",
     port: 587,
     secure: false,
     auth: {
-        user: process.env.GMAIL_USER as string,
-        pass: process.env.GMAIL_PASS as string,
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
     },
 });
-
 // Helper function to format date and time
-const formatDateTime = (date: Date): string => {
+const formatDateTime = (date) => {
     return date.toLocaleString("en-US", {
         weekday: "short",
         year: "numeric",
@@ -31,12 +21,7 @@ const formatDateTime = (date: Date): string => {
         minute: "2-digit",
     });
 };
-
-const sendVerificationEmail = async (
-    toEmail: string,
-    userFullName: string,
-    verificationLink: string
-): Promise<void> => {
+const sendVerificationEmail = async (toEmail, userFullName, verificationLink) => {
     try {
         await transporter.sendMail({
             from: `"Bazaar" <${process.env.GMAIL_USER}>`,
@@ -69,20 +54,15 @@ const sendVerificationEmail = async (
           </div>
         </div>`,
         });
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Error sending email:", error);
     }
 };
-
-const sendUnlockAccountEmail = async (
-    toEmail: string,
-    userFullName: string,
-    unlockAccountLink: string
-): Promise<void> => {
+const sendUnlockAccountEmail = async (toEmail, userFullName, unlockAccountLink) => {
     try {
         const lockDate = new Date();
-        const unlockDate = new Date(lockDate.getTime() + 10 * 60 * 1000); 
-
+        const unlockDate = new Date(lockDate.getTime() + 10 * 60 * 1000);
         await transporter.sendMail({
             from: `"Bazaar" <${process.env.GMAIL_USER}>`,
             to: toEmail,
@@ -123,15 +103,12 @@ const sendUnlockAccountEmail = async (
           </div>
         </div>`,
         });
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Error sending unlock email:", error);
     }
 };
-
-const sendForgotPasswordEmail = async (
-    toEmail: string,
-    resetPasswordLink: string
-): Promise<void> => {
+const sendForgotPasswordEmail = async (toEmail, resetPasswordLink) => {
     try {
         await transporter.sendMail({
             from: `"Bazaar" <${process.env.GMAIL_USER}>`,
@@ -169,9 +146,9 @@ const sendForgotPasswordEmail = async (
           </div>
         </div>`,
         });
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Error sending forgot password email:", error);
     }
 };
-
 export { sendVerificationEmail, sendUnlockAccountEmail, sendForgotPasswordEmail };

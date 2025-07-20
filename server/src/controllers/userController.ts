@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { getAll, login, register } from "../services/userService.js";
+import { getAll, getByEmail, getOne, login, register } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
 
@@ -19,6 +19,55 @@ export const getUsers = async (
     next(error);
   }
 };
+
+export const getUserById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const user = await getOne(id);
+    if (!user) {
+      res.status(404).json({
+        message: "no such user found!",
+        data: null,
+      });
+    } else {
+      res.status(200).json({
+        message: "user retrieved successfully!",
+        data: user,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserByEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email } = req.params;
+    const user = await getByEmail(email);
+    if (!user) {
+      res.status(404).json({
+        message: "no such user with given email",
+        data: null,
+      });
+    } else {
+      res.status(200).json({
+        message: "user retrieved successfully!",
+        data: user,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const registerUser = async (
   req: Request,

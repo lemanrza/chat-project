@@ -1,7 +1,13 @@
 import bcrypt from "bcrypt";
 import UserModel from "../models/userModel.js";
+import { verifyAccessToken } from "../utils/jwt.js";
 
 export const getAll = async () => await UserModel.find().select("-password");
+
+export const getOne = async (id: any) => await UserModel.findById(id).select("-password");
+
+export const getByEmail = async (email: string) =>
+  await UserModel.find({ email: email }).select("-password");
 
 export const register = async (payload: any) => {
   try {
@@ -22,6 +28,31 @@ export const register = async (payload: any) => {
     };
   } catch (error: any) {
     return error.message || "Internal server error";
+  }
+};
+
+export const verifyEmail = async (token: any) => {
+  const isValidToken: any = verifyAccessToken(token);
+  if (isValidToken) {
+    const { id } = isValidToken;
+    const user = await UserModel.findById(id);
+    if (user) {
+      if (user.emailVerified) {
+        return {
+          success: false,
+          message: "email already has been verified",
+        };
+      } else {
+        user.emailVerified = true;
+        await user.save();
+        return {
+          success: true,
+          message: "email has been verified successfully!",
+        };
+      }
+    }
+  } else {
+    throw new Error("invalid or expired token!");
   }
 };
 
