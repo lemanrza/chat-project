@@ -1,4 +1,4 @@
-import { getAll, register } from "../services/userService.js";
+import { getAll, login, register } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
 export const getUsers = async (_, res, next) => {
@@ -31,5 +31,31 @@ export const registerUser = async (req, res, next) => {
     }
     catch (error) {
         next(error);
+    }
+};
+export const loginUser = async (req, res, _) => {
+    try {
+        const credentials = {
+            email: req.body.email,
+            password: req.body.password,
+        };
+        const response = await login(credentials);
+        // res.cookie("refreshToken", response.refreshToken, {
+        //   httpOnly: true,
+        //   secure: true,
+        //   sameSite: "strict",
+        //   path: "/auth/refresh",
+        //   maxAge: 7 * 24 * 60 * 60 * 1000,
+        // });
+        res.status(200).json({
+            message: "User successfully login",
+            // token: response.accessToken,
+        });
+    }
+    catch (error) {
+        res.json({
+            message: error.message || "internal server error",
+            statusCode: error.statusCode || 500,
+        });
     }
 };
