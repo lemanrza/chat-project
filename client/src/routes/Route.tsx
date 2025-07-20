@@ -1,5 +1,4 @@
 import { type RouteObject } from "react-router-dom";
-import Home from "../pages/Client/Home";
 import NotFound from "../pages/Client/NotFound";
 import ClientLayout from "../layout/ClientLayout";
 import Login from "../pages/Auth/Login";
@@ -21,24 +20,20 @@ const ROUTES: RouteObject[] = [
     },
     {
         element: <ClientLayout />,
-        path: "/app",
         children: [
-            // {
-            //     index: true,
-            //     element: <Home />,
-            // },
             {
-                path: "chat",
+                path: "app/chat",
                 element: <Feed />,
             },
             {
-                path: "feed",
+                path: "app/feed",
                 element: <Chat />,
             },
             {
-                path: "profile",
+                path: "app/profile",
                 element: <Profile />,
             },
+
         ],
     },
     // auth layout
