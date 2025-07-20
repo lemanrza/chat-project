@@ -1,20 +1,61 @@
 import React from "react";
-
+import { motion } from "framer-motion";
+import LetterByLetterText from "@/components/LetterByLetterText";
 interface SlideProps {
   icon: React.ReactNode;
   title: string;
   description: string;
-  bg?: string;
+  bg: string;
+  isTransitioning: boolean;
+  onTextComplete?: () => void;
+  onTextDeleted?: () => void;
 }
 
-const Slide: React.FC<SlideProps> = ({ icon, title, description, bg }) => (
-  <div className="flex flex-col items-center justify-center gap-6 py-10">
-    <div className={`rounded-2xl p-6 shadow-lg mb-4 ${bg ? bg : 'bg-gradient-to-br from-orange-400 to-red-500'}`}>
-      {icon}
+const Slide: React.FC<SlideProps> = ({ 
+  icon, 
+  title, 
+  description, 
+  bg, 
+  isTransitioning, 
+  onTextComplete, 
+  onTextDeleted 
+}) => {
+  return (
+    <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
+      {/* App Icon */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.5 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className={`${bg} rounded-3xl p-8 mb-12 shadow-2xl`}
+      >
+        {icon}
+      </motion.div>
+
+      {/* Title */}
+      <div className="mb-6">
+        <LetterByLetterText
+          text={title}
+          className="text-5xl font-bold text-gray-800 mb-4"
+          delay={0.5}
+          isDeleting={isTransitioning}
+        />
+      </div>
+
+      {/* Description */}
+      <div>
+        <LetterByLetterText
+          text={description}
+          className="text-xl text-gray-600 leading-relaxed max-w-lg"
+          delay={1.5}
+          isDeleting={isTransitioning}
+          onComplete={onTextComplete}
+          onDeleted={onTextDeleted}
+        />
+      </div>
     </div>
-    <h2 className="text-3xl font-bold text-gray-800 mb-2">{title}</h2>
-    <p className="text-xl text-gray-500 text-center max-w-md">{description}</p>
-  </div>
-);
+  );
+};
 
 export default Slide;
