@@ -29,66 +29,55 @@ const LetterByLetterText: React.FC<LetterByLetterTextProps> = ({
   useEffect(() => {
     setDisplayedText('');
     setCurrentIndex(0);
+    setIsAnimating(false);
     setIsDeletingText(false);
-    if (delay === 0) {
-      setIsAnimating(true);
-    } else {
-      setIsAnimating(false);
-    }
-  }, [text, delay]);
+  }, [text]);
 
   // Handle deletion trigger
   useEffect(() => {
-    if (isDeleting && displayedText.length > 0) {
+    if (isDeleting && displayedText.length > 0 && !isDeletingText) {
       setIsDeletingText(true);
     }
-  }, [isDeleting, displayedText.length]);
+  }, [isDeleting, displayedText.length, isDeletingText]);
 
-  useEffect(() => {
-    if (delay > 0) {
-      const timer = setTimeout(() => {
-        setIsAnimating(true);
-      }, delay * 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [delay]);
-
-  useEffect(() => {
-    if (isDeletingText && displayedText.length > 0) {
-      const timer = setTimeout(() => {
-        setDisplayedText(prev => prev.slice(0, -1));
-      }, 30);
-
-      return () => clearTimeout(timer);
-    } else if (isDeletingText && displayedText.length === 0) {
-      setIsDeletingText(false);
-      if (onDeleted) {
-        onDeleted();
-      }
-      // Restart animation for new text after deletion
-      if (delay === 0) {
-        setIsAnimating(true);
-      } else {
-        setIsAnimating(false);
-      }
-      setCurrentIndex(0);
-    }
-  }, [isDeletingText, displayedText, onDeleted]);
-
+  // Handle typing
   useEffect(() => {
     if (!isAnimating || isDeletingText) return;
 
-    if (currentIndex < text.length) {
-      const timer = setTimeout(() => {
-        setDisplayedText(prev => prev + text[currentIndex]);
-        setCurrentIndex(prev => prev + 1);
-      }, speed);
+    const timer = setTimeout(() => {
+      if (currentIndex < text.length) {
+        setDisplayedText((prev) => prev + text[currentIndex]);
+        setCurrentIndex((prev) => prev + 1);
+      } else if (currentIndex === text.length && onComplete) {
+        onComplete();
+      }
+    }, speed);
 
-      return () => clearTimeout(timer);
-    } else if (currentIndex === text.length && onComplete) {
-      onComplete();
-    }
+    return () => clearTimeout(timer);
   }, [currentIndex, text, speed, isAnimating, isDeletingText, onComplete]);
+
+  // Handle deletion
+  useEffect(() => {
+    if (!isDeletingText) return;
+
+    const timer = setTimeout(() => {
+      setDisplayedText((prev) => prev.slice(0, -1));
+    }, speed);
+
+    if (displayedText.length === 0 && onDeleted) {
+      onDeleted();
+      setIsDeletingText(false);
+    }
+
+    return () => clearTimeout(timer);
+  }, [isDeletingText, displayedText, speed, onDeleted]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAnimating(true);
+    }, delay * 1000);
+    return () => clearTimeout(timer);
+  }, [delay]);
 
   const letters = displayedText.split('').map((letter, index) => (
     <motion.span

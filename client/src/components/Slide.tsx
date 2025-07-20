@@ -36,6 +36,7 @@ const Slide: React.FC<SlideProps> = ({
       {/* Title */}
       <div className="mb-6">
         <LetterByLetterText
+          key={title}
           text={title}
           className="text-5xl font-bold text-gray-800 mb-4"
           delay={0.5}
