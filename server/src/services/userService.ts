@@ -11,7 +11,11 @@ import config from "../config/config.js";
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 10 * 60 * 1000;
 
-export const getAll = async () => await UserModel.find().select("-password");
+export const getAll = async () =>
+  await UserModel.find().select("-password").populate({
+    path: "connections",
+    select: "-password",
+  });
 
 export const getOne = async (id: any) =>
   await UserModel.findById(id).select("-password");
@@ -77,16 +81,6 @@ export const login = async (credentials: {
   if (!user) throw new Error("Invalid credentials");
 
   if (!user.emailVerified) throw new Error("User should be verified first");
-
-  if (user.isBanned) {
-    if (!user.banUntil || new Date(user.banUntil) > new Date()) {
-      throw new Error("You are banned from logging in.");
-    } else {
-      user.isBanned = false;
-      user.banUntil = null;
-      await user.save();
-    }
-  }
 
   if (user.lockUntil && user.lockUntil > new Date()) {
     const unlockTime = new Date(user.lockUntil).toLocaleString();
@@ -162,4 +156,29 @@ export const login = async (credentials: {
     accessToken: accessToken,
     refreshToken: refreshToken,
   };
+};
+
+export const unlockAcc = async (token: any) => {
+  const isValidToken: any = verifyAccessToken(token);
+
+  if (isValidToken && isValidToken.id) {
+    const { id } = isValidToken;
+    const user: any = await UserModel.findById(id);
+
+    if (user?.loginAttempts >= 5) {
+      user.loginAttempts = 0;
+      user.lockUntil = null;
+      await user.save();
+
+      return {
+        message: "Account has been unlock manually successfully",
+      };
+    } else {
+      return {
+        message: "Account already has been unlocked",
+      };
+    }
+  } else {
+    throw new Error("Invalid or expired token");
+  }
 };
