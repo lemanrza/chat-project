@@ -4,7 +4,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#43e97b] via-[#38f9d7] to-[#fa8bff]">
+    <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 flex flex-col gap-6">
         <div className="flex flex-col items-center mb-2">
           <h1 className="text-3xl font-bold text-[#222] mb-1">Chat <span className="text-[#43e97b]">Wave</span></h1>
