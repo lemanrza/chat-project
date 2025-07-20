@@ -82,10 +82,10 @@ export const registerUser = async (req, res, next) => {
         const token = generateAccessToken({
             id: response.data._id,
             email: req.body.email,
-            fullName: req.body.displayName,
+            fullName: req.body.profile.displayName,
         }, "6h");
         const verificationLink = `${process.env.SERVER_URL}/auth/verify-email?token=${token}`;
-        sendVerificationEmail(req.body.email, req.body.displayName, verificationLink);
+        sendVerificationEmail(req.body.email, req.body.profile.displayName, verificationLink);
         res.status(201).json({
             message: "User registered successfully | Verify your email",
             data: response.data,
