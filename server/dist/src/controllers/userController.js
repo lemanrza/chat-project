@@ -1,9 +1,10 @@
-import { getAll, getByEmail, getOne, login, register, } from "../services/userService.js";
+import { getAll, getByEmail, getOne, login, register, unlockAcc, } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken } from "../utils/jwt.js";
 import { sendVerificationEmail } from "../utils/sendMail.js";
 import cloudinary from "cloudinary";
+import config from "../config/config.js";
 export const getUsers = async (_, res, next) => {
     try {
         const users = await getAll();
@@ -82,10 +83,10 @@ export const registerUser = async (req, res, next) => {
         const token = generateAccessToken({
             id: response.data._id,
             email: req.body.email,
-            fullName: req.body.displayName,
+            fullName: req.body.profile.displayName,
         }, "6h");
         const verificationLink = `${process.env.SERVER_URL}/auth/verify-email?token=${token}`;
-        sendVerificationEmail(req.body.email, req.body.displayName, verificationLink);
+        sendVerificationEmail(req.body.email, req.body.profile.displayName, verificationLink);
         res.status(201).json({
             message: "User registered successfully | Verify your email",
             data: response.data,
@@ -119,5 +120,15 @@ export const loginUser = async (req, res, next) => {
             message: error.message || "internal server error",
             statusCode: error.statusCode || 500,
         });
+    }
+};
+export const unlockAccount = async (req, res, next) => {
+    try {
+        const { token } = req.query;
+        const response = await unlockAcc(token);
+        res.redirect(`${config.CLIENT_URL}/auth/login?message=${response.message}`);
+    }
+    catch (error) {
+        next(error);
     }
 };
