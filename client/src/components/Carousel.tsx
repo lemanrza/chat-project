@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Slide from "./Slide";
-import { FaBolt, FaUsers, FaShieldAlt } from "react-icons/fa";
+import { FaBolt } from "react-icons/fa";
+import { FaUsers } from "react-icons/fa";
+import { FaShieldAlt } from "react-icons/fa";
 
 const slides = [
     {
