@@ -92,10 +92,10 @@ export const login = async (credentials) => {
             const token = generateAccessToken({
                 id: user.id,
                 email: user.email,
-                fullName: user.fullName,
+                fullName: user.displayName,
             }, "6h");
             const unlockAccountLink = `${config.SERVER_URL}/auth/unlock-account?token=${token}`;
-            sendUnlockAccountEmail(user.email, user.fullName, user.lockUntil, unlockAccountLink);
+            sendUnlockAccountEmail(user.email, user.profile.displayName, user.lockUntil, unlockAccountLink);
             throw new Error("Too many login attempts. Account locked for 10 minutes. Check your email");
         }
         await user.save();
@@ -108,14 +108,12 @@ export const login = async (credentials) => {
     const accessToken = generateAccessToken({
         email: user.email,
         id: user.id,
-        role: user.role,
-        fullName: user.fullName,
+        fullName: user.displayName,
     });
     const refreshToken = generateRefreshToken({
         email: user.email,
         id: user.id,
-        role: user.role,
-        fullName: user.fullName,
+        fullName: user.displayName,
     });
     return {
         message: "User login successfully!",

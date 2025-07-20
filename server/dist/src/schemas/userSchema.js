@@ -28,6 +28,19 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    hobbies: {
+        type: [String],
+        default: [],
+    },
+    connections: {
+        type: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
+        default: [],
+    },
     lastLogin: { type: Date, default: null },
     loginAttempts: { type: Number, default: 0 },
     lockUntil: { type: Date, default: null },
