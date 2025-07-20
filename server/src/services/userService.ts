@@ -117,7 +117,7 @@ export const login = async (credentials: {
         {
           id: user.id,
           email: user.email,
-          fullName: user.fullName,
+          fullName: user.displayName,
         },
         "6h"
       );
@@ -125,7 +125,7 @@ export const login = async (credentials: {
       const unlockAccountLink = `${config.SERVER_URL}/auth/unlock-account?token=${token}`;
       sendUnlockAccountEmail(
         user.email,
-        user.fullName,
+        user.profile.displayName,
         user.lockUntil,
         unlockAccountLink
       );
@@ -148,15 +148,13 @@ export const login = async (credentials: {
   const accessToken = generateAccessToken({
     email: user.email,
     id: user.id,
-    role: user.role,
-    fullName: user.fullName,
+    fullName: user.displayName,
   });
 
   const refreshToken = generateRefreshToken({
     email: user.email,
     id: user.id,
-    role: user.role,
-    fullName: user.fullName,
+    fullName: user.displayName,
   });
 
   return {

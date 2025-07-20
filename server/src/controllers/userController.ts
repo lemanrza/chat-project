@@ -1,5 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import { getAll, getByEmail, getOne, login, register } from "../services/userService.js";
+import {
+  getAll,
+  getByEmail,
+  getOne,
+  login,
+  register,
+} from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken } from "../utils/jwt.js";
@@ -138,17 +144,17 @@ export const loginUser = async (
     };
     const response = await login(credentials);
 
-    // res.cookie("refreshToken", response.refreshToken, {
-    //   httpOnly: true,
-    //   secure: true,
-    //   sameSite: "strict",
-    //   path: "/auth/refresh",
-    //   maxAge: 7 * 24 * 60 * 60 * 1000,
-    // });
+    res.cookie("refreshToken", response.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      path: "/auth/refresh",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     res.status(200).json({
       message: "User successfully login",
-      // token: response.accessToken,
+      token: response.accessToken,
     });
   } catch (error: any) {
     res.json({
