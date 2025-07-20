@@ -9,4 +9,6 @@ export default {
   DB_URL: process.env.DB_URL,
   GMAIL_USER: process.env.GMAIL_USER,
   GMAIL_PASS: process.env.GMAIL_PASS,
+  JWT_REFRESH_SECRET_KEY: process.env.JWT_REFRESH_SECRET_KEY,
+  JWT_ACCESS_SECRET_KEY: process.env.JWT_ACCESS_SECRET_KEY
 };
