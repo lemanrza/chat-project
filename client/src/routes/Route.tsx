@@ -10,6 +10,7 @@ import Feed from "../pages/Client/Feed";
 import Chat from "../pages/Client/Chat";
 import Profile from "../pages/Client/Profile";
 import AuthLayout from "../layout/AuthLayout";
+import Welcome from "@/pages/Client/Welcome";
 
 
 
@@ -17,8 +18,12 @@ import AuthLayout from "../layout/AuthLayout";
 const ROUTES: RouteObject[] = [
     // client layout
     {
-        element: <ClientLayout />,
         path: "/",
+        element: <Welcome />,
+    },
+    {
+        element: <ClientLayout />,
+        path: "/app",
         children: [
             {
                 index: true,

@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Search, Phone, Video, MoreHorizontal, Paperclip, Smile, Send, Settings, Menu, X, Users, MessageCircle, User } from 'lucide-react'
 
 interface Message {
@@ -195,19 +194,17 @@ const Feed = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out ${
-        sidebarOpen ? 'w-64' : 'w-16'
-      }`}>
+      <div className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out ${sidebarOpen ? 'w-64' : 'w-16'
+        }`}>
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div className={`flex items-center gap-2 transition-opacity duration-300 ${
-              sidebarOpen ? 'opacity-100' : 'opacity-0'
-            }`}>
+            <div className={`flex items-center gap-2 transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0'
+              }`}>
               <div className="w-6 h-6 bg-green-500 rounded"></div>
               <span className="font-semibold text-xl">Chat <span className="text-green-500">Wave</span></span>
             </div>
-            <button 
+            <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-1 text-gray-600 hover:bg-gray-100 rounded"
             >
@@ -269,8 +266,8 @@ const Feed = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Messages</h2>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Search conversations..."
               className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
@@ -280,22 +277,20 @@ const Feed = () => {
         {/* Conversations */}
         <div className="flex-1 overflow-y-auto">
           {conversations.map((conversation) => (
-            <div 
+            <div
               key={conversation.id}
               onClick={() => setSelectedChat(conversation.id)}
-              className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                selectedChat === conversation.id ? 'bg-green-50 border-l-4 border-l-green-500' : ''
-              }`}
+              className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${selectedChat === conversation.id ? 'bg-green-50 border-l-4 border-l-green-500' : ''
+                }`}
             >
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${
-                    conversation.id === 'alex-chen' ? 'bg-green-500' :
-                    conversation.id === 'design-team' ? 'bg-purple-500' :
-                    conversation.id === 'maria-garcia' ? 'bg-green-500' :
-                    conversation.id === 'dev-squad' ? 'bg-purple-500' :
-                    'bg-green-500'
-                  }`}>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${conversation.id === 'alex-chen' ? 'bg-green-500' :
+                      conversation.id === 'design-team' ? 'bg-purple-500' :
+                        conversation.id === 'maria-garcia' ? 'bg-green-500' :
+                          conversation.id === 'dev-squad' ? 'bg-purple-500' :
+                            'bg-green-500'
+                    }`}>
                     {conversation.avatar}
                   </div>
                   {conversation.online && (
@@ -332,13 +327,12 @@ const Feed = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
-                  selectedChat === 'alex-chen' ? 'bg-green-500' :
-                  selectedChat === 'design-team' ? 'bg-purple-500' :
-                  selectedChat === 'maria-garcia' ? 'bg-green-500' :
-                  selectedChat === 'dev-squad' ? 'bg-purple-500' :
-                  'bg-green-500'
-                }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${selectedChat === 'alex-chen' ? 'bg-green-500' :
+                    selectedChat === 'design-team' ? 'bg-purple-500' :
+                      selectedChat === 'maria-garcia' ? 'bg-green-500' :
+                        selectedChat === 'dev-squad' ? 'bg-purple-500' :
+                          'bg-green-500'
+                  }`}>
                   {selectedConversation?.avatar || 'AC'}
                 </div>
                 {selectedConversation?.online && !selectedConversation?.isGroup && (
@@ -348,10 +342,10 @@ const Feed = () => {
               <div>
                 <h3 className="font-semibold text-gray-900">{selectedConversation?.name || 'Alex Chen'}</h3>
                 <p className="text-sm text-green-500">
-                  {selectedConversation?.isGroup 
-                    ? `${selectedConversation.members} members` 
-                    : selectedConversation?.online 
-                      ? 'Online' 
+                  {selectedConversation?.isGroup
+                    ? `${selectedConversation.members} members`
+                    : selectedConversation?.online
+                      ? 'Online'
                       : 'Offline'
                   }
                 </p>
@@ -377,21 +371,19 @@ const Feed = () => {
             <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
               <div className={`flex items-start gap-2 max-w-xs lg:max-w-md ${msg.isMe ? 'flex-row-reverse' : ''}`}>
                 {!msg.isMe && (
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${
-                    selectedChat === 'alex-chen' ? 'bg-green-500' :
-                    selectedChat === 'design-team' ? 'bg-purple-500' :
-                    selectedChat === 'maria-garcia' ? 'bg-green-500' :
-                    selectedChat === 'dev-squad' ? 'bg-purple-500' :
-                    'bg-green-500'
-                  }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${selectedChat === 'alex-chen' ? 'bg-green-500' :
+                      selectedChat === 'design-team' ? 'bg-purple-500' :
+                        selectedChat === 'maria-garcia' ? 'bg-green-500' :
+                          selectedChat === 'dev-squad' ? 'bg-purple-500' :
+                            'bg-green-500'
+                    }`}>
                     {selectedConversation?.avatar || 'AC'}
                   </div>
                 )}
-                <div className={`px-4 py-2 rounded-lg ${
-                  msg.isMe 
-                    ? 'bg-green-500 text-white' 
+                <div className={`px-4 py-2 rounded-lg ${msg.isMe
+                    ? 'bg-green-500 text-white'
                     : 'bg-gray-100 text-gray-900'
-                }`}>
+                  }`}>
                   <p>{msg.content}</p>
                   <p className={`text-xs mt-1 ${msg.isMe ? 'text-green-100' : 'text-gray-500'}`}>
                     {msg.time}
