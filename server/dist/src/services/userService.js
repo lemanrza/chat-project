@@ -1,9 +1,15 @@
 import bcrypt from "bcrypt";
 import UserModel from "../models/userModel.js";
+<<<<<<< HEAD
+import { verifyAccessToken } from "../utils/jwt.js";
+=======
 // import config from "../config/config.js";
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 10 * 60 * 1000;
+>>>>>>> d41ad8225c96c6d3b81e52740db065599d081806
 export const getAll = async () => await UserModel.find().select("-password");
+export const getOne = async (id) => await UserModel.findById(id).select("-password");
+export const getByEmail = async (email) => await UserModel.find({ email: email }).select("-password");
 export const register = async (payload) => {
     try {
         const { email, username } = payload;
@@ -23,6 +29,32 @@ export const register = async (payload) => {
     }
     catch (error) {
         return error.message || "Internal server error";
+    }
+};
+export const verifyEmail = async (token) => {
+    const isValidToken = verifyAccessToken(token);
+    if (isValidToken) {
+        const { id } = isValidToken;
+        const user = await UserModel.findById(id);
+        if (user) {
+            if (user.emailVerified) {
+                return {
+                    success: false,
+                    message: "email already has been verified",
+                };
+            }
+            else {
+                user.emailVerified = true;
+                await user.save();
+                return {
+                    success: true,
+                    message: "email has been verified successfully!",
+                };
+            }
+        }
+    }
+    else {
+        throw new Error("invalid or expired token!");
     }
 };
 export const login = async (credentials) => {
