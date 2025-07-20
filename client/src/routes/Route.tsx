@@ -13,8 +13,6 @@ import AuthLayout from "../layout/AuthLayout";
 import Welcome from "@/pages/Client/Welcome";
 
 
-
-
 const ROUTES: RouteObject[] = [
     // client layout
     {
@@ -25,16 +23,16 @@ const ROUTES: RouteObject[] = [
         element: <ClientLayout />,
         path: "/app",
         children: [
+            // {
+            //     index: true,
+            //     element: <Home />,
+            // },
             {
-                index: true,
-                element: <Home />,
-            },
-            {
-                path: "feed",
+                path: "chat",
                 element: <Feed />,
             },
             {
-                path: "chat",
+                path: "feed",
                 element: <Chat />,
             },
             {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Users, MessageCircle, MapPin, UserPlus, X, User, Settings, LogOut } from 'lucide-react';
+import { Search, Filter, Users, MessageCircle, MapPin, UserPlus, User } from 'lucide-react';
 
 interface User {
   id: string;
@@ -19,48 +19,12 @@ interface Tab {
   icon: React.ReactNode;
 }
 
-interface SidebarItemProps {
-  icon: React.ReactNode;
-  label: string;
-  active: boolean;
-  collapsed: boolean;
-}
-
-const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, active, collapsed }) => {
-  return (
-    <button
-      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-        collapsed ? 'justify-center' : ''
-      }`}
-      style={{
-        backgroundColor: active ? '#00B878' : 'transparent',
-        color: active ? '#FFFFFF' : '#374151'
-      }}
-      onMouseEnter={(e) => {
-        if (!active) {
-          e.currentTarget.style.backgroundColor = '#E5E7EB';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!active) {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }
-      }}
-    >
-      {icon}
-      {!collapsed && (
-        <span className="font-medium text-sm">{label}</span>
-      )}
-    </button>
-  );
-};
 
 const Chat = () => {
   const [activeTab, setActiveTab] = useState('discover');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const tabs: Tab[] = [
     { id: 'discover', label: 'Discover', icon: <Search className="w-4 h-4" /> },
@@ -158,98 +122,12 @@ const Chat = () => {
   };
 
   return (
-    <div className="h-full flex" style={{ backgroundColor: '#F9FAFB' }}>
-      {/* Sidebar */}
-      <div 
-        className={`${sidebarCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 flex-shrink-0 flex flex-col`}
-        style={{ backgroundColor: '#FFFFFF', borderRightColor: '#D1D5DB', borderRight: '1px solid #D1D5DB' }}
-      >
-        {/* Sidebar Header */}
-        <div className="p-4 border-b" style={{ borderBottomColor: '#D1D5DB' }}>
-          <div className="flex items-center justify-between">
-            {!sidebarCollapsed && (
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold">
-                  <span style={{ color: '#374151' }}>Chat </span>
-                  <span style={{ color: '#22C55E' }}>Wave</span>
-                </h2>
-              </div>
-            )}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-2 rounded-lg transition-colors"
-              style={{ color: '#6B7280' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#E5E7EB';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <div className="flex-1 p-4">
-          <nav className="space-y-2">
-            <SidebarItem
-              icon={<Users className="w-5 h-5" />}
-              label="Feed"
-              active={false}
-              collapsed={sidebarCollapsed}
-            />
-            <SidebarItem
-              icon={<MessageCircle className="w-5 h-5" />}
-              label="Chat"
-              active={true}
-              collapsed={sidebarCollapsed}
-            />
-            <SidebarItem
-              icon={<User className="w-5 h-5" />}
-              label="Profile"
-              active={false}
-              collapsed={sidebarCollapsed}
-            />
-          </nav>
-        </div>
-
-        {/* Bottom Section - Settings and Logout */}
-        <div className="p-4 border-t" style={{ borderTopColor: '#D1D5DB' }}>
-          <div className="space-y-2">
-            <SidebarItem
-              icon={<Settings className="w-5 h-5" />}
-              label="Settings"
-              active={false}
-              collapsed={sidebarCollapsed}
-            />
-            <button
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                sidebarCollapsed ? 'justify-center' : ''
-              }`}
-              style={{ color: '#EF4444' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#FEE2E2';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              <LogOut className="w-5 h-5" />
-              {!sidebarCollapsed && (
-                <span className="font-medium text-sm">Logout</span>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
+    <div className="w-full flex bg-gray-50">
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div style={{ backgroundColor: '#FFFFFF', borderBottomColor: '#D1D5DB' }} className="border-b px-6 py-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="  px-8 py-8 rounded-t-2xl shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <div>
               <h1 className="text-3xl font-bold" style={{ color: '#374151' }}>
                 Discover People
@@ -258,36 +136,29 @@ const Chat = () => {
                 Find and connect with other users
               </p>
             </div>
-            <button 
+            <button
               style={{ backgroundColor: '#00B878' }}
-              className=":opacity-90 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors font-medium text-sm"
+              className="hover:brightness-110 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all font-medium text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-[#00B878] focus:ring-offset-2"
             >
-              <Users className="w-4 h-4" />
+              <Users className="w-4 h-4" style={{ color: '#fff' }} />
               Create Group
             </button>
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-8 mb-6">
+          <div className="flex items-center gap-4 sm:gap-8 mb-6">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium"
-                style={{
-                  backgroundColor: activeTab === tab.id ? '#00B878' : 'transparent',
-                  color: activeTab === tab.id ? '#FFFFFF' : '#374151'
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== tab.id) {
-                    e.currentTarget.style.backgroundColor = '#E5E7EB';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== tab.id) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
+                  ${activeTab === tab.id
+                    ? 'shadow-md scale-105 text-[#00B878]'
+
+                    : 'bg-transparent text-gray-700 hover:bg-gray-100'}
+                  "
+                style={activeTab === tab.id ? { backgroundColor: '#00B878' } : {}}
+                `}
               >
                 {tab.icon}
                 {tab.label}
@@ -296,38 +167,20 @@ const Chat = () => {
           </div>
 
           {/* Search and Filters */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mt-2">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#6B7280' }} />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search for users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  borderColor: '#D1D5DB',
-                  color: '#374151',
-                  border: '1px solid #D1D5DB'
-                }}
+                className="w-full pl-12 pr-4 py-3 rounded-lg text-base border border-gray-200 bg-white text-gray-700 focus:ring-2 focus:ring-green-400 focus:border-transparent focus:outline-none shadow-sm"
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg transition-colors font-medium"
-              style={{
-                borderColor: '#D1D5DB',
-                color: '#374151',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #D1D5DB'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#E5E7EB';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-              }}
+              className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow-sm"
             >
               <Filter className="w-4 h-4" />
               Filters
@@ -341,18 +194,13 @@ const Chat = () => {
             {filteredUsers.map((user) => (
               <div
                 key={user.id}
-                className="rounded-2xl p-6 :shadow-md transition-shadow"
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  borderColor: '#D1D5DB',
-                  border: '1px solid #D1D5DB'
-                }}
+                className="rounded-2xl p-6 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200 group"
               >
                 {/* User Avatar and Status */}
                 <div className="flex items-start mb-4">
                   <div className="relative">
                     <div 
-                      className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl"
+                      className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl group-hover:scale-105 transition-transform duration-200"
                       style={{ backgroundColor: '#00B878' }}
                     >
                       {user.avatar}
@@ -410,37 +258,17 @@ const Chat = () => {
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleConnect(user.id)}
-                    className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium"
-                    style={{
-                      backgroundColor: '#10B981',
-                      color: '#FFFFFF',
-                      border: 'none'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#F0FDF4';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
+                    className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white transition-all shadow group-hover:scale-105"
+                    style={{ backgroundColor: '#00B878' }}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#00a76d')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#00B878')}
                   >
-                    <UserPlus className="w-4 h-4" />
+                    <UserPlus className="w-4 h-4" style={{ color: '#fff' }} />
                     Connect
                   </button>
                   <button
                     onClick={() => handleMessage(user.id)}
-                    className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors font-medium"
-                    style={{
-                      borderColor: '#D1D5DB',
-                      color: '#374151',
-                      backgroundColor: '#FFFFFF',
-                      border: '1px solid #D1D5DB'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#E5E7EB';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#FFFFFF';
-                    }}
+                    className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow"
                   >
                     <MessageCircle className="w-4 h-4" />
                     Message
