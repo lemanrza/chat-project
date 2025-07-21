@@ -47,7 +47,7 @@ const Welcome: React.FC = () => {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
 
-      className="min-h-screen bg-gray-100 flex items-center justify-center"
+      className="min-h-screen  flex items-center justify-center"
     >
       <Carousel onComplete={handleIntroComplete} language={selectedLanguage} />
 

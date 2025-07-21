@@ -5,7 +5,10 @@ import {
   getOne,
   login,
   register,
+  resetPass,
   unlockAcc,
+  forgotPassword as forgotPasswordService,
+  deleteUser as deleteUserService,
 } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
@@ -79,10 +82,63 @@ export const getUserByEmail = async (
   }
 };
 
-// Extend Request type to include file property
+export const deleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const response = await deleteUserService(id);
+
+    if (!response || !response.success) {
+      // In case no response or success is false (i.e. user doesn't exist)
+      res.status(404).json({
+        message: "No such user found!",
+        data: null,
+      });
+    } else {
+      res.status(200).json({
+        message: response.message,
+        data: null, // You can also return the deleted user's details here if needed.
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
 }
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+    await forgotPasswordService(email);
+    res.status(200).json({
+      message: "reset password email was sent!",
+    });
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "message" in error) {
+      next(error);
+    } else {
+      next(new Error("Internal server error"));
+    }
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { newPassword, email } = req.body;
+    await resetPass(newPassword, email);
+    res.status(200).json({
+      message: "password reset successfully!",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const registerUser = async (
   req: MulterRequest,
@@ -104,7 +160,7 @@ export const registerUser = async (
       req.body.public_id = uploadedImage.public_id;
     }
 
-    const response = await register({
+    const response: any = await register({
       ...req.body,
       password: hashedPassword,
     });
@@ -134,8 +190,12 @@ export const registerUser = async (
       message: "User registered successfully | Verify your email",
       data: response.data,
     });
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "message" in error) {
+      next(error);
+    } else {
+      next(new Error("Internal server error"));
+    }
   }
 };
 
@@ -163,10 +223,18 @@ export const loginUser = async (
       message: "User successfully login",
       token: response.accessToken,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let message = "internal server error";
+    let statusCode = 500;
+    if (error && typeof error === "object" && "message" in error) {
+      message = (error as any).message;
+      if ("statusCode" in error) {
+        statusCode = (error as any).statusCode;
+      }
+    }
     res.json({
-      message: error.message || "internal server error",
-      statusCode: error.statusCode || 500,
+      message,
+      statusCode,
     });
   }
 };
@@ -185,4 +253,9 @@ export const unlockAccount = async (
   } catch (error) {
     next(error);
   }
+};
+
+export const logout = (_: Request, res: Response) => {
+  res.clearCookie("refreshToken", { path: "/auth/refresh" });
+  res.status(204).json({ message: "logged out successfully!" });
 };
