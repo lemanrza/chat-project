@@ -42,7 +42,7 @@ passport.use(
         const displayName = profile.displayName;
         const nameParts = displayName.split(" ");
         const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(" ");
+        const lastName = nameParts.slice(1).join(" ") || firstName; // Use firstName as lastName if no last name
 
         const DEFAULT_BIO = `Welcome to my profile! I'm just getting started here and looking forward to meeting new people, learning new things, and sharing great conversations. Stay tuned as I update more about myself!`;
 
@@ -118,7 +118,7 @@ passport.use(
           profile.displayName || profile.username || "New User";
         const nameParts = displayName.split(" ");
         const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(" ");
+        const lastName = nameParts.slice(1).join(" ") || firstName; // Use firstName as lastName if no last name
 
         const DEFAULT_BIO = `Welcome to my profile! I'm just getting started here and looking forward to meeting new people, learning new things, and sharing great conversations. Stay tuned as I update more about myself!`;
 

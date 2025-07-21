@@ -26,8 +26,8 @@ const profileSchema = new mongoose.Schema({
       "Welcome to my profile! I'm just getting started here and looking forward to meeting new people, learning new things, and sharing great conversations. Stay tuned as I update more about myself!",
   },
 
-  location: { type: String, required: true },
-  dateOfBirth: { type: Date, required: true },
+  location: { type: String, default: "" },
+  dateOfBirth: { type: Date, default: null },
 });
 
 export default profileSchema;
