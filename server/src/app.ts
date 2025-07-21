@@ -2,6 +2,9 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import userRouter from "./routes/userRoute.js";
 import { errorHandler } from "./errors/errorHandler.js";
+import githubRouter from "./routes/githubRoute.js";
+import googleRouter from "./routes/googleRoute.js";
+import passport from "passport";
 
 const app = express();
 
@@ -16,6 +19,9 @@ app.use(express.json());
 app.use(limiter);
 
 //routes
+app.use(passport.initialize());
+app.use("/auth", googleRouter);
+app.use("/auth", githubRouter);
 app.use("/auth", userRouter);
 
 app.use(errorHandler);

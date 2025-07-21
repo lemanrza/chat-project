@@ -9,11 +9,12 @@
     }
   ],
   "compilerOptions": {
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   }
 }
