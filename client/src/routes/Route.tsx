@@ -10,60 +10,62 @@ import Chat from "../pages/Client/Chat";
 import Profile from "../pages/Client/Profile";
 import AuthLayout from "../layout/AuthLayout";
 import Welcome from "@/pages/Client/Welcome";
-
+import AuthCallback from "@/pages/Auth/AuthCallback";
 
 const ROUTES: RouteObject[] = [
-    // client layout
-    {
-        path: "/",
-        element: <Welcome />,
-    },
-    {
-        element: <ClientLayout />,
-        children: [
-            {
-                path: "app/chat",
-                element: <Feed />,
-            },
-            {
-                path: "app/feed",
-                element: <Chat />,
-            },
-            {
-                path: "app/profile",
-                element: <Profile />,
-            },
-
-        ],
-    },
-    // auth layout
-    {
-        element: <AuthLayout />,
-        path: "/auth/",
-        children: [
-            {
-                path: "login",
-                element: <Login />,
-            },
-            {
-                path: "register",
-                element: <Register />,
-            },
-            {
-                path: "forgot-password",
-                element: <ForgotPassword />,
-            },
-            {
-                path: "reset-password/:token",
-                element: <ResetPassword />,
-            },
-
-        ],
-    },
-    {
-        path: "*",
-        element: <NotFound />,
-    },
+  // client layout
+  {
+    path: "/",
+    element: <Welcome />,
+  },
+  {
+    element: <ClientLayout />,
+    children: [
+      {
+        path: "app/chat",
+        element: <Feed />,
+      },
+      {
+        path: "app/feed",
+        element: <Chat />,
+      },
+      {
+        path: "app/profile",
+        element: <Profile />,
+      },
+    ],
+  },
+  // auth layout
+  {
+    element: <AuthLayout />,
+    path: "/auth/",
+    children: [
+      {
+        path: "login",
+        element: <Login />,
+      },
+      {
+        path: "register",
+        element: <Register />,
+      },
+      {
+        path: "success/:token",
+        element: <AuthCallback />,
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPassword />,
+      },
+      {
+        path: "reset-password/:token",
+        element: <ResetPassword />,
+      },
+    ],
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
 ];
 
 export default ROUTES;
