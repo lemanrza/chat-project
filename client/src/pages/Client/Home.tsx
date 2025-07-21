@@ -1,16 +1,16 @@
-import Carousel from "../../components/Carousel";
-import { motion } from "framer-motion";
+import React from 'react';
+import Carousel from '@/components/Carousel';
 
-const Home = () => {
+interface HomeProps {
+  selectedLanguage: string;
+  onIntroComplete: () => void;
+}
+
+const Home: React.FC<HomeProps> = ({ selectedLanguage, onIntroComplete }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="min-h-screen bg-gradient-to-br from-green-100 via-blue-50 to-pink-100 flex items-center justify-center"
-    >
-      <Carousel />
-    </motion.div>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <Carousel onComplete={onIntroComplete} language={selectedLanguage} />
+    </div>
   );
 };
 

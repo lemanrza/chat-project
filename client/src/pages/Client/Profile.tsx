@@ -5,56 +5,18 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('overview')
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-green-500 rounded"></div>
-            <span className="font-semibold text-xl">Chat <span className="text-green-500">Wave</span></span>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
-              <User size={20} />
-              <span>Feed</span>
-            </div>
-            <div className="flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
-              <MessageCircle size={20} />
-              <span>Chat</span>
-            </div>
-            <div className="flex items-center gap-3 px-3 py-2 text-green-600 bg-green-50 rounded-lg">
-              <Users size={20} />
-              <span>Profile</span>
-              <div className="w-2 h-2 bg-green-500 rounded-full ml-auto"></div>
-            </div>
-          </div>
-        </nav>
-
-        {/* Bottom Navigation */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3 px-3 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
-              <Settings size={20} />
-              <span>Settings</span>
-            </div>
-            <div className="flex items-center gap-3 px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg">
-              <span>↪</span>
-              <span>Logout</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="flex-1 p-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold">Profile</h1>
-          <button className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors">
+          <button
+            className="text-white px-6 py-2 rounded-lg transition-colors"
+            style={{ backgroundColor: '#00B878' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#00a76d')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#00B878')}
+          >
             ✏ Save Changes
           </button>
         </div>
@@ -64,7 +26,7 @@ const Profile = () => {
           <div className="flex items-start gap-6">
             {/* Avatar */}
             <div className="relative">
-              <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl font-semibold">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold" style={{ backgroundColor: '#00B878' }}>
                 AJ
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
@@ -81,7 +43,7 @@ const Profile = () => {
               <p className="text-gray-600 mb-6 leading-relaxed">
                 Digital enthusiast, coffee lover, and ChatWave explorer! Always excited to connect with new people and share interesting conversations.
               </p>
-              
+
               {/* Location and Join Date */}
               <div className="flex items-center gap-6 text-gray-500 text-sm mb-6">
                 <div className="flex items-center gap-1">
@@ -111,46 +73,46 @@ const Profile = () => {
 
         {/* Tab Navigation */}
         <div className="flex gap-1 mb-8">
-          <button 
+          <button
             onClick={() => setActiveTab('overview')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
-              activeTab === 'overview' 
-                ? 'bg-green-500 text-white' 
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeTab === 'overview'
+                ? 'text-white'
                 : 'text-gray-600 hover:bg-gray-100'
-            }`}
+              }`}
+            style={activeTab === 'overview' ? { backgroundColor: '#00B878' } : {}}
           >
             <User size={16} />
             Overview
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
-              activeTab === 'settings' 
-                ? 'bg-green-500 text-white' 
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeTab === 'settings'
+                ? 'text-white'
                 : 'text-gray-600 hover:bg-gray-100'
-            }`}
+              }`}
+            style={activeTab === 'settings' ? { backgroundColor: '#00B878' } : {}}
           >
             <Settings size={16} />
             Settings
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('privacy')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
-              activeTab === 'privacy' 
-                ? 'bg-green-500 text-white' 
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeTab === 'privacy'
+                ? 'text-white'
                 : 'text-gray-600 hover:bg-gray-100'
-            }`}
+              }`}
+            style={activeTab === 'privacy' ? { backgroundColor: '#00B878' } : {}}
           >
             <Shield size={16} />
             Privacy
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('account')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
-              activeTab === 'account' 
-                ? 'bg-green-500 text-white' 
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeTab === 'account'
+                ? 'text-white'
                 : 'text-gray-600 hover:bg-gray-100'
-            }`}
+              }`}
+            style={activeTab === 'account' ? { backgroundColor: '#00B878' } : {}}
           >
             <Link size={16} />
             Account
@@ -164,8 +126,8 @@ const Profile = () => {
             <div className="grid grid-cols-3 gap-6 mb-8">
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                    <MessageCircle className="text-green-600" size={24} />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: '#E6FAF3' }}>
+                    <MessageCircle size={24} style={{ color: '#00B878' }} />
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-gray-900">154</div>
@@ -204,8 +166,8 @@ const Profile = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
               <div className="grid grid-cols-4 gap-4">
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <MessageCircle className="text-green-600" size={24} />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style={{ background: '#E6FAF3' }}>
+                    <MessageCircle size={24} style={{ color: '#00B878' }} />
                   </div>
                   <div className="font-medium text-gray-900 mb-1">New Chat</div>
                 </div>
@@ -241,7 +203,7 @@ const Profile = () => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Language & Region</h3>
               <div className="grid grid-cols-4 gap-4">
-                <div className="border-2 border-green-500 bg-green-50 rounded-lg p-4 cursor-pointer">
+                <div className="border-2 rounded-lg p-4 cursor-pointer" style={{ borderColor: '#00B878', background: '#E6FAF3' }}>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-900">US</span>
                     <span className="text-sm text-gray-600">English</span>
@@ -284,7 +246,7 @@ const Profile = () => {
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" className="sr-only peer" defaultChecked />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B878]"></div>
                   </label>
                 </div>
               </div>
@@ -356,7 +318,7 @@ const Profile = () => {
           <div className="space-y-8">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Privacy Settings</h3>
-              
+
               {/* Profile Visibility */}
               <div className="space-y-6">
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
@@ -472,7 +434,12 @@ const Profile = () => {
                   />
                 </div>
               </div>
-              <button className="mt-6 bg-green-500 text-white px-8 py-3 rounded-lg hover:bg-green-600 transition-colors text-base">
+              <button
+                className="mt-6 text-white px-8 py-3 rounded-lg transition-colors text-base"
+                style={{ backgroundColor: '#00B878' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#00a76d')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#00B878')}
+              >
                 Update Password
               </button>
             </div>
