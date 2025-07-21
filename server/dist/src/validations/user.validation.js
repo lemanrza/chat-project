@@ -5,8 +5,8 @@ const profileSchema = Joi.object({
     displayName: Joi.string().optional(),
     avatar: Joi.string().uri().optional(),
     bio: Joi.string().optional(),
-    location: Joi.string().required(),
-    dateOfBirth: Joi.date().iso().required(),
+    location: Joi.string().optional(),
+    dateOfBirth: Joi.date().iso().optional(),
 });
 const userValidationSchema = Joi.object({
     username: Joi.string().min(3).required(),

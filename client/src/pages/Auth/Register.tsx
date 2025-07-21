@@ -1,9 +1,54 @@
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
+import { toast } from "sonner";
+import { useFormik } from "formik";
+import { useNavigate } from "react-router-dom";
+import registerValidation from "@/validations/registerValidation";
+import controller from "@/services/commonRequest";
+import endpoints from "@/services/api";
+import User from "@/classes/User";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const navigate = useNavigate();
+
+  const registerFormik = useFormik({
+    initialValues: {
+      firstName: "",
+      lastName: "",
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    validationSchema: registerValidation,
+    onSubmit: async (values: any, action: any) => {
+      const newUser = new User(
+        {
+          firstName: values.firstName,
+          lastName: values.lastName,
+        },
+        values.username,
+        values.email,
+        values.password
+      );
+
+      try {
+        await controller.post(`${endpoints.users}/register`, newUser);
+
+        toast.success("Registration successful!");
+
+        action.resetForm();
+
+        navigate("/auth/login");
+      } catch (error: any) {
+        toast.error("Registration failed!");
+        values.email = "";
+        values.username = "";
+      }
+    },
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -48,45 +93,91 @@ const Register = () => {
         </div>
 
         {/* Form */}
-        <form className="grid grid-cols-2 gap-4">
+        <form
+          onSubmit={registerFormik.handleSubmit}
+          className="grid grid-cols-2 gap-4"
+        >
           <div>
             <label className="text-sm font-medium text-[#222]">
               First Name
             </label>
             <input
               type="text"
+              value={registerFormik.values.firstName}
+              onChange={registerFormik.handleChange}
+              onBlur={registerFormik.handleBlur}
+              name="firstName"
               placeholder="Enter your first name"
               className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
             />
+            {registerFormik.errors.firstName &&
+              registerFormik.touched.firstName && (
+                <span className="text-red-500 text-sm mt-1 block">
+                  {registerFormik.errors.firstName}
+                </span>
+              )}
           </div>
           <div>
             <label className="text-sm font-medium text-[#222]">Last Name</label>
             <input
               type="text"
+              value={registerFormik.values.lastName}
+              onChange={registerFormik.handleChange}
+              onBlur={registerFormik.handleBlur}
+              name="lastName"
               placeholder="Enter your last name"
               className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
             />
+            {registerFormik.errors.lastName &&
+              registerFormik.touched.lastName && (
+                <span className="text-red-500 text-sm mt-1 block">
+                  {registerFormik.errors.lastName}
+                </span>
+              )}
           </div>
           <div className="col-span-2">
             <label className="text-sm font-medium text-[#222]">Username</label>
             <input
               type="text"
+              value={registerFormik.values.username}
+              onChange={registerFormik.handleChange}
+              onBlur={registerFormik.handleBlur}
+              name="username"
               placeholder="Choose a username"
               className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
             />
+            {registerFormik.errors.username &&
+              registerFormik.touched.username && (
+                <span className="text-red-500 text-sm mt-1 block">
+                  {registerFormik.errors.username}
+                </span>
+              )}
           </div>
           <div className="col-span-2">
             <label className="text-sm font-medium text-[#222]">Email</label>
             <input
               type="email"
+              value={registerFormik.values.email}
+              onChange={registerFormik.handleChange}
+              onBlur={registerFormik.handleBlur}
+              name="email"
               placeholder="Enter your email"
               className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
             />
+            {registerFormik.errors.email && registerFormik.touched.email && (
+              <span className="text-red-500 text-sm mt-1 block">
+                {registerFormik.errors.email}
+              </span>
+            )}
           </div>
           <div className="relative">
             <label className="text-sm font-medium text-[#222]">Password</label>
             <input
               type={showPassword ? "text" : "password"}
+              value={registerFormik.values.password}
+              onChange={registerFormik.handleChange}
+              onBlur={registerFormik.handleBlur}
+              name="password"
               placeholder="Enter password"
               className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b] pr-10"
             />
@@ -133,6 +224,12 @@ const Register = () => {
                 </svg>
               )}
             </button>
+            {registerFormik.errors.password &&
+              registerFormik.touched.password && (
+                <span className="text-red-500 text-sm mt-1 block">
+                  {registerFormik.errors.password}
+                </span>
+              )}
           </div>
           <div className="relative">
             <label className="text-sm font-medium text-[#222]">
@@ -140,6 +237,10 @@ const Register = () => {
             </label>
             <input
               type={showConfirm ? "text" : "password"}
+              value={registerFormik.values.confirmPassword}
+              onChange={registerFormik.handleChange}
+              onBlur={registerFormik.handleBlur}
+              name="confirmPassword"
               placeholder="Confirm password"
               className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b] pr-10"
             />
@@ -186,12 +287,23 @@ const Register = () => {
                 </svg>
               )}
             </button>
+            {registerFormik.errors.confirmPassword &&
+              registerFormik.touched.confirmPassword && (
+                <span className="text-red-500 text-sm mt-1 block">
+                  {registerFormik.errors.confirmPassword}
+                </span>
+              )}
           </div>
 
           <div className="col-span-2">
             <button
+              disabled={
+                registerFormik.isSubmitting ||
+                !registerFormik.dirty ||
+                Object.entries(registerFormik.errors).length > 0
+              }
               type="submit"
-              className="bg-[#43e97b] text-white rounded-lg py-2 font-semibold hover:bg-[#38d46d] transition w-full mt-2 cursor-pointer"
+              className="bg-[#43e97b] text-white disabled:cursor-not-allowed disabled:bg-[#43e97add] rounded-lg py-2 font-semibold hover:bg-[#38d46d] transition w-full mt-2 cursor-pointer"
             >
               Create Account
             </button>

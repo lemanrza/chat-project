@@ -1,3 +1,4 @@
+import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import userRouter from "./routes/userRoute.js";
@@ -15,6 +16,7 @@ const limiter = rateLimit({
 // Global middlewares
 app.use(express.json());
 app.use(limiter);
+app.use(cors());
 //routes
 app.use(passport.initialize());
 app.use("/auth", googleRouter);
