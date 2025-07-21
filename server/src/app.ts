@@ -5,6 +5,7 @@ import { errorHandler } from "./errors/errorHandler.js";
 import githubRouter from "./routes/githubRoute.js";
 import googleRouter from "./routes/googleRoute.js";
 import passport from "passport";
+import "./config/passport.js";
 
 const app = express();
 

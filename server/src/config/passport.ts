@@ -1,8 +1,7 @@
 import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 import config from "./config.js";
 import UserModel from "../models/userModel.js";
-import { Profile } from "passport-google-oauth20";
 import { VerifyCallback } from "passport-oauth2";
 import {
   Strategy as GitHubStrategy,
