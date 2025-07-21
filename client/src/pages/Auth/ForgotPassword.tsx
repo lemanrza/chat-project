@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import chatLogo from '../../assets/images/chatlogo.png';
 
 const ForgotPassword = () => {

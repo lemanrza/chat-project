@@ -8,7 +8,7 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ selectedLanguage, onIntroComplete }) => {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+    <div className="min-h-screen  flex items-center justify-center">
       <Carousel onComplete={onIntroComplete} language={selectedLanguage} />
     </div>
   );
