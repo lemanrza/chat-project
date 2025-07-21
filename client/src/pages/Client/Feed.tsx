@@ -1,5 +1,13 @@
-import { useState } from 'react'
-import { Search, Phone, Video, MoreHorizontal, Paperclip, Smile, Send } from 'lucide-react'
+import { useState } from "react";
+import {
+  Search,
+  Phone,
+  Video,
+  MoreHorizontal,
+  Paperclip,
+  Smile,
+  Send,
+} from "lucide-react";
 
 interface Message {
   id: number;
@@ -22,172 +30,174 @@ interface Conversation {
 }
 
 const Feed = () => {
-  const [selectedChat, setSelectedChat] = useState('alex-chen')
-  const [message, setMessage] = useState('')
+  const [selectedChat, setSelectedChat] = useState("alex-chen");
+  const [message, setMessage] = useState("");
 
   const conversations: Conversation[] = [
     {
-      id: 'alex-chen',
-      name: 'Alex Chen',
-      avatar: 'AC',
+      id: "alex-chen",
+      name: "Alex Chen",
+      avatar: "AC",
       lastMessage: "Hey! How's the project going?",
-      time: '2 min',
+      time: "2 min",
       unread: 3,
-      online: true
+      online: true,
     },
     {
-      id: 'design-team',
-      name: 'Design Team',
-      avatar: 'DT',
-      lastMessage: 'Meeting at 3 PM tomorrow',
-      time: '5 min',
+      id: "design-team",
+      name: "Design Team",
+      avatar: "DT",
+      lastMessage: "Meeting at 3 PM tomorrow",
+      time: "5 min",
       unread: 0,
       isGroup: true,
-      members: 8
+      members: 8,
     },
     {
-      id: 'maria-garcia',
-      name: 'Maria Garcia',
-      avatar: 'MG',
-      lastMessage: 'Thanks for the help yesterday!',
-      time: '1 hour',
+      id: "maria-garcia",
+      name: "Maria Garcia",
+      avatar: "MG",
+      lastMessage: "Thanks for the help yesterday!",
+      time: "1 hour",
       unread: 1,
-      online: true
+      online: true,
     },
     {
-      id: 'dev-squad',
-      name: 'Dev Squad',
-      avatar: 'DS',
-      lastMessage: 'New feature is ready for review',
-      time: '3 hours',
+      id: "dev-squad",
+      name: "Dev Squad",
+      avatar: "DS",
+      lastMessage: "New feature is ready for review",
+      time: "3 hours",
       unread: 0,
       isGroup: true,
-      members: 12
+      members: 12,
     },
     {
-      id: 'yuki-tanaka',
-      name: 'Yuki Tanaka',
-      avatar: 'YT',
+      id: "yuki-tanaka",
+      name: "Yuki Tanaka",
+      avatar: "YT",
       lastMessage: "Let's catch up soon 😊",
-      time: '1 day',
+      time: "1 day",
       unread: 0,
-      online: false
-    }
-  ]
+      online: false,
+    },
+  ];
 
   const chatMessages: Record<string, Message[]> = {
-    'alex-chen': [
+    "alex-chen": [
       {
         id: 1,
-        sender: 'Alex Chen',
-        content: 'Hey! How are you doing?',
-        time: '10:30 AM',
-        isMe: false
+        sender: "Alex Chen",
+        content: "Hey! How are you doing?",
+        time: "10:30 AM",
+        isMe: false,
       },
       {
         id: 2,
         content: "I'm doing great! Thanks for asking. How about you?",
-        time: '10:32 AM',
-        isMe: true
+        time: "10:32 AM",
+        isMe: true,
       },
       {
         id: 3,
-        sender: 'Alex Chen',
-        content: 'Pretty good! Want to grab coffee later?',
-        time: '10:35 AM',
-        isMe: false
+        sender: "Alex Chen",
+        content: "Pretty good! Want to grab coffee later?",
+        time: "10:35 AM",
+        isMe: false,
       },
       {
         id: 4,
-        content: 'Sounds perfect! What time works for you?',
-        time: '10:36 AM',
-        isMe: true
+        content: "Sounds perfect! What time works for you?",
+        time: "10:36 AM",
+        isMe: true,
       },
       {
         id: 5,
-        sender: 'Alex Chen',
-        content: 'That sounds awesome! 🎉',
-        time: '10:37 AM',
-        isMe: false
-      }
+        sender: "Alex Chen",
+        content: "That sounds awesome! 🎉",
+        time: "10:37 AM",
+        isMe: false,
+      },
     ],
-    'design-team': [
+    "design-team": [
       {
         id: 1,
-        sender: 'Design Team',
-        content: 'Meeting at 3 PM tomorrow',
-        time: '9:00 AM',
-        isMe: false
+        sender: "Design Team",
+        content: "Meeting at 3 PM tomorrow",
+        time: "9:00 AM",
+        isMe: false,
       },
       {
         id: 2,
-        content: 'I will be there!',
-        time: '9:02 AM',
-        isMe: true
+        content: "I will be there!",
+        time: "9:02 AM",
+        isMe: true,
       },
       {
         id: 3,
-        sender: 'Sarah Wilson',
-        content: 'Great! See you all there.',
-        time: '9:05 AM',
-        isMe: false
-      }
+        sender: "Sarah Wilson",
+        content: "Great! See you all there.",
+        time: "9:05 AM",
+        isMe: false,
+      },
     ],
-    'maria-garcia': [
+    "maria-garcia": [
       {
         id: 1,
-        sender: 'Maria Garcia',
-        content: 'Thanks for the help yesterday!',
-        time: '8:30 AM',
-        isMe: false
+        sender: "Maria Garcia",
+        content: "Thanks for the help yesterday!",
+        time: "8:30 AM",
+        isMe: false,
       },
       {
         id: 2,
-        content: 'You are welcome! Happy to help.',
-        time: '8:32 AM',
-        isMe: true
+        content: "You are welcome! Happy to help.",
+        time: "8:32 AM",
+        isMe: true,
       },
       {
         id: 3,
-        sender: 'Maria Garcia',
-        content: 'The project looks amazing now!',
-        time: '8:35 AM',
-        isMe: false
-      }
+        sender: "Maria Garcia",
+        content: "The project looks amazing now!",
+        time: "8:35 AM",
+        isMe: false,
+      },
     ],
-    'dev-squad': [
+    "dev-squad": [
       {
         id: 1,
-        sender: 'Dev Squad',
-        content: 'New feature is ready for review',
-        time: '7:00 AM',
-        isMe: false
+        sender: "Dev Squad",
+        content: "New feature is ready for review",
+        time: "7:00 AM",
+        isMe: false,
       },
       {
         id: 2,
-        content: 'Awesome! I will check it out.',
-        time: '7:02 AM',
-        isMe: true
-      }
+        content: "Awesome! I will check it out.",
+        time: "7:02 AM",
+        isMe: true,
+      },
     ],
-    'yuki-tanaka': [
+    "yuki-tanaka": [
       {
         id: 1,
-        sender: 'Yuki Tanaka',
+        sender: "Yuki Tanaka",
         content: "Let's catch up soon 😊",
-        time: 'Yesterday',
-        isMe: false
+        time: "Yesterday",
+        isMe: false,
       },
       {
         id: 2,
-        content: 'Definitely! How about this weekend?',
-        time: 'Yesterday',
-        isMe: true
-      }
-    ]
-  }
-  const selectedConversation = conversations.find(conv => conv.id === selectedChat)
-  const messages = chatMessages[selectedChat] || []
+        content: "Definitely! How about this weekend?",
+        time: "Yesterday",
+        isMe: true,
+      },
+    ],
+  };
+  const selectedConversation = conversations.find(
+    (conv) => conv.id === selectedChat
+  );
+  const messages = chatMessages[selectedChat] || [];
 
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">
@@ -197,7 +207,10 @@ const Feed = () => {
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Messages</h2>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
             <input
               type="text"
               placeholder="Search conversations..."
@@ -212,35 +225,65 @@ const Feed = () => {
             <div
               key={conversation.id}
               onClick={() => setSelectedChat(conversation.id)}
-              className={`p-4 border-b border-gray-100 cursor-pointer transition-all duration-150 hover:bg-[#E6FAF3] ${selectedChat === conversation.id ? 'bg-[#E6FAF3] border-l-4 border-l-[#00B878] shadow' : ''}`}
+              className={`p-4 border-b border-gray-100 cursor-pointer transition-all duration-150 hover:bg-[#E6FAF3] ${
+                selectedChat === conversation.id
+                  ? "bg-[#E6FAF3] border-l-4 border-l-[#00B878] shadow"
+                  : ""
+              }`}
               style={{ minHeight: 80 }}
             >
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow ${conversation.id === 'alex-chen' || conversation.id === 'maria-garcia' ? '' : ''}`}
-                    style={{ backgroundColor: conversation.id === 'design-team' || conversation.id === 'dev-squad' ? '#a78bfa' : '#00B878' }}>
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow ${
+                      conversation.id === "alex-chen" ||
+                      conversation.id === "maria-garcia"
+                        ? ""
+                        : ""
+                    }`}
+                    style={{
+                      backgroundColor:
+                        conversation.id === "design-team" ||
+                        conversation.id === "dev-squad"
+                          ? "#a78bfa"
+                          : "#00B878",
+                    }}
+                  >
                     {conversation.avatar}
                   </div>
                   {conversation.online && (
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full" style={{ backgroundColor: '#00B878' }}></div>
+                    <div
+                      className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full"
+                      style={{ backgroundColor: "#00B878" }}
+                    ></div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-gray-900 truncate">{conversation.name}</h3>
-                    <span className="text-xs text-gray-500">{conversation.time}</span>
+                    <h3 className="font-medium text-gray-900 truncate">
+                      {conversation.name}
+                    </h3>
+                    <span className="text-xs text-gray-500">
+                      {conversation.time}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600 truncate">{conversation.lastMessage}</p>
+                    <p className="text-sm text-gray-600 truncate">
+                      {conversation.lastMessage}
+                    </p>
                     {conversation.unread > 0 && (
-                      <span className="ml-2 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center shadow"
-                        style={{ backgroundColor: '#00B878' }}>
+                      <span
+                        className="ml-2 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center shadow"
+                        style={{ backgroundColor: "#00B878" }}
+                      >
                         {conversation.unread}
                       </span>
                     )}
                   </div>
                   {conversation.isGroup && (
-                    <p className="text-xs text-gray-500">{conversation.members} members</p>
+                    <p className="text-xs text-gray-500">
+                      {conversation.members} members
+                    </p>
                   )}
                 </div>
               </div>
@@ -256,23 +299,36 @@ const Feed = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold shadow`}
-                  style={{ backgroundColor: selectedChat === 'design-team' || selectedChat === 'dev-squad' ? '#a78bfa' : '#00B878' }}>
-                  {selectedConversation?.avatar || 'AC'}
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold shadow`}
+                  style={{
+                    backgroundColor:
+                      selectedChat === "design-team" ||
+                      selectedChat === "dev-squad"
+                        ? "#a78bfa"
+                        : "#00B878",
+                  }}
+                >
+                  {selectedConversation?.avatar || "AC"}
                 </div>
-                {selectedConversation?.online && !selectedConversation?.isGroup && (
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 border-2 border-white rounded-full" style={{ backgroundColor: '#00B878' }}></div>
-                )}
+                {selectedConversation?.online &&
+                  !selectedConversation?.isGroup && (
+                    <div
+                      className="absolute -bottom-1 -right-1 w-3 h-3 border-2 border-white rounded-full"
+                      style={{ backgroundColor: "#00B878" }}
+                    ></div>
+                  )}
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">{selectedConversation?.name || 'Alex Chen'}</h3>
-                <p className="text-sm font-medium" style={{ color: '#00B878' }}>
+                <h3 className="font-semibold text-gray-900">
+                  {selectedConversation?.name || "Alex Chen"}
+                </h3>
+                <p className="text-sm font-medium" style={{ color: "#00B878" }}>
                   {selectedConversation?.isGroup
                     ? `${selectedConversation.members} members`
                     : selectedConversation?.online
-                      ? 'Online'
-                      : 'Offline'
-                  }
+                    ? "Online"
+                    : "Offline"}
                 </p>
               </div>
             </div>
@@ -293,22 +349,60 @@ const Feed = () => {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 min-h-0">
           {messages.map((msg: Message) => (
-            <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-              <div className={`flex items-start gap-2 max-w-xs lg:max-w-md ${msg.isMe ? 'flex-row-reverse' : ''}`}>
+            <div
+              key={msg.id}
+              className={`flex ${msg.isMe ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`flex items-start gap-2 max-w-xs lg:max-w-md ${
+                  msg.isMe ? "flex-row-reverse" : ""
+                }`}
+              >
                 {!msg.isMe && (
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow`}
-                    style={{ backgroundColor: selectedChat === 'design-team' || selectedChat === 'dev-squad' ? '#a78bfa' : '#00B878' }}>
-                    {selectedConversation?.avatar || 'AC'}
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow`}
+                    style={{
+                      backgroundColor:
+                        selectedChat === "design-team" ||
+                        selectedChat === "dev-squad"
+                          ? "#a78bfa"
+                          : "#00B878",
+                    }}
+                  >
+                    {selectedConversation?.avatar || "AC"}
                   </div>
                 )}
                 <div
-                  className={`px-4 py-2 rounded-2xl shadow ${msg.isMe ? '' : ''}`}
-                  style={msg.isMe
-                    ? { backgroundColor: '#00B878', color: '#fff', borderTopRightRadius: 8, borderBottomRightRadius: 24, borderTopLeftRadius: 24, borderBottomLeftRadius: 8 }
-                    : { backgroundColor: '#F3F4F6', color: '#222', borderTopLeftRadius: 8, borderBottomLeftRadius: 24, borderTopRightRadius: 24, borderBottomRightRadius: 8 }}
+                  className={`px-4 py-2 rounded-2xl shadow ${
+                    msg.isMe ? "" : ""
+                  }`}
+                  style={
+                    msg.isMe
+                      ? {
+                          backgroundColor: "#00B878",
+                          color: "#fff",
+                          borderTopRightRadius: 8,
+                          borderBottomRightRadius: 24,
+                          borderTopLeftRadius: 24,
+                          borderBottomLeftRadius: 8,
+                        }
+                      : {
+                          backgroundColor: "#F3F4F6",
+                          color: "#222",
+                          borderTopLeftRadius: 8,
+                          borderBottomLeftRadius: 24,
+                          borderTopRightRadius: 24,
+                          borderBottomRightRadius: 8,
+                        }
+                  }
                 >
                   <p>{msg.content}</p>
-                  <p className={`text-xs mt-1`} style={msg.isMe ? { color: '#E6FAF3' } : { color: '#6B7280' }}>
+                  <p
+                    className={`text-xs mt-1`}
+                    style={
+                      msg.isMe ? { color: "#E6FAF3" } : { color: "#6B7280" }
+                    }
+                  >
                     {msg.time}
                   </p>
                 </div>
@@ -342,9 +436,13 @@ const Feed = () => {
             </div>
             <button
               className="p-2 text-white rounded-lg transition-colors shadow"
-              style={{ backgroundColor: '#00B878' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#00a76d')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#00B878')}
+              style={{ backgroundColor: "#00B878" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#00a76d")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "#00B878")
+              }
             >
               <Send size={20} />
             </button>
@@ -352,7 +450,7 @@ const Feed = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Feed
+export default Feed;
