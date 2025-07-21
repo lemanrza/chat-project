@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { toast } from "sonner";
 import { useFormik } from "formik";
 import { useNavigate } from "react-router-dom";
 import registerValidation from "@/validations/registerValidation";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import User from "@/classes/User";
+import { enqueueSnackbar } from "notistack";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -37,13 +37,27 @@ const Register = () => {
       try {
         await controller.post(`${endpoints.users}/register`, newUser);
 
-        toast.success("Registration successful!");
+        enqueueSnackbar("User registered successfully!", {
+          autoHideDuration: 2000,
+          anchorOrigin: {
+            vertical: "bottom",
+            horizontal: "right",
+          },
+          variant: "success",
+        });
 
         action.resetForm();
 
         navigate("/auth/login");
       } catch (error: any) {
-        toast.error("Registration failed!");
+        enqueueSnackbar(error.response.data.message, {
+          autoHideDuration: 2000,
+          anchorOrigin: {
+            vertical: "bottom",
+            horizontal: "right",
+          },
+          variant: "error",
+        });
         values.email = "";
         values.username = "";
       }

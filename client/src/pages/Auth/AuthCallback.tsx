@@ -1,6 +1,6 @@
+import { enqueueSnackbar } from "notistack";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -9,16 +9,37 @@ const AuthCallback = () => {
     if (token) {
       try {
         localStorage.setItem("token", JSON.stringify(token));
-        toast.success("Login successful!");
+        enqueueSnackbar("Login successful", {
+          variant: "success",
+          autoHideDuration: 2000,
+          anchorOrigin: {
+            horizontal: "right",
+            vertical: "bottom",
+          },
+        });
 
         navigate("/app/feed");
       } catch (err) {
         console.log("error: ", err);
-        toast.error("Invalid token. Please try logging in again.");
+        enqueueSnackbar("Invalid token", {
+          variant: "error",
+          autoHideDuration: 2000,
+          anchorOrigin: {
+            vertical: "bottom",
+            horizontal: "right",
+          },
+        });
         navigate("/auth/login");
       }
     } else {
-      toast.error("Token not found. Please try logging in again.");
+      enqueueSnackbar("Token not found. Please try logging in again.", {
+        variant: "error",
+        autoHideDuration: 2000,
+        anchorOrigin: {
+          vertical: "bottom",
+          horizontal: "right",
+        },
+      });
       navigate("/auth/login");
     }
   }, [navigate, token]);

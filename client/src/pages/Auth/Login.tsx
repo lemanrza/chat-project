@@ -1,8 +1,99 @@
-import { useState } from "react";
+import controller from "@/services/commonRequest";
+import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useFormik } from "formik";
+import loginValidation from "@/validations/loginValidation";
+import endpoints from "@/services/api";
+import { enqueueSnackbar } from "notistack";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const message = searchParams.get("message");
+
+  const error = searchParams.get("error");
+
+  useEffect(() => {
+    if (error) {
+      enqueueSnackbar(
+        "This account has been created with email, please try to login with email",
+        {
+          autoHideDuration: 2000,
+          anchorOrigin: {
+            vertical: "bottom",
+            horizontal: "right",
+          },
+          variant: "error",
+        }
+      );
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (message) {
+      enqueueSnackbar(message, {
+        autoHideDuration: 2000,
+        anchorOrigin: {
+          vertical: "bottom",
+          horizontal: "right",
+        },
+        variant: "success",
+      });
+    }
+  }, [message]);
+
+  const loginFormik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validationSchema: loginValidation,
+    onSubmit: async (values, actions) => {
+      try {
+        const { email, password } = values;
+
+        const response = await controller.post(`${endpoints.users}/login`, {
+          email,
+          password,
+        });
+
+        if (response.statusCode == 401 || response.statusCode == 500) {
+          actions.resetForm();
+
+          return enqueueSnackbar(response.message, {
+            autoHideDuration: 2000,
+            anchorOrigin: {
+              vertical: "bottom",
+              horizontal: "right",
+            },
+            variant: "error",
+          });
+        } else {
+          enqueueSnackbar("User successfully login", {
+            autoHideDuration: 2000,
+            anchorOrigin: {
+              vertical: "bottom",
+              horizontal: "right",
+            },
+            variant: "success",
+          });
+
+          if (response.token) {
+            localStorage.setItem("token", JSON.stringify(response.token));
+
+            navigate("/app/feed");
+          }
+        }
+
+        actions.resetForm();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -52,23 +143,37 @@ const Login = () => {
           </div>
         </div>
 
-        <form className="flex flex-col gap-4">
+        <form
+          onSubmit={loginFormik.handleSubmit}
+          className="flex flex-col gap-4"
+        >
           <div>
             <label className="text-sm font-medium text-[#222]">
               Email or Username
             </label>
             <input
               type="text"
+              name="email"
+              onChange={loginFormik.handleChange}
+              value={loginFormik.values.email}
+              onBlur={loginFormik.handleBlur}
               placeholder="Enter email or username"
               className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
             />
-            {/* Error message example */}
-            {/* <span className="text-xs text-red-500 mt-1">Email or username is required</span> */}
+            {loginFormik.errors.email && loginFormik.touched.email && (
+              <span className="text-red-500 text-sm mt-1 block">
+                {loginFormik.errors.email}
+              </span>
+            )}
           </div>
           <div className="relative">
             <label className="text-sm font-medium text-[#222]">Password</label>
             <input
               type={showPassword ? "text" : "password"}
+              name="password"
+              onChange={loginFormik.handleChange}
+              value={loginFormik.values.password}
+              onBlur={loginFormik.handleBlur}
               placeholder="Enter password"
               className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b] pr-10"
             />
@@ -115,6 +220,11 @@ const Login = () => {
                 </svg>
               )}
             </button>
+            {loginFormik.errors.password && loginFormik.touched.password && (
+              <span className="text-red-500 text-sm mt-1 block">
+                {loginFormik.errors.password}
+              </span>
+            )}
           </div>
           <div className="flex items-center justify-between text-xs text-gray-500">
             <label className="flex items-center gap-2">
@@ -129,7 +239,12 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className="bg-[#43e97b] text-white rounded-lg py-2 font-semibold hover:bg-blue-400 transition cursor-pointer"
+            disabled={
+              loginFormik.isSubmitting ||
+              !loginFormik.dirty ||
+              Object.entries(loginFormik.errors).length > 0
+            }
+            className="bg-[#43e97b] text-white rounded-lg py-2 font-semibold hover:bg-[#38d46d] transition disabled:cursor-not-allowed disabled:bg-[#43e97add] cursor-pointer"
           >
             Sign In
           </button>

@@ -1,17 +1,17 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ROUTES from "./routes/Route";
-import { Toaster } from "./components/ui/sonner";
 import "./i18n/config";
 import AnimatedBackground from "./components/AnimatedBackground";
+import { SnackbarProvider } from "notistack";
 
 const router = createBrowserRouter(ROUTES);
 
 function App() {
   return (
     <>
-    <AnimatedBackground/>
+      <AnimatedBackground />
       <RouterProvider router={router} />
-      <Toaster />
+      <SnackbarProvider />
     </>
   );
 }
