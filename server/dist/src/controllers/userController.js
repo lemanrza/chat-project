@@ -1,4 +1,4 @@
-import { getAll, getByEmail, getOne, login, register, unlockAcc, } from "../services/userService.js";
+import { getAll, getByEmail, getOne, login, register, resetPass, unlockAcc, forgotPassword as forgotPasswordService, deleteUser as deleteUserService, } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken } from "../utils/jwt.js";
@@ -59,6 +59,57 @@ export const getUserByEmail = async (req, res, next) => {
         next(error);
     }
 };
+export const deleteUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const response = await deleteUserService(id);
+        if (!response || !response.success) {
+            // In case no response or success is false (i.e. user doesn't exist)
+            res.status(404).json({
+                message: "No such user found!",
+                data: null,
+            });
+        }
+        else {
+            res.status(200).json({
+                message: response.message,
+                data: null, // You can also return the deleted user's details here if needed.
+            });
+        }
+    }
+    catch (error) {
+        next(error);
+    }
+};
+export const forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        await forgotPasswordService(email);
+        res.status(200).json({
+            message: "reset password email was sent!",
+        });
+    }
+    catch (error) {
+        if (error && typeof error === "object" && "message" in error) {
+            next(error);
+        }
+        else {
+            next(new Error("Internal server error"));
+        }
+    }
+};
+export const resetPassword = async (req, res, next) => {
+    try {
+        const { newPassword, email } = req.body;
+        await resetPass(newPassword, email);
+        res.status(200).json({
+            message: "password reset successfully!",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
 export const registerUser = async (req, res, next) => {
     try {
         // Password hash
@@ -93,7 +144,12 @@ export const registerUser = async (req, res, next) => {
         });
     }
     catch (error) {
-        next(error);
+        if (error && typeof error === "object" && "message" in error) {
+            next(error);
+        }
+        else {
+            next(new Error("Internal server error"));
+        }
     }
 };
 export const loginUser = async (req, res, next) => {
@@ -116,9 +172,17 @@ export const loginUser = async (req, res, next) => {
         });
     }
     catch (error) {
+        let message = "internal server error";
+        let statusCode = 500;
+        if (error && typeof error === "object" && "message" in error) {
+            message = error.message;
+            if ("statusCode" in error) {
+                statusCode = error.statusCode;
+            }
+        }
         res.json({
-            message: error.message || "internal server error",
-            statusCode: error.statusCode || 500,
+            message,
+            statusCode,
         });
     }
 };
@@ -131,4 +195,8 @@ export const unlockAccount = async (req, res, next) => {
     catch (error) {
         next(error);
     }
+};
+export const logout = (_, res) => {
+    res.clearCookie("refreshToken", { path: "/auth/refresh" });
+    res.status(204).json({ message: "logged out successfully!" });
 };

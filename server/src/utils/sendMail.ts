@@ -181,3 +181,46 @@ export const sendVerificationEmail = async (
     console.error("Error sending email:", error);
   }
 };
+
+export
+  const sendForgotPasswordEmail = async (toEmail: string, resetPasswordLink: string) => {
+    try {
+      await transporter.sendMail({
+        from: `"ChatWave" <${process.env.GMAIL_USER}>`,
+        to: toEmail,
+        subject: "Reset Your ChatWave Account Password",
+        html: ` <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 40px;">
+        <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <div style="background-color: #1e90ff; padding: 20px; color: white; text-align: center;">
+            <h2 style="margin: 0;">Reset Your Password</h2>
+          </div>
+          <div style="padding: 30px; color: #333;">
+            <p style="font-size: 16px;">Hi there,</p>
+            <p style="font-size: 16px;">
+              We received a request to reset the password for your <strong>Bazaar</strong> account.
+            </p>
+            <p style="font-size: 16px;">
+              Click the button below to reset your password. This link is valid for the next 30 minutes:
+            </p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetPasswordLink}" target="_blank" 
+                style="background-color: #ff4d4f; color: #ffffff; padding: 14px 24px; text-decoration: none; border-radius: 6px; font-size: 16px;">
+                Reset Password
+              </a>
+            </div>
+            <p style="font-size: 14px; color: #666;">
+              If you didn’t request a password reset, you can safely ignore this email.
+              <br/>
+              For further assistance, please contact our support team.
+            </p>
+          </div>
+          <div style="background-color: #f4f4f4; padding: 20px; text-align: center; font-size: 12px; color: #999;">
+            &copy; ${new Date().getFullYear()} Bazaar. All rights reserved.
+          </div>
+        </div>
+      </div>`,
+      });
+    } catch (error) {
+      console.error("Error sending forgot password email:", error);
+    }
+  };
