@@ -11,6 +11,7 @@ export const getAll = async () => await UserModel.find().select("-password").pop
     select: "-password",
 });
 export const getOne = async (id) => await UserModel.findById(id).select("-password");
+export const getOneWithPassword = async (id) => await UserModel.findById(id);
 export const getByEmail = async (email) => await UserModel.find({ email: email }).select("-password");
 export const deleteUser = async (id) => {
     try {

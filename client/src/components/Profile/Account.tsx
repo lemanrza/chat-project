@@ -38,15 +38,13 @@ const Account = ({
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumbers = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
     return {
       isValid:
         password.length >= minLength &&
         hasUpperCase &&
         hasLowerCase &&
-        hasNumbers &&
-        hasSpecialChar,
+        hasNumbers,
       errors: [
         ...(password.length < minLength
           ? ["Password must be at least 8 characters long"]
@@ -58,9 +56,6 @@ const Account = ({
           ? ["Password must contain at least one lowercase letter"]
           : []),
         ...(!hasNumbers ? ["Password must contain at least one number"] : []),
-        ...(!hasSpecialChar
-          ? ["Password must contain at least one special character"]
-          : []),
       ],
     };
   };
@@ -317,9 +312,9 @@ const Account = ({
                   className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
                   placeholder="Enter your current password"
                   value={passwordData.currentPassword}
-                  onChange={(e) =>
-                    handlePasswordChange("currentPassword", e.target.value)
-                  }
+                  onChange={(e) => {
+                    handlePasswordChange("currentPassword", e.target.value);
+                  }}
                   required
                 />
                 <button
@@ -473,20 +468,6 @@ const Account = ({
                         {/\d/.test(passwordData.newPassword) ? "✓" : "✗"}
                       </span>
                       One number
-                    </li>
-                    <li
-                      className={`flex items-center ${
-                        /[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword)
-                          ? "text-green-600"
-                          : "text-red-500"
-                      }`}
-                    >
-                      <span className="mr-1">
-                        {/[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword)
-                          ? "✓"
-                          : "✗"}
-                      </span>
-                      One special character
                     </li>
                   </ul>
                 </div>

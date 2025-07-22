@@ -24,6 +24,9 @@ export const getAll = async () =>
 export const getOne = async (id: any) =>
   await UserModel.findById(id).select("-password");
 
+export const getOneWithPassword = async (id: any) =>
+  await UserModel.findById(id);
+
 export const getByEmail = async (email: string) =>
   await UserModel.find({ email: email }).select("-password");
 
