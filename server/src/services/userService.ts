@@ -5,7 +5,10 @@ import {
   generateRefreshToken,
   verifyAccessToken,
 } from "../utils/jwt.js";
-import { sendForgotPasswordEmail, sendUnlockAccountEmail } from "../utils/sendMail.js";
+import {
+  sendForgotPasswordEmail,
+  sendUnlockAccountEmail,
+} from "../utils/sendMail.js";
 import config from "../config/config.js";
 
 const CLIENT_URL = config.CLIENT_URL;
@@ -28,7 +31,7 @@ export const deleteUser = async (id: string) => {
   try {
     const deletedUser = await UserModel.findByIdAndDelete(id);
     if (!deletedUser) {
-      return null;  // This ensures the controller can handle a non-existent user case.
+      return null;
     }
     return {
       success: true,
@@ -45,7 +48,6 @@ export const deleteUser = async (id: string) => {
     };
   }
 };
-
 
 export const updateUser = async (id: string, payload: any) => {
   try {
@@ -164,7 +166,7 @@ export const login = async (credentials: {
         {
           id: user.id,
           email: user.email,
-          fullName: user.displayName,
+          fullName: user.profile.displayName,
         },
         "6h"
       );
@@ -195,13 +197,13 @@ export const login = async (credentials: {
   const accessToken = generateAccessToken({
     email: user.email,
     id: user.id,
-    fullName: user.displayName,
+    fullName: user.profile.displayName,
   });
 
   const refreshToken = generateRefreshToken({
     email: user.email,
     id: user.id,
-    fullName: user.displayName,
+    fullName: user.profile.displayName,
   });
 
   return {
