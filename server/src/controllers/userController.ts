@@ -413,6 +413,73 @@ export const uploadProfileImage = async (
   }
 };
 
+export const deleteProfileImage = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user.id;
+    console.log("Delete image request from user:", userId);
+
+    const currentUser = await getOne(userId);
+    if (!currentUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const defaultAvatarUrl =
+      "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png";
+
+    if (
+      currentUser.profile?.avatar &&
+      currentUser.profile.avatar !== defaultAvatarUrl
+    ) {
+      const avatarUrl = currentUser.profile.avatar;
+      if (avatarUrl.includes("cloudinary.com")) {
+        try {
+          const urlParts = avatarUrl.split("/");
+          const fileWithExtension = urlParts[urlParts.length - 1];
+          const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
+
+          console.log("Deleting from Cloudinary with public_id:", publicId);
+          await cloudinary.uploader.destroy(publicId);
+          console.log("Successfully deleted from Cloudinary");
+        } catch (cloudinaryError) {
+          console.error("Error deleting from Cloudinary:", cloudinaryError);
+        }
+      }
+    }
+
+    const response = await updateUser(userId, {
+      $set: {
+        "profile.avatar": defaultAvatarUrl,
+      },
+    });
+
+    if (!response.success) {
+      return res.status(500).json({
+        message: response.message,
+      });
+    }
+
+    res.status(200).json({
+      message: "Profile image deleted successfully",
+      data: {
+        avatar: defaultAvatarUrl,
+        user: response.data,
+      },
+    });
+  } catch (error: any) {
+    console.error("Error deleting image:", error);
+    res.status(500).json({
+      message: "Failed to delete image",
+      error: error.message,
+    });
+  }
+};
+
 export const getCurrentUser = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -437,6 +504,77 @@ export const getCurrentUser = async (
   }
 };
 
+export const deleteCurrentUser = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user.id;
+    console.log("Delete account request from user:", userId);
+
+    const currentUser = await getOne(userId);
+    if (!currentUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const defaultAvatarUrl =
+      "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png";
+
+    if (
+      currentUser.profile?.avatar &&
+      currentUser.profile.avatar !== defaultAvatarUrl
+    ) {
+      const avatarUrl = currentUser.profile.avatar;
+      if (avatarUrl.includes("cloudinary.com")) {
+        try {
+          const urlParts = avatarUrl.split("/");
+          const fileWithExtension = urlParts[urlParts.length - 1];
+          const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
+
+          console.log(
+            "Deleting avatar from Cloudinary with public_id:",
+            publicId
+          );
+          await cloudinary.uploader.destroy(publicId);
+          console.log("Successfully deleted avatar from Cloudinary");
+        } catch (cloudinaryError) {
+          console.error(
+            "Error deleting avatar from Cloudinary:",
+            cloudinaryError
+          );
+        }
+      }
+    }
+
+    const response = await deleteUserService(userId);
+
+    if (!response) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    if (!response.success) {
+      return res.status(500).json({
+        message: response.message,
+      });
+    }
+
+    res.status(200).json({
+      message: "Account deleted successfully",
+    });
+  } catch (error: any) {
+    console.error("Error deleting account:", error);
+    res.status(500).json({
+      message: "Failed to delete account",
+      error: error.message,
+    });
+  }
+};
+
 export const changePassword = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -452,7 +590,6 @@ export const changePassword = async (
       });
     }
 
-    // Get user to verify current password
     const user = await getOneWithPassword(userId);
     if (!user) {
       return res.status(404).json({
@@ -460,7 +597,6 @@ export const changePassword = async (
       });
     }
 
-    // Check if user is local provider (has password)
     if (user.provider !== "local") {
       return res.status(400).json({
         message: "Password change not available for social login accounts",
@@ -482,7 +618,6 @@ export const changePassword = async (
       });
     }
 
-    // Verify current password
     const isCurrentPasswordValid = await bcrypt.compare(
       currentPassword,
       user.password
@@ -496,11 +631,9 @@ export const changePassword = async (
       });
     }
 
-    // Hash new password
     const saltRounds = 10;
     const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
 
-    // Update password
     const response = await updateUser(userId, {
       $set: {
         password: hashedNewPassword,

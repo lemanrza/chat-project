@@ -307,6 +307,60 @@ export const uploadProfileImage = async (req, res, next) => {
         });
     }
 };
+export const deleteProfileImage = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        console.log("Delete image request from user:", userId);
+        const currentUser = await getOne(userId);
+        if (!currentUser) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+        const defaultAvatarUrl = "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png";
+        if (currentUser.profile?.avatar &&
+            currentUser.profile.avatar !== defaultAvatarUrl) {
+            const avatarUrl = currentUser.profile.avatar;
+            if (avatarUrl.includes("cloudinary.com")) {
+                try {
+                    const urlParts = avatarUrl.split("/");
+                    const fileWithExtension = urlParts[urlParts.length - 1];
+                    const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
+                    console.log("Deleting from Cloudinary with public_id:", publicId);
+                    await cloudinary.uploader.destroy(publicId);
+                    console.log("Successfully deleted from Cloudinary");
+                }
+                catch (cloudinaryError) {
+                    console.error("Error deleting from Cloudinary:", cloudinaryError);
+                }
+            }
+        }
+        const response = await updateUser(userId, {
+            $set: {
+                "profile.avatar": defaultAvatarUrl,
+            },
+        });
+        if (!response.success) {
+            return res.status(500).json({
+                message: response.message,
+            });
+        }
+        res.status(200).json({
+            message: "Profile image deleted successfully",
+            data: {
+                avatar: defaultAvatarUrl,
+                user: response.data,
+            },
+        });
+    }
+    catch (error) {
+        console.error("Error deleting image:", error);
+        res.status(500).json({
+            message: "Failed to delete image",
+            error: error.message,
+        });
+    }
+};
 export const getCurrentUser = async (req, res, next) => {
     try {
         const userId = req.user.id;
@@ -325,6 +379,57 @@ export const getCurrentUser = async (req, res, next) => {
         next(error);
     }
 };
+export const deleteCurrentUser = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        console.log("Delete account request from user:", userId);
+        const currentUser = await getOne(userId);
+        if (!currentUser) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+        const defaultAvatarUrl = "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png";
+        if (currentUser.profile?.avatar &&
+            currentUser.profile.avatar !== defaultAvatarUrl) {
+            const avatarUrl = currentUser.profile.avatar;
+            if (avatarUrl.includes("cloudinary.com")) {
+                try {
+                    const urlParts = avatarUrl.split("/");
+                    const fileWithExtension = urlParts[urlParts.length - 1];
+                    const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
+                    console.log("Deleting avatar from Cloudinary with public_id:", publicId);
+                    await cloudinary.uploader.destroy(publicId);
+                    console.log("Successfully deleted avatar from Cloudinary");
+                }
+                catch (cloudinaryError) {
+                    console.error("Error deleting avatar from Cloudinary:", cloudinaryError);
+                }
+            }
+        }
+        const response = await deleteUserService(userId);
+        if (!response) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+        if (!response.success) {
+            return res.status(500).json({
+                message: response.message,
+            });
+        }
+        res.status(200).json({
+            message: "Account deleted successfully",
+        });
+    }
+    catch (error) {
+        console.error("Error deleting account:", error);
+        res.status(500).json({
+            message: "Failed to delete account",
+            error: error.message,
+        });
+    }
+};
 export const changePassword = async (req, res, next) => {
     try {
         const userId = req.user.id;
@@ -334,14 +439,12 @@ export const changePassword = async (req, res, next) => {
                 message: "Current password and new password are required",
             });
         }
-        // Get user to verify current password
         const user = await getOneWithPassword(userId);
         if (!user) {
             return res.status(404).json({
                 message: "User not found",
             });
         }
-        // Check if user is local provider (has password)
         if (user.provider !== "local") {
             return res.status(400).json({
                 message: "Password change not available for social login accounts",
@@ -360,7 +463,6 @@ export const changePassword = async (req, res, next) => {
                 message: "No password found for this account",
             });
         }
-        // Verify current password
         const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
         console.log("Password validation result:", isCurrentPasswordValid);
         if (!isCurrentPasswordValid) {
@@ -368,10 +470,8 @@ export const changePassword = async (req, res, next) => {
                 message: "Current password is incorrect",
             });
         }
-        // Hash new password
         const saltRounds = 10;
         const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
-        // Update password
         const response = await updateUser(userId, {
             $set: {
                 password: hashedNewPassword,
