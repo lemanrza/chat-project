@@ -14,7 +14,6 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [step, setStep] = useState(1);
-
   interface RegisterFormValues {
     location: string;
     dateOfBirth: string;
@@ -26,6 +25,7 @@ function Register() {
     password: string;
     confirmPassword: string;
   }
+
 
   const registerFormik = useFormik<RegisterFormValues>({
     initialValues: {
@@ -41,23 +41,22 @@ function Register() {
     },
     validationSchema: registerValidation,
     onSubmit: async (values, action) => {
-      const formattedDate = new Date(values.dateOfBirth).toISOString();
-
       const newUser = new User(
         {
           firstName: values.firstName,
           lastName: values.lastName,
           location: values.location,
-          dateOfBirth: formattedDate, 
+          dateOfBirth: values.dateOfBirth,
         },
         values.username,
         values.email,
         values.password,
-        values.hobbies.map(hobbie => hobbie)
+        values.hobbies
       );
       console.log("user", newUser);
       try {
         await controller.post(`${endpoints.users}/register`, newUser);
+
         enqueueSnackbar("User registered successfully!", {
           autoHideDuration: 2000,
           anchorOrigin: {
@@ -174,7 +173,8 @@ function Register() {
                 {index < 3 && (
                   <div
                     className={`h-0.5 w-16 mx-2 transition-all duration-300 ${stepNumber < step ? 'bg-[#00B878]' : 'bg-gray-200'
-                      }`}></div>
+                      }`}
+                  ></div>
                 )}
               </React.Fragment>
             ))}
@@ -182,7 +182,8 @@ function Register() {
         </div>
 
         {/* Main Content Card */}
-        <form onSubmit={registerFormik.handleSubmit} className="bg-white rounded-3xl p-8 shadow-xl">
+        <form onSubmit={registerFormik.handleSubmit}
+          className="bg-white rounded-3xl p-8 shadow-xl">
           {step === 1 && (
             <>
               <div className="flex flex-col gap-2 bg-[#f8fafb] rounded-xl p-6 shadow-sm border border-gray-100">
@@ -295,8 +296,8 @@ function Register() {
                     <input
                       type="date"
                       name="dateOfBirth"
-                      value={registerFormik.values.dateOfBirth}
-                      onChange={registerFormik.handleChange}
+                      // value={registerFormik.values.dateOfBirth}
+                      // onChange={registerFormik.handleChange}
                       className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-[#00B878] focus:ring-opacity-20 focus:border-[#00B878] transition-all bg-gray-50"
                     />
                     <Calendar className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
@@ -602,6 +603,15 @@ function Register() {
               </div>
             </>
           )}
+
+          <div className="text-center mt-8 pt-6 border-t border-gray-100">
+            <p className="text-gray-500">
+              Already have an account?{' '}
+              <button className="text-[#00B878] font-semibold hover:underline transition-all">
+                Sign in here
+              </button>
+            </p>
+          </div>
         </form>
       </div>
     </div>

@@ -1,6 +1,8 @@
 type ProfileData = {
   firstName: string;
   lastName: string;
+  dateOfBirth: string;
+  location: string;
 };
 
 class User {
@@ -8,17 +10,20 @@ class User {
   email: string;
   password: string;
   profile: ProfileData;
+  hobbies: string[];
 
   constructor(
     profile: ProfileData,
     username: string,
     email: string,
-    password: string
+    password: string,
+    hobbies: string[] = []
   ) {
     this.username = username;
     this.email = email;
     this.password = password;
     this.profile = profile;
+    this.hobbies = hobbies;
   }
 }
 
