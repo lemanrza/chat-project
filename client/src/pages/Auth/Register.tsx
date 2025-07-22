@@ -82,7 +82,7 @@ const Register = () => {
             onClick={() => {
               window.location.href = `${
                 import.meta.env.VITE_SERVER_URL
-              }/auth/google`;
+              }/auth/google?mode=register`;
             }}
             className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
           >
@@ -93,7 +93,7 @@ const Register = () => {
             onClick={() => {
               window.location.href = `${
                 import.meta.env.VITE_SERVER_URL
-              }/auth/github`;
+              }/auth/github?mode=register`;
             }}
             className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
           >

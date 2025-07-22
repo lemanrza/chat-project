@@ -82,7 +82,7 @@ const Login = () => {
           });
 
           if (response.token) {
-            localStorage.setItem("token", JSON.stringify(response.token));
+            localStorage.setItem("token", response.token);
 
             navigate("/app/feed");
           }
@@ -112,7 +112,7 @@ const Login = () => {
             onClick={() => {
               window.location.href = `${
                 import.meta.env.VITE_SERVER_URL
-              }/auth/google`;
+              }/auth/google?mode=login`;
             }}
             className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
           >
@@ -123,7 +123,7 @@ const Login = () => {
             onClick={() => {
               window.location.href = `${
                 import.meta.env.VITE_SERVER_URL
-              }/auth/github`;
+              }/auth/github?mode=login`;
             }}
             className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
           >
@@ -148,9 +148,7 @@ const Login = () => {
           className="flex flex-col gap-4"
         >
           <div>
-            <label className="text-sm font-medium text-[#222]">
-              Email or Username
-            </label>
+            <label className="text-sm font-medium text-[#222]">Email</label>
             <input
               type="text"
               name="email"

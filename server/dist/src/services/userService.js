@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import UserModel from "../models/userModel.js";
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, } from "../utils/jwt.js";
-import { sendForgotPasswordEmail, sendUnlockAccountEmail } from "../utils/sendMail.js";
+import { sendForgotPasswordEmail, sendUnlockAccountEmail, } from "../utils/sendMail.js";
 import config from "../config/config.js";
 const CLIENT_URL = config.CLIENT_URL;
 const MAX_ATTEMPTS = 5;
@@ -16,7 +16,7 @@ export const deleteUser = async (id) => {
     try {
         const deletedUser = await UserModel.findByIdAndDelete(id);
         if (!deletedUser) {
-            return null; // This ensures the controller can handle a non-existent user case.
+            return null;
         }
         return {
             success: true,
@@ -137,7 +137,7 @@ export const login = async (credentials) => {
             const token = generateAccessToken({
                 id: user.id,
                 email: user.email,
-                fullName: user.displayName,
+                fullName: user.profile.displayName,
             }, "6h");
             const unlockAccountLink = `${config.SERVER_URL}/auth/unlock-account?token=${token}`;
             sendUnlockAccountEmail(user.email, user.profile.displayName, user.lockUntil, unlockAccountLink);
@@ -153,12 +153,12 @@ export const login = async (credentials) => {
     const accessToken = generateAccessToken({
         email: user.email,
         id: user.id,
-        fullName: user.displayName,
+        fullName: user.profile.displayName,
     });
     const refreshToken = generateRefreshToken({
         email: user.email,
         id: user.id,
-        fullName: user.displayName,
+        fullName: user.profile.displayName,
     });
     return {
         message: "User login successfully!",

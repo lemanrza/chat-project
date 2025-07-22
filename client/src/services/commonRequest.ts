@@ -12,12 +12,13 @@ async function getAll(endpoint: string) {
 }
 
 // Fetch one by ID
-async function getOne(endpoint: string, id: string) {
+async function getOne(endpoint: string, id: string = "") {
   try {
-    const response = await instance.get(`${endpoint}/${id}`);
+    const url = id ? `${endpoint}/${id}` : endpoint;
+    const response = await instance.get(url);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching user with ID ${id}`, error);
+    console.error(`Error fetching data from ${endpoint}`, error);
     throw error;
   }
 }
@@ -34,12 +35,13 @@ async function deleteOne(endpoint: string, id: string) {
 }
 
 // Update data by ID
-async function update(endpoint: string, id: string, data: any) {
+async function update(endpoint: string, id: string = "", data: any) {
   try {
-    const response = await instance.patch(`${endpoint}/${id}`, data);
+    const url = id ? `${endpoint}/${id}` : endpoint;
+    const response = await instance.put(url, data);
     return response.data;
   } catch (error) {
-    console.error(`Error updating user with ID ${id}`, error);
+    console.error(`Error updating data at ${endpoint}`, error);
     throw error;
   }
 }

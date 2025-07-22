@@ -8,7 +8,7 @@ const AuthCallback = () => {
   useEffect(() => {
     if (token) {
       try {
-        localStorage.setItem("token", JSON.stringify(token));
+        localStorage.setItem("token", token);
         enqueueSnackbar("Login successful", {
           variant: "success",
           autoHideDuration: 2000,
