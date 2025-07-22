@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, MapPin, ChevronRight, ChevronLeft, Heart, Calendar, Coffee, Plane, Monitor, Laptop, Dog, Cat, Music, BookOpen, Dumbbell, ChefHat, Palette, Camera, Gamepad2, Mountain, Waves, TreePine, Theater, Pizza, FolderRoot as Football, Sprout, Guitar, Flame, ShoppingBasket as Basketball, Target, Home, Wine, Beer, Umbrella, Snowflake, Car, Tent, Film, Globe, Piano, CircleUser } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
@@ -7,6 +8,7 @@ import User from '@/classes/User';
 import registerValidation from '@/validations/registerValidation';
 import { useFormik } from "formik";
 import { useNavigate } from 'react-router-dom';
+
 import { enqueueSnackbar } from "notistack";
 
 function Register() {
@@ -58,6 +60,7 @@ function Register() {
       console.log("user", newUser);
       try {
         await controller.post(`${endpoints.users}/register`, newUser);
+
         enqueueSnackbar("User registered successfully!", {
           autoHideDuration: 2000,
           anchorOrigin: {
