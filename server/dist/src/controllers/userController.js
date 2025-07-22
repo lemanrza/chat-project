@@ -1,4 +1,4 @@
-import { getAll, getByEmail, getOne, login, register, resetPass, unlockAcc, forgotPassword as forgotPasswordService, deleteUser as deleteUserService, updateUser, } from "../services/userService.js";
+import { getAll, getByEmail, getOne, getOneWithPassword, login, register, resetPass, unlockAcc, forgotPassword as forgotPasswordService, deleteUser as deleteUserService, updateUser, } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken } from "../utils/jwt.js";
@@ -335,7 +335,7 @@ export const changePassword = async (req, res, next) => {
             });
         }
         // Get user to verify current password
-        const user = await getOne(userId);
+        const user = await getOneWithPassword(userId);
         if (!user) {
             return res.status(404).json({
                 message: "User not found",
@@ -347,8 +347,22 @@ export const changePassword = async (req, res, next) => {
                 message: "Password change not available for social login accounts",
             });
         }
+        console.log("User provider:", user.provider);
+        console.log("User has password:", !!user.password);
+        console.log("Password field type:", typeof user.password);
+        console.log("Password comparison input:", {
+            currentPasswordLength: currentPassword.length,
+            hasStoredPassword: !!user.password,
+            storedPasswordLength: user.password?.length,
+        });
+        if (!user.password) {
+            return res.status(400).json({
+                message: "No password found for this account",
+            });
+        }
         // Verify current password
-        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password || "");
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        console.log("Password validation result:", isCurrentPasswordValid);
         if (!isCurrentPasswordValid) {
             return res.status(400).json({
                 message: "Current password is incorrect",

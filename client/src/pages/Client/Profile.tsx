@@ -1,4 +1,3 @@
-import { Settings } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
@@ -7,6 +6,7 @@ import Account from "@/components/Profile/Account";
 import Privacy from "@/components/Profile/Privacy";
 import Overview from "@/components/Profile/Overview";
 import Navigation from "@/components/Profile/Navigation";
+import Settings from "@/components/Profile/Settings";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("overview");
