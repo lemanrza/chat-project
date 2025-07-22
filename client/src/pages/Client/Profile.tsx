@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { enqueueSnackbar } from "notistack";
-import Account from "@/components/Profile/Account";
+import Account from "@/components/Profile/Account/Account";
 import Privacy from "@/components/Profile/Privacy";
 import Overview from "@/components/Profile/Overview";
 import Navigation from "@/components/Profile/Navigation";
@@ -164,37 +164,58 @@ const Profile = () => {
     fileInputRef.current?.click();
   };
 
-  const handleSaveChanges = async () => {
+  const handleDeleteImage = async () => {
     try {
-      const updateData = {
-        profile: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          location: formData.location,
-          bio: formData.bio,
-        },
-        email: formData.email,
-      };
+      setIsUploadingImage(true);
 
-      await controller.update(`${endpoints.users}/me`, "", updateData);
-      enqueueSnackbar("Profile updated successfully!", {
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/delete-image`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete image");
+      }
+
+      setUserData((prev: any) => ({
+        ...prev,
+        profile: {
+          ...prev.profile,
+          avatar:
+            "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png",
+        },
+      }));
+
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+        setImagePreview("");
+      }
+
+      enqueueSnackbar("Profile image deleted successfully!", {
         variant: "success",
-        autoHideDuration: 2000,
+        autoHideDuration: 3000,
         anchorOrigin: {
           vertical: "bottom",
           horizontal: "right",
         },
       });
     } catch (error) {
-      console.error("Error updating profile:", error);
-      enqueueSnackbar("Failed to update profile", {
+      console.error("Error deleting image:", error);
+      enqueueSnackbar("Failed to delete image. Please try again.", {
         variant: "error",
-        autoHideDuration: 2000,
+        autoHideDuration: 3000,
         anchorOrigin: {
           vertical: "bottom",
           horizontal: "right",
         },
       });
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -236,28 +257,15 @@ const Profile = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold">Profile</h1>
-          <button
-            onClick={handleSaveChanges}
-            className="text-white px-6 py-2 rounded-lg transition-colors"
-            style={{ backgroundColor: "#00B878" }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#00a76d")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "#00B878")
-            }
-          >
-            ✏ Save Changes
-          </button>
         </div>
 
         {/* Profile Card */}
         <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
           <div className="flex items-start gap-6">
             {/* Avatar */}
-            <div className="relative">
+            <div className="relative group">
               <div
-                className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold overflow-hidden"
+                className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold overflow-hidden transition-all duration-200 group-hover:shadow-xl group-hover:scale-[1.02] mx-auto"
                 style={{ backgroundColor: "#00B878" }}
               >
                 {imagePreview ? (
@@ -277,32 +285,7 @@ const Profile = () => {
                     userData?.profile?.lastName?.charAt(0) || "U"
                 )}
               </div>
-              <div
-                className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
-                  isUploadingImage
-                    ? "bg-blue-500 cursor-not-allowed"
-                    : "bg-gray-300 hover:bg-gray-400"
-                }`}
-                onClick={!isUploadingImage ? triggerFileInput : undefined}
-                title={
-                  isUploadingImage ? "Uploading..." : "Change profile picture"
-                }
-              >
-                {isUploadingImage ? (
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                ) : (
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 2L12 22M2 12L22 12" />
-                  </svg>
-                )}
-              </div>
+
               <input
                 type="file"
                 ref={fileInputRef}
@@ -310,6 +293,82 @@ const Profile = () => {
                 accept="image/*"
                 className="hidden"
               />
+
+              {/* Action Buttons - Below the avatar */}
+              <div className="mt-3 flex flex-col items-center gap-2">
+                {/* Upload Button */}
+                <button
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
+                    isUploadingImage
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-[#00B878] text-white hover:bg-emerald-600 border border-[#00B878] hover:border-emerald-600"
+                  }`}
+                  onClick={!isUploadingImage ? triggerFileInput : undefined}
+                  disabled={isUploadingImage}
+                >
+                  {isUploadingImage ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      >
+                        <path d="M12 2L12 22M2 12L22 12" />
+                      </svg>
+                      <span>Change Photo</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Delete Button - only show if user has custom avatar */}
+                {userData?.profile?.avatar &&
+                  userData.profile.avatar !==
+                    "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
+                  !imagePreview && (
+                    <button
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
+                        isUploadingImage
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-200 hover:border-red-300"
+                      }`}
+                      onClick={
+                        !isUploadingImage ? handleDeleteImage : undefined
+                      }
+                      disabled={isUploadingImage}
+                    >
+                      {isUploadingImage ? (
+                        <>
+                          <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
+                          <span>Removing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          >
+                            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14ZM10 11v6M14 11v6" />
+                          </svg>
+                          <span>Remove Photo</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+              </div>
             </div>
 
             {/* Profile Info */}

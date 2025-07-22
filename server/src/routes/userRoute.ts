@@ -9,8 +9,10 @@ import {
   updateCurrentUser,
   getCurrentUser,
   uploadProfileImage,
+  deleteProfileImage,
   upload,
   changePassword,
+  deleteCurrentUser,
 } from "../controllers/userController.js";
 import userValidate from "../middlewares/userValidate.js";
 import { authenticateToken } from "../middlewares/authMiddleware.js";
@@ -24,6 +26,7 @@ userRouter.get("/unlock-account", unlockAccount);
 
 userRouter.get("/me", authenticateToken, getCurrentUser);
 userRouter.put("/me", authenticateToken, updateCurrentUser);
+userRouter.delete("/me", authenticateToken, deleteCurrentUser);
 userRouter.post("/me/change-password", authenticateToken, changePassword);
 userRouter.post(
   "/me/upload-image",
@@ -31,6 +34,7 @@ userRouter.post(
   upload.single("avatar"),
   uploadProfileImage
 );
+userRouter.delete("/me/delete-image", authenticateToken, deleteProfileImage);
 
 userRouter.get("/:id", getUserById);
 userRouter.delete("/:id", authenticateToken, deleteUser);

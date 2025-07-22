@@ -1,0 +1,60 @@
+interface AccountSettingsProps {
+  userData: any;
+}
+
+const AccountSettings = ({ userData }: AccountSettingsProps) => {
+  return (
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+      <h3 className="text-xl font-semibold text-gray-900 mb-6">
+        Account Settings
+      </h3>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div>
+            <h4 className="font-medium text-gray-900">Account Type</h4>
+            <p className="text-sm text-gray-500">
+              {userData?.provider === "local"
+                ? "Email Account"
+                : userData?.provider === "google"
+                ? "Google Account"
+                : userData?.provider === "github"
+                ? "GitHub Account"
+                : "Standard Account"}
+            </p>
+          </div>
+          <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+            {userData?.emailVerified ? "Verified" : "Unverified"}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+          <div>
+            <h4 className="font-medium text-gray-900">
+              Two-Factor Authentication
+            </h4>
+            <p className="text-sm text-gray-500">
+              Add an extra layer of security to your account
+            </p>
+          </div>
+          <button className="px-4 py-2 bg-[#00B878] text-white rounded-lg hover:bg-[#00a76d] transition-colors text-sm font-medium">
+            Enable 2FA
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+          <div>
+            <h4 className="font-medium text-gray-900">Login Sessions</h4>
+            <p className="text-sm text-gray-500">
+              Manage your active login sessions
+            </p>
+          </div>
+          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+            View Sessions
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AccountSettings;
