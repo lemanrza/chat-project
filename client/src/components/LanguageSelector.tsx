@@ -1,7 +1,7 @@
 import chatlogo from "../assets/images/chatlogo.png";
 import React from 'react';
 import { motion } from 'framer-motion';
-import {  ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import LanguageOption from './LanguageOption';
 
 interface LanguageSelectionProps {
