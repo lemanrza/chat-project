@@ -122,7 +122,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="w-full flex bg-gray-50">
+    <div className="w-full flex">
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
