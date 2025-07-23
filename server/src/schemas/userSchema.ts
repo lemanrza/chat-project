@@ -53,7 +53,7 @@ const userSchema = new mongoose.Schema(
     loginAttempts: { type: Number, default: 0 },
     lockUntil: { type: Date, default: null },
 
-    lastSeen: { type: Boolean, default: null },
+    lastSeen: { type: Date, default: null },
 
     isOnline: { type: Boolean, default: false },
     status: {
@@ -79,9 +79,5 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true, versionKey: false }
 );
-
-userSchema.index({ isOnline: 1, lastSeen: -1 });
-userSchema.index({ socketId: 1 });
-userSchema.index({ status: 1 });
 
 export default userSchema;

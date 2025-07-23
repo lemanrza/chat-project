@@ -139,24 +139,32 @@ export const resetPassword = async (req, res, next) => {
 };
 export const registerUser = async (req, res, next) => {
     try {
-        const { password } = req.body;
+        const { password, firstName, lastName, location, dateOfBirth, hobbies, ...otherData } = req.body;
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const profileData = {
+            firstName,
+            lastName,
+            location,
+            dateOfBirth,
+        };
         if (req.file) {
             const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
                 folder: "user_profiles",
             });
-            req.body.profile = uploadedImage.secure_url;
-            req.body.public_id = uploadedImage.public_id;
+            profileData.avatar = uploadedImage.secure_url;
+            profileData.public_id = uploadedImage.public_id;
         }
-        const response = await register({
-            ...req.body,
+        const userData = {
+            ...otherData,
             password: hashedPassword,
-        });
+            profile: profileData,
+            hobbies: hobbies || [],
+        };
+        const response = await register(userData);
         if (!response.success) {
             throw new Error(response.message);
         }
-        // Send email service ...
         const token = generateAccessToken({
             id: response.data._id,
             email: req.body.email,
