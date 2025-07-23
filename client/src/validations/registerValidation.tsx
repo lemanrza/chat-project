@@ -3,9 +3,9 @@ import * as Yup from "yup";
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
 
 const registerValidation = Yup.object().shape({
-  // location: Yup.string().required("Country is required"),
-  // birthDate: Yup.date().required("Birth date is required"),
-  // hobbies: Yup.array().required("Hobbies are required"),
+  location: Yup.string().required("Country is required"),
+  birthDate: Yup.date().required("Birth date is required"),
+  hobbies: Yup.array().required("Hobbies are required"),
   firstName: Yup.string().required("First name is required"),
   lastName: Yup.string().required("Last name is required"),
   username: Yup.string().required("Username is required"),
