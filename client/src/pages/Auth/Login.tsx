@@ -86,6 +86,10 @@ const Login = () => {
 
             navigate("/app/feed");
           }
+
+          await controller.update(`${endpoints.users}/me`, "", {
+            isOnline: true,
+          });
         }
 
         actions.resetForm();

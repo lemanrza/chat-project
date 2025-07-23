@@ -219,19 +219,6 @@ const Profile = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    enqueueSnackbar("Logged out successfully", {
-      variant: "success",
-      autoHideDuration: 2000,
-      anchorOrigin: {
-        vertical: "bottom",
-        horizontal: "right",
-      },
-    });
-    window.location.href = "/auth/login";
-  };
-
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -432,7 +419,6 @@ const Profile = () => {
             userData={userData}
             formData={formData}
             handleInputChange={handleInputChange}
-            handleLogout={handleLogout}
           />
         )}
       </div>

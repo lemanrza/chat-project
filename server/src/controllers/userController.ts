@@ -20,6 +20,11 @@ import cloudinary from "../config/cloudinaryConfig.js";
 import config from "../config/config.js";
 import multer from "multer";
 import path from "path";
+import {
+  AuthenticatedMulterRequest,
+  AuthenticatedRequest,
+  MulterRequest,
+} from "../types/userType.js";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -53,10 +58,6 @@ export const upload = multer({
     }
   },
 });
-
-interface AuthenticatedRequest extends Request {
-  user?: any;
-}
 
 export const getUsers = async (
   _: Request,
@@ -148,17 +149,6 @@ export const deleteUser = async (
   }
 };
 
-interface AuthenticatedRequest extends Request {
-  user?: any;
-}
-
-interface MulterRequest extends Request {
-  file?: Express.Multer.File;
-}
-
-interface AuthenticatedMulterRequest extends AuthenticatedRequest {
-  file?: Express.Multer.File;
-}
 export const forgotPassword = async (
   req: Request,
   res: Response,
@@ -320,10 +310,73 @@ export const updateCurrentUser = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id; // Get user ID from JWT token
-    const updateData = req.body;
+    const userId = req.user.id;
+    const user: any = await getOne(userId);
 
-    const response = await updateUser(userId, updateData);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const files = req.files as {
+      profileImage?: Express.Multer.File[];
+    };
+
+    const updatedFields: any = { ...req.body };
+
+    if (files?.profileImage?.[0]) {
+      const defaultAvatarUrl =
+        "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png";
+
+      if (
+        user.profile?.avatar &&
+        user.profile.avatar !== defaultAvatarUrl &&
+        user.profile.avatar.includes("cloudinary.com")
+      ) {
+        try {
+          const avatarUrl = user.profile.avatar;
+          const urlParts = avatarUrl.split("/");
+          const fileWithExtension = urlParts[urlParts.length - 1];
+          const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
+
+          await cloudinary.uploader.destroy(publicId);
+        } catch (cloudinaryError) {
+          console.error(
+            "Error deleting old avatar from Cloudinary:",
+            cloudinaryError
+          );
+        }
+      }
+
+      try {
+        const uploadResult = await cloudinary.uploader.upload(
+          files.profileImage[0].path,
+          {
+            folder: "user_profiles",
+            public_id: `user_${userId}_${Date.now()}`,
+            transformation: [
+              { width: 400, height: 400, crop: "fill", gravity: "face" },
+              { quality: "auto" },
+            ],
+          }
+        );
+
+        if (!updatedFields.profile) {
+          updatedFields.profile = {};
+        }
+        updatedFields.profile.avatar = uploadResult.secure_url;
+        updatedFields.profile.public_id = uploadResult.public_id;
+        updatedFields.profile.updatedAt = new Date();
+      } catch (uploadError) {
+        console.error("Error uploading new avatar to Cloudinary:", uploadError);
+        return res.status(500).json({
+          message: "Failed to upload profile image",
+        });
+      }
+    }
+
+    const response = await updateUser(userId, updatedFields);
 
     if (!response.success) {
       return res.status(404).json({
@@ -340,15 +393,13 @@ export const updateCurrentUser = async (
   }
 };
 
-// Upload profile image to Cloudinary
 export const uploadProfileImage = async (
   req: AuthenticatedMulterRequest,
   res: Response,
-  next: NextFunction
+  _: NextFunction
 ) => {
   try {
     const userId = req.user.id;
-    console.log("Upload request from user:", userId);
 
     if (!req.file) {
       console.log("No file provided");
@@ -357,14 +408,37 @@ export const uploadProfileImage = async (
       });
     }
 
-    console.log("File details:", {
-      size: req.file.size,
-      mimetype: req.file.mimetype,
-      originalname: req.file.originalname,
-      path: req.file.path,
-    });
+    const currentUser = await getOne(userId);
+    if (!currentUser) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
 
-    console.log("Uploading to Cloudinary...");
+    const defaultAvatarUrl =
+      "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png";
+
+    if (
+      currentUser.profile?.avatar &&
+      currentUser.profile.avatar !== defaultAvatarUrl
+    ) {
+      const avatarUrl = currentUser.profile.avatar;
+      if (avatarUrl.includes("cloudinary.com")) {
+        try {
+          const urlParts = avatarUrl.split("/");
+          const fileWithExtension = urlParts[urlParts.length - 1];
+          const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
+
+          await cloudinary.uploader.destroy(publicId);
+        } catch (cloudinaryError) {
+          console.error(
+            "Error deleting old avatar from Cloudinary:",
+            cloudinaryError
+          );
+        }
+      }
+    }
+
     const uploadResult = await cloudinary.uploader.upload(req.file.path, {
       folder: "user_profiles",
       public_id: `user_${userId}_${Date.now()}`,
@@ -374,20 +448,11 @@ export const uploadProfileImage = async (
       ],
     });
 
-    console.log("Cloudinary upload successful:", uploadResult.secure_url);
-
-    // Clean up the uploaded file from local storage
-    const fs = await import("fs");
-    try {
-      fs.unlinkSync(req.file.path);
-    } catch (err) {
-      console.log("File cleanup failed:", err);
-    }
-
-    // Update only the avatar field in the user's profile
     const response = await updateUser(userId, {
       $set: {
         "profile.avatar": uploadResult.secure_url,
+        "profile.public_id": uploadResult.public_id,
+        "profile.updatedAt": new Date(),
       },
     });
 
@@ -401,6 +466,7 @@ export const uploadProfileImage = async (
       message: "Profile image uploaded successfully",
       data: {
         avatar: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
         user: response.data,
       },
     });

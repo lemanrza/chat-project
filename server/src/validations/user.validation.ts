@@ -5,6 +5,7 @@ const profileSchema = Joi.object({
   lastName: Joi.string().min(2).required(),
   displayName: Joi.string().optional(),
   avatar: Joi.string().uri().optional(),
+  public_id: Joi.string().optional(),
   bio: Joi.string().optional(),
   location: Joi.string().optional(),
   dateOfBirth: Joi.date().iso().optional(),

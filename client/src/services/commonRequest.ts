@@ -67,7 +67,6 @@ async function post(endpoint: string, data: any, headers?: object) {
       variant: "error",
     });
   }
-
 }
 
 const controller = {

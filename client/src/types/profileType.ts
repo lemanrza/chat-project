@@ -24,7 +24,6 @@ export interface AccountProps {
   userData: UserData | null;
   formData: FormData;
   handleInputChange: (field: string, value: string) => void;
-  handleLogout: () => void;
 }
 
 export interface PasswordData {
