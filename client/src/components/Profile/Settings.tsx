@@ -1,36 +1,58 @@
 import { Sun, Bell } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const Settings = () => {
+  const { i18n } = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
+
+  const handleLanguageChange = (languageCode: string) => {
+    i18n.changeLanguage(languageCode);
+    setSelectedLanguage(languageCode);
+  };
+
+  const getLanguageClass = (languageCode: string) => {
+    return selectedLanguage === languageCode
+      ? "border-2 border-[#00B878] bg-[#E6FAF3]"
+      : "border border-gray-200 hover:border-gray-300";
+  };
   return (
     <div className="space-y-8">
       {/* Language & Region */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Language & Region
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Language & Region</h3>
         <div className="grid grid-cols-4 gap-4">
           <div
-            className="border-2 rounded-lg p-4 cursor-pointer"
-            style={{ borderColor: "#00B878", background: "#E6FAF3" }}
+            className={`rounded-lg p-4 cursor-pointer ${getLanguageClass('en')}`}
+            onClick={() => handleLanguageChange('en')}  // Change to English
           >
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-900">US</span>
               <span className="text-sm text-gray-600">English</span>
             </div>
           </div>
-          <div className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-gray-300">
+          <div
+            className={`rounded-lg p-4 cursor-pointer ${getLanguageClass('az')}`}
+            onClick={() => handleLanguageChange('az')}  // Change to Azerbaijani
+          >
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-900">AZ</span>
               <span className="text-sm text-gray-600">Azərbaycan</span>
             </div>
           </div>
-          <div className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-gray-300">
+          <div
+            className={`rounded-lg p-4 cursor-pointer ${getLanguageClass('ru')}`}
+            onClick={() => handleLanguageChange('ru')}  // Change to Russian
+          >
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-900">RU</span>
               <span className="text-sm text-gray-600">Русский</span>
             </div>
           </div>
-          <div className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-gray-300">
+          <div
+            className={`rounded-lg p-4 cursor-pointer ${getLanguageClass('tr')}`}
+            onClick={() => handleLanguageChange('tr')}  // Change to Turkish
+          >
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-900">TR</span>
               <span className="text-sm text-gray-600">Türkçe</span>

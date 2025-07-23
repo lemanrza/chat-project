@@ -2,6 +2,7 @@ import chatlogo from "../assets/images/chatlogo.png";
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';  // Import useTranslation hook
 import LanguageOption from './LanguageOption';
 
 interface LanguageSelectionProps {
@@ -16,9 +17,15 @@ const languages = [
 ];
 
 const LanguageSelection: React.FC<LanguageSelectionProps> = ({ onLanguageSelect }) => {
+    const { i18n } = useTranslation();  // Use t function from useTranslation hook
+
+    const handleLanguageSelect = (languageCode: string) => {
+        i18n.changeLanguage(languageCode);  // Change language using i18n
+        onLanguageSelect(languageCode);  // Call parent callback if needed
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-
             <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -43,8 +50,7 @@ const LanguageSelection: React.FC<LanguageSelectionProps> = ({ onLanguageSelect 
                     transition={{ delay: 0.5, duration: 0.6 }}
                     className="text-2xl font-bold text-center text-gray-800 mb-2"
                 >
-                    Choose Your Language
-                </motion.h1>
+                    Choose Language                </motion.h1>
 
                 <motion.p
                     initial={{ opacity: 0 }}
@@ -52,8 +58,7 @@ const LanguageSelection: React.FC<LanguageSelectionProps> = ({ onLanguageSelect 
                     transition={{ delay: 0.7, duration: 0.6 }}
                     className="text-gray-600 text-center mb-8"
                 >
-                    Select your preferred language to continue
-                </motion.p>
+                    Select Language Prompt                </motion.p>
 
                 <div className="space-y-3">
                     {languages.map((language, index) => (
@@ -64,12 +69,10 @@ const LanguageSelection: React.FC<LanguageSelectionProps> = ({ onLanguageSelect 
                             transition={{ delay: 0.9 + index * 0.1, duration: 0.5 }}
                             whileHover={{ scale: 1.02, x: 5 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => onLanguageSelect(language.code)}
+                            onClick={() => handleLanguageSelect(language.code)}
                             className="w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-green-400 rounded-2xl p-4 flex items-center justify-between transition-all duration-200 group"
                         >
-                            <button key={language.code} onClick={() => onLanguageSelect(language.code)}>
-                                <LanguageOption code={language.code} name={language.name} />
-                            </button>
+                            <LanguageOption code={language.code} name={language.name} />
                             <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-green-500 transition-colors" />
                         </motion.button>
                     ))}
