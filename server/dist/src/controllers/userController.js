@@ -171,7 +171,7 @@ export const registerUser = async (req, res, next) => {
             fullName: req.body.profile.displayName,
         }, "6h");
         const verificationLink = `${process.env.SERVER_URL}/auth/verify-email?token=${token}`;
-        sendVerificationEmail(req.body.email, req.body.profile.displayName, verificationLink);
+        sendVerificationEmail(req.body.email, req.body.profile.firstName + " " + req.body.profile.lastName, verificationLink);
         res.status(201).json({
             message: "User registered successfully | Verify your email",
             data: response.data,
@@ -186,7 +186,7 @@ export const registerUser = async (req, res, next) => {
         }
     }
 };
-export const loginUser = async (req, res, next) => {
+export const loginUser = async (req, res) => {
     try {
         const credentials = {
             email: req.body.email,

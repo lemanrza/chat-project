@@ -244,10 +244,9 @@ export const registerUser = async (
     const verificationLink = `${process.env.SERVER_URL}/auth/verify-email?token=${token}`;
     sendVerificationEmail(
       req.body.email,
-      req.body.profile.displayName,
+      req.body.profile.firstName + " " + req.body.profile.lastName,
       verificationLink
     );
-
     res.status(201).json({
       message: "User registered successfully | Verify your email",
       data: response.data,
@@ -264,7 +263,6 @@ export const registerUser = async (
 export const loginUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
 ) => {
   try {
     const credentials = {

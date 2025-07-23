@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface StepNavigationProps {
   onPrevious?: () => void;
@@ -19,7 +19,7 @@ function StepNavigation({
   canGoBack = true,
   isLastStep = false,
   nextButtonText = "Continue",
-  submitButtonText = "Create Account",
+  submitButtonText = "Create Account"
 }: StepNavigationProps) {
   return (
     <div className="flex gap-3">
@@ -34,7 +34,7 @@ function StepNavigation({
           Back
         </button>
       )}
-
+      
       {isLastStep ? (
         <button
           type="submit"
@@ -48,12 +48,10 @@ function StepNavigation({
           type="button"
           onClick={onNext}
           disabled={!canGoNext}
-          className={`${
-            onPrevious ? "flex-1" : "px-8"
-          } py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+          className={`${onPrevious ? 'flex-1' : 'px-8'} py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
             canGoNext
-              ? "bg-[#00B878] hover:bg-[#00a76d] text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              ? 'bg-[#00B878] hover:bg-[#00a76d] text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >
           {nextButtonText}

@@ -1,63 +1,27 @@
-import { useState } from "react";
+import { useState } from 'react';
+import { MapPin, Heart, CircleUser, ChevronRight, ChevronLeft, Calendar } from 'lucide-react';
+import ProgressBar from '@/components/Register/ProgressBar';
+import StepHeader from '@/components/Register/StepHeader';
+import LocationSearch from '@/components/Register/LocationSearch';
+import StepNavigation from '@/components/Register/StepNavigation';
+import { Calendar as CalendarDate } from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 import {
-  MapPin,
-  Heart,
-  CircleUser,
-  ChevronRight,
-  ChevronLeft,
-  Calendar,
-} from "lucide-react";
-import ProgressBar from "@/components/Register/ProgressBar";
-import StepHeader from "@/components/Register/StepHeader";
-import LocationSearch from "@/components/Register/LocationSearch";
-import StepNavigation from "@/components/Register/StepNavigation";
-import { Calendar as CalendarDate } from "react-calendar";
-import "react-calendar/dist/Calendar.css";
-import {
-  Coffee,
-  Plane,
-  Monitor,
-  Laptop,
-  Dog,
-  Cat,
-  Music,
-  BookOpen,
-  Dumbbell,
-  ChefHat,
-  Palette,
-  Camera,
-  Gamepad2,
-  Mountain,
-  Waves,
-  TreePine,
-  Theater,
-  Pizza,
-  FolderRoot as Football,
-  Sprout,
-  Guitar,
-  Flame,
-  ShoppingBasket as Basketball,
-  Target,
-  Home,
-  Wine,
-  Beer,
-  Umbrella,
-  Snowflake,
-  Car,
-  Tent,
-  Film,
-  Globe,
-  Piano,
-} from "lucide-react";
-import { useFormik } from "formik";
-import registerValidation from "@/validations/registerValidation";
-import User from "@/classes/User";
-import controller from "@/services/commonRequest";
-import endpoints from "@/services/api";
-import { enqueueSnackbar } from "notistack";
-import { useNavigate } from "react-router-dom";
-import ReCAPTCHA from "react-google-recaptcha";
-import { FcGoogle } from "react-icons/fc";
+  Coffee, Plane, Monitor, Laptop, Dog, Cat, Music, BookOpen,
+  Dumbbell, ChefHat, Palette, Camera, Gamepad2, Mountain, Waves,
+  TreePine, Theater, Pizza, FolderRoot as Football, Sprout, Guitar,
+  Flame, ShoppingBasket as Basketball, Target, Home, Wine, Beer,
+  Umbrella, Snowflake, Car, Tent, Film, Globe, Piano
+} from 'lucide-react';
+import { useFormik } from 'formik';
+import registerValidation from '@/validations/registerValidation';
+import User from '@/classes/User';
+import controller from '@/services/commonRequest';
+import endpoints from '@/services/api';
+import { enqueueSnackbar } from 'notistack';
+import { useNavigate } from 'react-router-dom';
+import ReCAPTCHA from 'react-google-recaptcha';
+import { FcGoogle } from 'react-icons/fc';
 
 interface LocationResult {
   id: string;
@@ -80,8 +44,7 @@ interface RegisterFormValues {
 function Register() {
   const [step, setStep] = useState(1);
   const [location, setLocation] = useState("");
-  const [selectedLocation, setSelectedLocation] =
-    useState<LocationResult | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<LocationResult | null>(null);
   const navigate = useNavigate();
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -92,7 +55,7 @@ function Register() {
   const handleDateChange = (value: any) => {
     if (value && value instanceof Date) {
       setDateOfBirth(value);
-      registerFormik.setFieldValue("dateOfBirth", value.toISOString());
+      registerFormik.setFieldValue('dateOfBirth', value.toISOString());
       setIsCalendarOpen(false);
     }
   };
@@ -114,7 +77,13 @@ function Register() {
     },
     validationSchema: registerValidation,
     onSubmit: async (values, action) => {
+      console.log("Form submission started", values);
+      console.log("CAPTCHA value:", captchaValue);
+      console.log("Date of birth:", dateOfBirth);
+      console.log("Selected location:", selectedLocation);
+
       if (!captchaValue) {
+        console.log("CAPTCHA validation failed");
         enqueueSnackbar("Please complete the CAPTCHA verification", {
           variant: "error",
           autoHideDuration: 2000,
@@ -123,7 +92,26 @@ function Register() {
       }
 
       if (!dateOfBirth) {
+        console.log("Date of birth validation failed");
         enqueueSnackbar("Please select your date of birth", {
+          variant: "error",
+          autoHideDuration: 2000,
+        });
+        return;
+      }
+
+      if (!selectedLocation) {
+        console.log("Location validation failed");
+        enqueueSnackbar("Please select your location", {
+          variant: "error",
+          autoHideDuration: 2000,
+        });
+        return;
+      }
+
+      if (!values.hobbies || values.hobbies.length < 3) {
+        console.log("Hobbies validation failed");
+        enqueueSnackbar("Please select at least 3 hobbies", {
           variant: "error",
           autoHideDuration: 2000,
         });
@@ -136,18 +124,20 @@ function Register() {
         {
           firstName: values.firstName,
           lastName: values.lastName,
-          location: values.location,
+          location: `${selectedLocation.city}, ${selectedLocation.country}`,
           dateOfBirth: formattedDate,
         },
         values.username,
         values.email,
         values.password,
-        values.hobbies.map((hobby) => hobby)
+        values.hobbies.map(hobby => hobby)
       );
       console.log("User object created", newUser);
 
       try {
-        await controller.post(`${endpoints.users}/register`, newUser);
+        console.log("Sending registration request...");
+        const response = await controller.post(`${endpoints.users}/register`, newUser);
+        console.log("Registration successful", response);
 
         enqueueSnackbar("User registered successfully!", {
           autoHideDuration: 2000,
@@ -162,17 +152,14 @@ function Register() {
         navigate("/auth/login");
       } catch (error: any) {
         console.error("Registration failed", error);
-        enqueueSnackbar(
-          error.response?.data?.message || "Registration failed",
-          {
-            autoHideDuration: 2000,
-            anchorOrigin: {
-              vertical: "bottom",
-              horizontal: "right",
-            },
-            variant: "error",
-          }
-        );
+        enqueueSnackbar(error.response?.data?.message || "Registration failed", {
+          autoHideDuration: 2000,
+          anchorOrigin: {
+            vertical: "bottom",
+            horizontal: "right",
+          },
+          variant: "error",
+        });
         values.email = "";
         values.username = "";
       }
@@ -180,42 +167,42 @@ function Register() {
   });
 
   const interests = [
-    { name: "Coffee", icon: Coffee },
-    { name: "Travel", icon: Plane },
-    { name: "Netflix", icon: Monitor },
-    { name: "Coding", icon: Laptop },
-    { name: "Dogs", icon: Dog },
-    { name: "Cats", icon: Cat },
-    { name: "Music", icon: Music },
-    { name: "Reading", icon: BookOpen },
-    { name: "Fitness", icon: Dumbbell },
-    { name: "Cooking", icon: ChefHat },
-    { name: "Art", icon: Palette },
-    { name: "Photo", icon: Camera },
-    { name: "Gaming", icon: Gamepad2 },
-    { name: "Hiking", icon: Mountain },
-    { name: "Swimming", icon: Waves },
-    { name: "Yoga", icon: TreePine },
-    { name: "Theater", icon: Theater },
-    { name: "Food", icon: Pizza },
-    { name: "Sports", icon: Football },
-    { name: "Garden", icon: Sprout },
-    { name: "Guitar", icon: Guitar },
-    { name: "Dancing", icon: Flame },
-    { name: "Basketball", icon: Basketball },
-    { name: "Soccer", icon: Target },
-    { name: "Darts", icon: Target },
-    { name: "Games", icon: Home },
-    { name: "Wine", icon: Wine },
-    { name: "Beer", icon: Beer },
-    { name: "Beach", icon: Umbrella },
-    { name: "Winter", icon: Snowflake },
-    { name: "Cars", icon: Car },
-    { name: "Comedy", icon: Tent },
-    { name: "Movies", icon: Film },
-    { name: "Tech", icon: Globe },
-    { name: "Nature", icon: Globe },
-    { name: "Piano", icon: Piano },
+    { name: 'Coffee', icon: Coffee },
+    { name: 'Travel', icon: Plane },
+    { name: 'Netflix', icon: Monitor },
+    { name: 'Coding', icon: Laptop },
+    { name: 'Dogs', icon: Dog },
+    { name: 'Cats', icon: Cat },
+    { name: 'Music', icon: Music },
+    { name: 'Reading', icon: BookOpen },
+    { name: 'Fitness', icon: Dumbbell },
+    { name: 'Cooking', icon: ChefHat },
+    { name: 'Art', icon: Palette },
+    { name: 'Photo', icon: Camera },
+    { name: 'Gaming', icon: Gamepad2 },
+    { name: 'Hiking', icon: Mountain },
+    { name: 'Swimming', icon: Waves },
+    { name: 'Yoga', icon: TreePine },
+    { name: 'Theater', icon: Theater },
+    { name: 'Food', icon: Pizza },
+    { name: 'Sports', icon: Football },
+    { name: 'Garden', icon: Sprout },
+    { name: 'Guitar', icon: Guitar },
+    { name: 'Dancing', icon: Flame },
+    { name: 'Basketball', icon: Basketball },
+    { name: 'Soccer', icon: Target },
+    { name: 'Darts', icon: Target },
+    { name: 'Games', icon: Home },
+    { name: 'Wine', icon: Wine },
+    { name: 'Beer', icon: Beer },
+    { name: 'Beach', icon: Umbrella },
+    { name: 'Winter', icon: Snowflake },
+    { name: 'Cars', icon: Car },
+    { name: 'Comedy', icon: Tent },
+    { name: 'Movies', icon: Film },
+    { name: 'Tech', icon: Globe },
+    { name: 'Nature', icon: Globe },
+    { name: 'Piano', icon: Piano }
   ];
 
   const handleInterestToggle = (interest: string, e: React.MouseEvent) => {
@@ -223,7 +210,7 @@ function Register() {
     registerFormik.setFieldValue(
       "hobbies",
       registerFormik.values.hobbies.includes(interest)
-        ? registerFormik.values.hobbies.filter((i) => i !== interest)
+        ? registerFormik.values.hobbies.filter(i => i !== interest)
         : [...registerFormik.values.hobbies, interest]
     );
   };
@@ -251,6 +238,8 @@ function Register() {
 
   const handleLocationSelect = (locationResult: LocationResult) => {
     setSelectedLocation(locationResult);
+    const locationString = `${locationResult.city}, ${locationResult.country}`;
+    registerFormik.setFieldValue("location", locationString);
   };
 
   return (
@@ -261,24 +250,16 @@ function Register() {
           <h1 className="text-4xl font-extrabold text-[#222] mb-2 tracking-tight flex items-center gap-2">
             <span>Chat</span> <span className="text-[#00B878]">Wave</span>
           </h1>
-          <p className="text-gray-500 text-base">
-            Create your account and join our unique platform.
-          </p>
+          <p className="text-gray-500 text-base">Create your account and join our unique platform.</p>
         </div>
 
         {/* Progress Bar */}
         <ProgressBar currentStep={step} totalSteps={4} />
 
         {/* Main Content Card */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            registerFormik.handleSubmit();
-            console.log("hello");
-          }}
-          className="bg-white rounded-3xl p-8 shadow-xl"
-        >
-          {step === 1 && (
+        <div className="bg-white rounded-3xl p-8 shadow-xl">
+          <form onSubmit={registerFormik.handleSubmit}>
+            {step === 1 && (
             <>
               <StepHeader
                 icon={MapPin}
@@ -306,34 +287,25 @@ function Register() {
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-[#E5F8F1] bg-opacity-10 rounded-full mb-4">
                   <Heart className="w-8 h-8 text-[#00B878]" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  What are your interests?
-                </h2>
-                <p className="text-gray-500">
-                  Select 3-5 interests to help us personalize your experience
-                </p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">What are your interests?</h2>
+                <p className="text-gray-500">Select 3-5 interests to help us personalize your experience</p>
               </div>
 
               <div className="grid grid-cols-6 gap-3 mb-6">
                 {interests.map((interest) => {
                   const IconComponent = interest.icon;
-                  const isSelected = registerFormik.values.hobbies.includes(
-                    interest.name
-                  );
+                  const isSelected = registerFormik.values.hobbies.includes(interest.name);
                   return (
                     <button
                       key={interest.name}
                       onClick={(e) => handleInterestToggle(interest.name, e)}
-                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
-                        isSelected
-                          ? "bg-[#00B878] border-[#00B878] text-white shadow-lg"
-                          : "bg-white border-gray-200 text-gray-600 hover:border-[#00B878] hover:text-[#00B878]"
-                      }`}
+                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${isSelected
+                        ? 'bg-[#00B878] border-[#00B878] text-white shadow-lg'
+                        : 'bg-white border-gray-200 text-gray-600 hover:border-[#00B878] hover:text-[#00B878]'
+                        }`}
                     >
                       <IconComponent className="w-6 h-6 mb-2" />
-                      <span className="text-xs font-medium">
-                        {interest.name}
-                      </span>
+                      <span className="text-xs font-medium">{interest.name}</span>
                     </button>
                   );
                 })}
@@ -341,8 +313,7 @@ function Register() {
 
               <div className="text-center mb-6">
                 <p className="text-sm text-gray-500">
-                  Selected: {registerFormik.values.hobbies.length}/5 (minimum 3
-                  required)
+                  Selected: {registerFormik.values.hobbies.length}/5 (minimum 3 required)
                 </p>
               </div>
 
@@ -359,11 +330,10 @@ function Register() {
                   type="button"
                   onClick={handleNextStep}
                   disabled={registerFormik.values.hobbies.length < 3}
-                  className={`flex-1 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                    registerFormik.values.hobbies.length >= 3
-                      ? "bg-[#00B878] hover:bg-[#00a76d] text-white shadow-lg"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  }`}
+                  className={`flex-1 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${registerFormik.values.hobbies.length >= 3
+                    ? 'bg-[#00B878] hover:bg-[#00a76d] text-white shadow-lg'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    }`}
                 >
                   Continue
                   <ChevronRight className="w-5 h-5" />
@@ -381,18 +351,14 @@ function Register() {
               />
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select your birthday
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Select your birthday</label>
                   <div className="relative">
                     <input
                       type="text"
                       onClick={toggleCalendar}
                       placeholder="Click to select a date"
                       className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-[#00B878] focus:ring-opacity-20 focus:border-[#00B878] transition-all bg-gray-50"
-                      defaultValue={
-                        dateOfBirth ? dateOfBirth.toLocaleDateString() : ""
-                      }
+                      defaultValue={dateOfBirth ? dateOfBirth.toLocaleDateString() : ''}
                     />
 
                     {isCalendarOpen && (
@@ -408,18 +374,15 @@ function Register() {
                       <div className="flex items-center gap-2 text-green-700">
                         <span className="text-lg">🎂</span>
                         <span className="font-semibold">
-                          Age:{" "}
-                          {new Date().getFullYear() - dateOfBirth.getFullYear()}{" "}
-                          years old
+                          Age: {new Date().getFullYear() - dateOfBirth.getFullYear()} years old
                         </span>
                       </div>
                       <p className="text-sm text-green-600 mt-1">
-                        Born on{" "}
-                        {dateOfBirth.toLocaleDateString("en-US", {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
+                        Born on {dateOfBirth.toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
                         })}
                       </p>
                     </div>
@@ -440,35 +403,27 @@ function Register() {
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-[#E5F8F1] bg-opacity-10 rounded-full mb-4">
                   <CircleUser className="w-8 h-8 text-[#00B878]" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  Create your account
-                </h2>
-                <p className="text-gray-500">
-                  Almost there! Just a few more details
-                </p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Create your account</h2>
+                <p className="text-gray-500">Almost there! Just a few more details</p>
               </div>
 
               <div className="space-y-4">
                 <button
                   type="button"
                   onClick={() => {
-                    window.location.href = `${
-                      import.meta.env.VITE_SERVER_URL
-                    }/auth/google`;
+                    window.location.href = `${import.meta.env.VITE_SERVER_URL
+                      }/auth/google`;
                   }}
                   className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
                 >
                   <FcGoogle className="text-xl" />
-                  <span className="text-sm text-semibold text-gray-700">
-                    Continue with Google
-                  </span>
+                  <span className="text-sm text-semibold text-gray-700">Continue with Google</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    window.location.href = `${
-                      import.meta.env.VITE_SERVER_URL
-                    }/auth/github`;
+                    window.location.href = `${import.meta.env.VITE_SERVER_URL
+                      }/auth/github`;
                   }}
                   className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
                 >
@@ -477,14 +432,10 @@ function Register() {
                     alt="GitHub"
                     className="w-5 h-5"
                   />
-                  <span className="text-sm text-gray-700 text-semibold">
-                    Continue with GitHub
-                  </span>
+                  <span className="text-sm text-gray-700 text-semibold">Continue with GitHub</span>
                 </button>
                 <div className="text-center">
-                  <span className="text-gray-400 text-sm">
-                    or create with email
-                  </span>
+                  <span className="text-gray-400 text-sm">or create with email</span>
                 </div>
 
                 <div>
@@ -508,9 +459,7 @@ function Register() {
                     )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-[#222]">
-                    Last Name
-                  </label>
+                  <label className="text-sm font-medium text-[#222]">Last Name</label>
                   <input
                     type="text"
                     value={registerFormik.values.lastName}
@@ -528,9 +477,7 @@ function Register() {
                     )}
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-[#222]">
-                    Username
-                  </label>
+                  <label className="text-sm font-medium text-[#222]">Username</label>
                   <input
                     type="text"
                     value={registerFormik.values.username}
@@ -548,9 +495,7 @@ function Register() {
                     )}
                 </div>
                 <div className="col-span-2">
-                  <label className="text-sm font-medium text-[#222]">
-                    Email
-                  </label>
+                  <label className="text-sm font-medium text-[#222]">Email</label>
                   <input
                     type="email"
                     value={registerFormik.values.email}
@@ -560,17 +505,14 @@ function Register() {
                     placeholder="Enter your email"
                     className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
                   />
-                  {registerFormik.errors.email &&
-                    registerFormik.touched.email && (
-                      <span className="text-red-500 text-sm mt-1 block">
-                        {registerFormik.errors.email}
-                      </span>
-                    )}
+                  {registerFormik.errors.email && registerFormik.touched.email && (
+                    <span className="text-red-500 text-sm mt-1 block">
+                      {registerFormik.errors.email}
+                    </span>
+                  )}
                 </div>
                 <div className="relative">
-                  <label className="text-sm font-medium text-[#222]">
-                    Password
-                  </label>
+                  <label className="text-sm font-medium text-[#222]">Password</label>
                   <input
                     type={showPassword ? "text" : "password"}
                     value={registerFormik.values.password}
@@ -713,14 +655,13 @@ function Register() {
                     disabled={registerFormik.isSubmitting || !captchaValue}
                     className="flex-1 bg-[#00B878] hover:bg-[#00a76d] text-white py-4 rounded-xl font-semibold transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {registerFormik.isSubmitting
-                      ? "Creating Account..."
-                      : "Create Account"}
+                    {registerFormik.isSubmitting ? 'Creating Account...' : 'Create Account'}
                   </button>
                 </div>
               </div>
             </>
           )}
+          </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
@@ -733,7 +674,7 @@ function Register() {
               </a>
             </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
