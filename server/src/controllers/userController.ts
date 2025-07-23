@@ -191,29 +191,47 @@ export const registerUser = async (
   next: NextFunction
 ) => {
   try {
-    const { password } = req.body;
+    const {
+      password,
+      firstName,
+      lastName,
+      location,
+      dateOfBirth,
+      hobbies,
+      ...otherData
+    } = req.body;
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const profileData: any = {
+      firstName,
+      lastName,
+      location,
+      dateOfBirth,
+    };
 
     if (req.file) {
       const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
         folder: "user_profiles",
       });
 
-      req.body.profile = uploadedImage.secure_url;
-      req.body.public_id = uploadedImage.public_id;
+      profileData.avatar = uploadedImage.secure_url;
+      profileData.public_id = uploadedImage.public_id;
     }
 
-    const response: any = await register({
-      ...req.body,
+    const userData = {
+      ...otherData,
       password: hashedPassword,
-    });
+      profile: profileData,
+      hobbies: hobbies || [],
+    };
+
+    const response: any = await register(userData);
 
     if (!response.success) {
       throw new Error(response.message);
     }
 
-    // Send email service ...
     const token = generateAccessToken(
       {
         id: response.data._id,
