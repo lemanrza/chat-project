@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 
-dotenv.config();
+// Load .env file from absolute path
+dotenv.config({ path: "/Users/aysu/Desktop/chatwave/server/.env" });
 
 export default {
   PORT: process.env.PORT || 3000,
