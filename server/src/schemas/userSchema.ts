@@ -56,6 +56,19 @@ const userSchema = new mongoose.Schema(
     lastSeen: { type: Boolean, default: null },
 
     isOnline: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ["online", "away", "busy", "offline"],
+      default: "offline",
+    },
+
+    socketId: { type: String, default: null },
+
+    profileVisibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "public",
+    },
 
     emailVerified: {
       type: Boolean,
@@ -66,5 +79,9 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true, versionKey: false }
 );
+
+userSchema.index({ isOnline: 1, lastSeen: -1 });
+userSchema.index({ socketId: 1 });
+userSchema.index({ status: 1 });
 
 export default userSchema;

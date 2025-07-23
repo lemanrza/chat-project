@@ -46,6 +46,17 @@ const userSchema = new mongoose.Schema({
     lockUntil: { type: Date, default: null },
     lastSeen: { type: Boolean, default: null },
     isOnline: { type: Boolean, default: false },
+    status: {
+        type: String,
+        enum: ["online", "away", "busy", "offline"],
+        default: "offline",
+    },
+    socketId: { type: String, default: null },
+    profileVisibility: {
+        type: String,
+        enum: ["public", "private"],
+        default: "public",
+    },
     emailVerified: {
         type: Boolean,
         default: function () {
@@ -53,4 +64,7 @@ const userSchema = new mongoose.Schema({
         },
     },
 }, { timestamps: true, versionKey: false });
+userSchema.index({ isOnline: 1, lastSeen: -1 });
+userSchema.index({ socketId: 1 });
+userSchema.index({ status: 1 });
 export default userSchema;
