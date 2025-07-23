@@ -37,6 +37,6 @@ userRouter.post(
 userRouter.delete("/me/delete-image", authenticateToken, deleteProfileImage);
 
 userRouter.get("/:id", getUserById);
-userRouter.delete("/:id", authenticateToken, deleteUser);
+userRouter.delete("/:id", deleteUser);
 
 export default userRouter;
