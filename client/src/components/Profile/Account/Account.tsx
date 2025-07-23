@@ -4,12 +4,7 @@ import ChangePassword from "./ChangePassword";
 import DangerZone from "./DangerZone";
 import type { AccountProps } from "@/types/profileType";
 
-const Account = ({
-  userData,
-  formData,
-  handleInputChange,
-  handleLogout,
-}: AccountProps) => {
+const Account = ({ userData, formData, handleInputChange }: AccountProps) => {
   return (
     <div className="space-y-8">
       {/* Personal Information Section */}
@@ -26,7 +21,7 @@ const Account = ({
       <ChangePassword userData={userData} />
 
       {/* Danger Zone Section */}
-      <DangerZone handleLogout={handleLogout} />
+      <DangerZone />
     </div>
   );
 };

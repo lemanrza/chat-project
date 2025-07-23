@@ -24,37 +24,35 @@ const ThreeBackground = () => {
       mount.appendChild(renderer.domElement);
     }
 
-    // Create bubble spheres
     const bubbleCount = 80;
     const bubbles: THREE.Mesh[] = [];
 
     for (let i = 0; i < bubbleCount; i++) {
       const geometry = new THREE.SphereGeometry(
-        Math.random() * 0.3 + 0.1, // Random size between 0.1 and 0.4
+        Math.random() * 0.3 + 0.1,
         16,
         16
       );
 
-      // Alternate between green and white colors
       const isGreen = Math.random() > 0.5;
       const material = new THREE.MeshBasicMaterial({
-        color: isGreen ? new THREE.Color("#90EE90") : new THREE.Color("#FFFFFF"), // Light green or white
+        color: isGreen
+          ? new THREE.Color("#90EE90")
+          : new THREE.Color("#FFFFFF"),
         transparent: true,
-        opacity: Math.random() * 0.4 + 0.6, // Random opacity between 0.6 and 1.0
+        opacity: Math.random() * 0.4 + 0.6,
       });
 
       const bubble = new THREE.Mesh(geometry, material);
-      
-      // Random position
+
       bubble.position.x = (Math.random() - 0.5) * 20;
       bubble.position.y = (Math.random() - 0.5) * 20;
       bubble.position.z = (Math.random() - 0.5) * 20;
-      
-      // Store random velocity for each bubble
+
       (bubble as any).velocity = {
-        x: (Math.random() - 0.5) * 0.02,
-        y: (Math.random() - 0.5) * 0.02,
-        z: (Math.random() - 0.5) * 0.02,
+        x: (Math.random() - 0.5) * 0.005,
+        y: (Math.random() - 0.5) * 0.005,
+        z: (Math.random() - 0.5) * 0.005,
       };
 
       bubbles.push(bubble);
@@ -63,26 +61,22 @@ const ThreeBackground = () => {
 
     const animate = () => {
       requestAnimationFrame(animate);
-      
-      // Animate each bubble individually
+
       bubbles.forEach((bubble) => {
         const velocity = (bubble as any).velocity;
-        
-        // Move bubbles
+
         bubble.position.x += velocity.x;
         bubble.position.y += velocity.y;
         bubble.position.z += velocity.z;
-        
-        // Rotate bubbles
+
         bubble.rotation.x += 0.01;
         bubble.rotation.y += 0.015;
-        
-        // Bounce off boundaries
+
         if (bubble.position.x > 10 || bubble.position.x < -10) velocity.x *= -1;
         if (bubble.position.y > 10 || bubble.position.y < -10) velocity.y *= -1;
         if (bubble.position.z > 10 || bubble.position.z < -10) velocity.z *= -1;
       });
-      
+
       renderer.render(scene, camera);
     };
 

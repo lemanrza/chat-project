@@ -1,10 +1,9 @@
+import endpoints from "@/services/api";
+import controller from "@/services/commonRequest";
+import { enqueueSnackbar } from "notistack";
 import Swal from "sweetalert2";
 
-interface DangerZoneProps {
-  handleLogout: () => void;
-}
-
-const DangerZone = ({ handleLogout }: DangerZoneProps) => {
+const DangerZone = () => {
   const handleDeleteAccount = async () => {
     const result = await Swal.fire({
       title: "Delete Account?",
@@ -56,7 +55,6 @@ const DangerZone = ({ handleLogout }: DangerZoneProps) => {
           throw new Error("Failed to delete account");
         }
 
-        // Clear token and redirect to login
         localStorage.removeItem("token");
 
         await Swal.fire({
@@ -90,6 +88,23 @@ const DangerZone = ({ handleLogout }: DangerZoneProps) => {
         });
       }
     }
+  };
+
+  const handleLogout = async () => {
+    await controller.update(`${endpoints.users}/me`, "", {
+      isOnline: false,
+    });
+
+    localStorage.removeItem("token");
+    enqueueSnackbar("Logged out successfully", {
+      variant: "success",
+      autoHideDuration: 2000,
+      anchorOrigin: {
+        vertical: "bottom",
+        horizontal: "right",
+      },
+    });
+    window.location.href = "/auth/login";
   };
 
   return (

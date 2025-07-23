@@ -27,7 +27,7 @@ const PersonalInformations = ({
           lastName: formData.lastName,
           location: formData.location,
           bio: formData.bio,
-          avatar: userData?.profile?.avatar, // Preserve existing avatar
+          avatar: userData?.profile?.avatar,
         },
         email: formData.email,
       };
