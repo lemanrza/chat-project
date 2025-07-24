@@ -21,6 +21,9 @@ const Profile = () => {
     email: "",
     location: "",
     bio: "",
+    hobbies: [],
+    connectionsRequests: [],
+    profileVisibility: "public"
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -56,6 +59,9 @@ const Profile = () => {
           email: response.data.email || "",
           location: response.data.profile?.location || "",
           bio: response.data.profile?.bio || "",
+          hobbies: response.data.profile?.hobbies || [],
+          connectionsRequests: response.data.connectionsRequests || [],
+          profileVisibility: response.data.profileVisibility || "public"
         });
       } catch (error: any) {
         console.error("Error fetching user data:", error);

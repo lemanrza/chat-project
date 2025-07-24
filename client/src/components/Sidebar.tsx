@@ -63,6 +63,7 @@ const Sidebar = () => {
     );
   };
   const handleLogout = async () => {
+<<<<<<< HEAD
     const userId = getUserIdFromToken();
     if (userId) {
       await controller.update(`${endpoints.users}/me`, userId, {
@@ -70,6 +71,11 @@ const Sidebar = () => {
       });
     }
 
+=======
+    await controller.update(`${endpoints.users}/me`, "", {
+      isOnline: false,
+    });
+>>>>>>> origin
     localStorage.removeItem("token");
 
     enqueueSnackbar("Logged out successfully", {
