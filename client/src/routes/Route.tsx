@@ -6,12 +6,13 @@ import Register from "../pages/Auth/Register";
 import ForgotPassword from "../pages/Auth/ForgotPassword";
 import ResetPassword from "../pages/Auth/ResetPassword";
 import Feed from "../pages/Client/Feed";
-import Chat from "../pages/Client/Chat";
+// import Chat from "../pages/Client/Chat";
 import Profile from "../pages/Client/Profile";
 import AuthLayout from "../layout/AuthLayout";
 import Welcome from "@/pages/Client/Welcome";
 import AuthCallback from "@/pages/Auth/AuthCallback";
 import EmailVerify from "@/pages/Auth/EmailVerify";
+import Chat from "@/pages/Client/Chat";
 
 const ROUTES: RouteObject[] = [
   // client layout

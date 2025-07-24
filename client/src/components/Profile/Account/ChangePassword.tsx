@@ -1,7 +1,7 @@
 import { enqueueSnackbar } from "notistack";
 import PasswordInput from "./components/PasswordInput";
 import PasswordRequirements from "./components/PasswordRequirements";
-import type { UserData } from "./types";
+import type { UserData } from "@/types/profileType";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
 import { validatePassword } from "@/lib/validatePassword";
 
@@ -19,6 +19,21 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
     resetForm,
     setIsChangingPassword,
   } = usePasswordForm();
+
+  // If userData is null, show loading or return early
+  if (!userData) {
+    return (
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <h3 className="text-xl font-semibold text-gray-900 mb-6">
+          Change Password
+        </h3>
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+      </div>
+    );
+  }
 
   const passwordValidation = validatePassword(passwordData.newPassword);
   const passwordsMatch =
@@ -234,14 +249,13 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
             !passwordsMatch ||
             isSameAsCurrentPassword
           }
-          className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-            isChangingPassword ||
-            !passwordValidation.isValid ||
-            !passwordsMatch ||
-            isSameAsCurrentPassword
+          className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 ${isChangingPassword ||
+              !passwordValidation.isValid ||
+              !passwordsMatch ||
+              isSameAsCurrentPassword
               ? "bg-gray-400 cursor-not-allowed text-white"
               : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
-          }`}
+            }`}
         >
           {isChangingPassword ? (
             <span className="flex items-center">
