@@ -1,65 +1,404 @@
-import { Settings, Shield, Link, User, MessageCircle, Users, Heart, Sun, Bell, Eye } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from "react";
+import controller from "@/services/commonRequest";
+import endpoints from "@/services/api";
+import { enqueueSnackbar } from "notistack";
+import Account from "@/components/Profile/Account/Account";
+import Privacy from "@/components/Profile/Privacy";
+import Overview from "@/components/Profile/Overview";
+import Navigation from "@/components/Profile/Navigation";
+import Settings from "@/components/Profile/Settings";
 
 const Profile = () => {
-  const [activeTab, setActiveTab] = useState('overview')
-  return (
-    <div className="min-h-screen bg-gray-50 flex">
+  const [activeTab, setActiveTab] = useState("overview");
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [userData, setUserData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    location: "",
+    bio: "",
+    hobbies: [],
+    connectionsRequests: [],
+    profileVisibility: "public"
+  });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await controller.getOne(`${endpoints.users}/me`);
+        setUserData(response.data);
+
+        setFormData({
+          firstName: response.data.profile?.firstName || "",
+          lastName: response.data.profile?.lastName || "",
+          email: response.data.email || "",
+          location: response.data.profile?.location || "",
+          bio: response.data.profile?.bio || "",
+          hobbies: response.data.profile?.hobbies || [],
+          connectionsRequests: response.data.connectionsRequests || [],
+          profileVisibility: response.data.profileVisibility || "public"
+        });
+      } catch (error: any) {
+        console.error("Error fetching user data:", error);
+
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          console.log("Authentication failed, redirecting to login...");
+          localStorage.removeItem("token");
+          window.location.href = "/auth/login";
+          return;
+        }
+
+        enqueueSnackbar("Failed to load user data", {
+          variant: "error",
+          autoHideDuration: 2000,
+          anchorOrigin: {
+            vertical: "bottom",
+            horizontal: "right",
+          },
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      enqueueSnackbar("Please select a valid image file (JPEG, PNG, or GIF)", {
+        variant: "error",
+        autoHideDuration: 3000,
+        anchorOrigin: {
+          vertical: "bottom",
+          horizontal: "right",
+        },
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      enqueueSnackbar("Image size must be less than 5MB", {
+        variant: "error",
+        autoHideDuration: 3000,
+        anchorOrigin: {
+          vertical: "bottom",
+          horizontal: "right",
+        },
+      });
+      return;
+    }
+
+    try {
+      setIsUploadingImage(true);
+
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+
+      const uploadFormData = new FormData();
+      uploadFormData.append("avatar", file);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/upload-image`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: uploadFormData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      const result = await response.json();
+
+      setUserData((prev: any) => ({
+        ...prev,
+        profile: {
+          ...prev.profile,
+          avatar: result.data.avatar,
+        },
+      }));
+
+      URL.revokeObjectURL(previewUrl);
+      setImagePreview("");
+
+      enqueueSnackbar("Profile image updated successfully!", {
+        variant: "success",
+        autoHideDuration: 3000,
+        anchorOrigin: {
+          vertical: "bottom",
+          horizontal: "right",
+        },
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+        setImagePreview("");
+      }
+
+      enqueueSnackbar("Failed to upload image. Please try again.", {
+        variant: "error",
+        autoHideDuration: 3000,
+        anchorOrigin: {
+          vertical: "bottom",
+          horizontal: "right",
+        },
+      });
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleDeleteImage = async () => {
+    try {
+      setIsUploadingImage(true);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/delete-image`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete image");
+      }
+
+      setUserData((prev: any) => ({
+        ...prev,
+        profile: {
+          ...prev.profile,
+          avatar:
+            "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png",
+        },
+      }));
+
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+        setImagePreview("");
+      }
+
+      enqueueSnackbar("Profile image deleted successfully!", {
+        variant: "success",
+        autoHideDuration: 3000,
+        anchorOrigin: {
+          vertical: "bottom",
+          horizontal: "right",
+        },
+      });
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      enqueueSnackbar("Failed to delete image. Please try again.", {
+        variant: "error",
+        autoHideDuration: 3000,
+        anchorOrigin: {
+          vertical: "bottom",
+          horizontal: "right",
+        },
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen  flex">
       {/* Main Content */}
       <div className="flex-1 p-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold">Profile</h1>
-          <button
-            className="text-white px-6 py-2 rounded-lg transition-colors"
-            style={{ backgroundColor: '#00B878' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#00a76d')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#00B878')}
-          >
-            ✏ Save Changes
-          </button>
         </div>
 
         {/* Profile Card */}
         <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
           <div className="flex items-start gap-6">
             {/* Avatar */}
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold" style={{ backgroundColor: '#00B878' }}>
-                AJ
+            <div className="relative group">
+              <div
+                className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold overflow-hidden transition-all duration-200 group-hover:shadow-xl group-hover:scale-[1.02] mx-auto"
+                style={{ backgroundColor: "#00B878" }}
+              >
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    alt="Profile Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : userData?.profile?.avatar ? (
+                  <img
+                    src={userData.profile.avatar}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  userData?.profile?.firstName?.charAt(0) +
+                    userData?.profile?.lastName?.charAt(0) || "U"
+                )}
               </div>
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 2L12 22M2 12L22 12" />
-                </svg>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
+              />
+
+              {/* Action Buttons - Below the avatar */}
+              <div className="mt-3 flex flex-col items-center gap-2">
+                {/* Upload Button */}
+                <button
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
+                    isUploadingImage
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-[#00B878] text-white hover:bg-emerald-600 border border-[#00B878] hover:border-emerald-600"
+                  }`}
+                  onClick={!isUploadingImage ? triggerFileInput : undefined}
+                  disabled={isUploadingImage}
+                >
+                  {isUploadingImage ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      >
+                        <path d="M12 2L12 22M2 12L22 12" />
+                      </svg>
+                      <span>Change Photo</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Delete Button - only show if user has custom avatar */}
+                {userData?.profile?.avatar &&
+                  userData.profile.avatar !==
+                    "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
+                  !imagePreview && (
+                    <button
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
+                        isUploadingImage
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-200 hover:border-red-300"
+                      }`}
+                      onClick={
+                        !isUploadingImage ? handleDeleteImage : undefined
+                      }
+                      disabled={isUploadingImage}
+                    >
+                      {isUploadingImage ? (
+                        <>
+                          <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
+                          <span>Removing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          >
+                            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14ZM10 11v6M14 11v6" />
+                          </svg>
+                          <span>Remove Photo</span>
+                        </>
+                      )}
+                    </button>
+                  )}
               </div>
             </div>
 
             {/* Profile Info */}
             <div className="flex-1">
-              <h2 className="text-3xl font-semibold text-gray-900 mb-1">Alex Johnson</h2>
-              <p className="text-gray-500 mb-4">@alexj_2024</p>
+              <h2 className="text-3xl font-semibold text-gray-900 mb-1">
+                {userData?.profile?.displayName ||
+                  `${formData.firstName} ${formData.lastName}`}
+              </h2>
+              <p className="text-gray-500 mb-4">@{userData?.username}</p>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                Digital enthusiast, coffee lover, and ChatWave explorer! Always excited to connect with new people and share interesting conversations.
+                {formData.bio || "No bio available"}
               </p>
 
               {/* Location and Join Date */}
               <div className="flex items-center gap-6 text-gray-500 text-sm mb-6">
                 <div className="flex items-center gap-1">
                   <span>📍</span>
-                  <span>San Francisco, CA</span>
+                  <span>{formData.location || "Location not set"}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span>📅</span>
-                  <span>Joined January 2024</span>
+                  <span>
+                    Joined{" "}
+                    {new Date(userData?.createdAt).toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
                 </div>
               </div>
 
               {/* Stats */}
               <div className="flex items-center gap-8">
                 <div>
-                  <span className="text-2xl font-bold text-gray-900">47</span>
+                  <span className="text-2xl font-bold text-gray-900">
+                    {userData?.connections?.length || 0}
+                  </span>
                   <p className="text-gray-500 text-sm">Connections</p>
                 </div>
                 <div>
@@ -72,397 +411,25 @@ const Profile = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-1 mb-8">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeTab === 'overview'
-                ? 'text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            style={activeTab === 'overview' ? { backgroundColor: '#00B878' } : {}}
-          >
-            <User size={16} />
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeTab === 'settings'
-                ? 'text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            style={activeTab === 'settings' ? { backgroundColor: '#00B878' } : {}}
-          >
-            <Settings size={16} />
-            Settings
-          </button>
-          <button
-            onClick={() => setActiveTab('privacy')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeTab === 'privacy'
-                ? 'text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            style={activeTab === 'privacy' ? { backgroundColor: '#00B878' } : {}}
-          >
-            <Shield size={16} />
-            Privacy
-          </button>
-          <button
-            onClick={() => setActiveTab('account')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg ${activeTab === 'account'
-                ? 'text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            style={activeTab === 'account' ? { backgroundColor: '#00B878' } : {}}
-          >
-            <Link size={16} />
-            Account
-          </button>
-        </div>
+        <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
         {/* Tab Content */}
-        {activeTab === 'overview' && (
-          <>
-            {/* Stats Cards */}
-            <div className="grid grid-cols-3 gap-6 mb-8">
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: '#E6FAF3' }}>
-                    <MessageCircle size={24} style={{ color: '#00B878' }} />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">154</div>
-                    <div className="text-gray-500 text-sm">Total Messages</div>
-                  </div>
-                </div>
-              </div>
+        {activeTab === "overview" && <Overview />}
 
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <Users className="text-blue-600" size={24} />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">47</div>
-                    <div className="text-gray-500 text-sm">Connections</div>
-                  </div>
-                </div>
-              </div>
+        {activeTab === "settings" && <Settings />}
 
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                    <Heart className="text-purple-600" size={24} />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">12</div>
-                    <div className="text-gray-500 text-sm">Favorites</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {activeTab === "privacy" && <Privacy />}
 
-            {/* Quick Actions */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-4 gap-4">
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style={{ background: '#E6FAF3' }}>
-                    <MessageCircle size={24} style={{ color: '#00B878' }} />
-                  </div>
-                  <div className="font-medium text-gray-900 mb-1">New Chat</div>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Users className="text-blue-600" size={24} />
-                  </div>
-                  <div className="font-medium text-gray-900 mb-1">Find Friends</div>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Settings className="text-purple-600" size={24} />
-                  </div>
-                  <div className="font-medium text-gray-900 mb-1">Preferences</div>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Shield className="text-orange-600" size={24} />
-                  </div>
-                  <div className="font-medium text-gray-900 mb-1">Privacy</div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {activeTab === 'settings' && (
-          <div className="space-y-8">
-            {/* Language & Region */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Language & Region</h3>
-              <div className="grid grid-cols-4 gap-4">
-                <div className="border-2 rounded-lg p-4 cursor-pointer" style={{ borderColor: '#00B878', background: '#E6FAF3' }}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">US</span>
-                    <span className="text-sm text-gray-600">English</span>
-                  </div>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-gray-300">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">AZ</span>
-                    <span className="text-sm text-gray-600">Azərbaycan</span>
-                  </div>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-gray-300">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">RU</span>
-                    <span className="text-sm text-gray-600">Русский</span>
-                  </div>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-gray-300">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">TR</span>
-                    <span className="text-sm text-gray-600">Türkçe</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Appearance */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Appearance</h3>
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                      <Sun className="text-gray-600" size={20} />
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">Dark Mode</div>
-                      <div className="text-sm text-gray-500">Switch between light and dark themes</div>
-                    </div>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" defaultChecked />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B878]"></div>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Notifications */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Notifications</h3>
-              <div className="space-y-4">
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                        <Bell className="text-gray-600" size={20} />
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">Message Notifications</div>
-                        <div className="text-sm text-gray-500">Get notified when you receive new messages</div>
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                        <Bell className="text-gray-600" size={20} />
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">Connection Requests</div>
-                        <div className="text-sm text-gray-500">Get notified when someone wants to connect</div>
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                        <Bell className="text-gray-600" size={20} />
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">App Updates</div>
-                        <div className="text-sm text-gray-500">Get notified about new features and updates</div>
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'privacy' && (
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Privacy Settings</h3>
-
-              {/* Profile Visibility */}
-              <div className="space-y-6">
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                        <Eye className="text-gray-600" size={20} />
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">Profile Visibility</div>
-                        <div className="text-sm text-gray-500">Control who can see your profile</div>
-                      </div>
-                    </div>
-                    <select className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                      <option value="public">Public</option>
-                      <option value="friends">Friends Only</option>
-                      <option value="private">Private</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Message Privacy */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                        <MessageCircle className="text-gray-600" size={20} />
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">Message Privacy</div>
-                        <div className="text-sm text-gray-500">Control who can send you messages</div>
-                      </div>
-                    </div>
-                    <select className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                      <option value="everyone">Everyone</option>
-                      <option value="friends">Friends Only</option>
-                      <option value="none">No One</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'account' && (
-          <div className="space-y-12">
-            {/* Personal Information Section */}
-            <div className="bg-white rounded-xl p-8 shadow-md border border-gray-300">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">Personal Information</h3>
-              <div className="grid grid-cols-2 gap-8">
-                <div>
-                  <label className="block text-base font-medium text-gray-700">Full Name</label>
-                  <input
-                    type="text"
-                    className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base"
-                    defaultValue="Alex Johnson"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-medium text-gray-700">Email Address</label>
-                  <input
-                    type="email"
-                    className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base"
-                    defaultValue="alex.johnson@email.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-medium text-gray-700">Phone Number</label>
-                  <input
-                    type="tel"
-                    className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base"
-                    defaultValue="+1 (555) 123-4567"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-medium text-gray-700">Location</label>
-                  <input
-                    type="text"
-                    className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base"
-                    defaultValue="San Francisco, CA"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Change Password Section */}
-            <div className="bg-white rounded-xl p-8 shadow-md border border-gray-300">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">Change Password</h3>
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-base font-medium text-gray-700">Current Password</label>
-                  <input
-                    type="password"
-                    className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base"
-                    placeholder="Enter your current password"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-medium text-gray-700">New Password</label>
-                  <input
-                    type="password"
-                    className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base"
-                    placeholder="Enter your new password"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-medium text-gray-700">Confirm New Password</label>
-                  <input
-                    type="password"
-                    className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base"
-                    placeholder="Confirm your new password"
-                  />
-                </div>
-              </div>
-              <button
-                className="mt-6 text-white px-8 py-3 rounded-lg transition-colors text-base"
-                style={{ backgroundColor: '#00B878' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#00a76d')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#00B878')}
-              >
-                Update Password
-              </button>
-            </div>
-
-            {/* Danger Zone Section */}
-            <div className="bg-white rounded-xl p-8 shadow-md border border-gray-300">
-              <h3 className="text-xl font-semibold text-red-500 mb-6">Danger Zone</h3>
-              <div className="space-y-6">
-                <button className="w-full bg-red-50 text-red-500 px-8 py-3 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-3 text-base">
-                  <span>↪</span>
-                  Sign Out
-                </button>
-                <button className="w-full bg-red-50 text-red-500 px-8 py-3 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-3 text-base">
-                  <span>✖</span>
-                  Delete Account
-                </button>
-              </div>
-            </div>
-          </div>
+        {activeTab === "account" && (
+          <Account
+            userData={userData}
+            formData={formData}
+            handleInputChange={handleInputChange}
+          />
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Profile
+export default Profile;

@@ -1,358 +1,267 @@
-import { useState } from 'react'
-import { Search, Phone, Video, MoreHorizontal, Paperclip, Smile, Send } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, Users, MessageCircle, MapPin, UserPlus } from 'lucide-react';
+import endpoints from '@/services/api';
+import controller from '@/services/commonRequest';
+import type { UserData } from '@/types/profileType';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
+import type { UserState } from '@/features/userSlice';
+import { useNavigate } from 'react-router-dom';
 
-interface Message {
-  id: number;
-  sender?: string;
-  content: string;
-  time: string;
-  isMe: boolean;
-}
-
-interface Conversation {
+interface Tab {
   id: string;
-  name: string;
-  avatar: string;
-  lastMessage: string;
-  time: string;
-  unread: number;
-  online?: boolean;
-  isGroup?: boolean;
-  members?: number;
+  label: string;
+  icon: React.ReactNode;
 }
 
 const Feed = () => {
-  const [selectedChat, setSelectedChat] = useState('alex-chen')
-  const [message, setMessage] = useState('')
+  const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.user) as UserState;
+  
+  const [activeTab, setActiveTab] = useState('discover');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const conversations: Conversation[] = [
-    {
-      id: 'alex-chen',
-      name: 'Alex Chen',
-      avatar: 'AC',
-      lastMessage: "Hey! How's the project going?",
-      time: '2 min',
-      unread: 3,
-      online: true
-    },
-    {
-      id: 'design-team',
-      name: 'Design Team',
-      avatar: 'DT',
-      lastMessage: 'Meeting at 3 PM tomorrow',
-      time: '5 min',
-      unread: 0,
-      isGroup: true,
-      members: 8
-    },
-    {
-      id: 'maria-garcia',
-      name: 'Maria Garcia',
-      avatar: 'MG',
-      lastMessage: 'Thanks for the help yesterday!',
-      time: '1 hour',
-      unread: 1,
-      online: true
-    },
-    {
-      id: 'dev-squad',
-      name: 'Dev Squad',
-      avatar: 'DS',
-      lastMessage: 'New feature is ready for review',
-      time: '3 hours',
-      unread: 0,
-      isGroup: true,
-      members: 12
-    },
-    {
-      id: 'yuki-tanaka',
-      name: 'Yuki Tanaka',
-      avatar: 'YT',
-      lastMessage: "Let's catch up soon 😊",
-      time: '1 day',
-      unread: 0,
-      online: false
+
+  // Check authentication on component mount
+  useEffect(() => {
+    if (!user.isAuthenticated || !user.token) {
+      console.log("User not authenticated, redirecting to login");
+      navigate('/auth/login');
+      return;
     }
-  ]
+  }, [user.isAuthenticated, user.token, navigate]);
 
-  const chatMessages: Record<string, Message[]> = {
-    'alex-chen': [
-      {
-        id: 1,
-        sender: 'Alex Chen',
-        content: 'Hey! How are you doing?',
-        time: '10:30 AM',
-        isMe: false
-      },
-      {
-        id: 2,
-        content: "I'm doing great! Thanks for asking. How about you?",
-        time: '10:32 AM',
-        isMe: true
-      },
-      {
-        id: 3,
-        sender: 'Alex Chen',
-        content: 'Pretty good! Want to grab coffee later?',
-        time: '10:35 AM',
-        isMe: false
-      },
-      {
-        id: 4,
-        content: 'Sounds perfect! What time works for you?',
-        time: '10:36 AM',
-        isMe: true
-      },
-      {
-        id: 5,
-        sender: 'Alex Chen',
-        content: 'That sounds awesome! 🎉',
-        time: '10:37 AM',
-        isMe: false
-      }
-    ],
-    'design-team': [
-      {
-        id: 1,
-        sender: 'Design Team',
-        content: 'Meeting at 3 PM tomorrow',
-        time: '9:00 AM',
-        isMe: false
-      },
-      {
-        id: 2,
-        content: 'I will be there!',
-        time: '9:02 AM',
-        isMe: true
-      },
-      {
-        id: 3,
-        sender: 'Sarah Wilson',
-        content: 'Great! See you all there.',
-        time: '9:05 AM',
-        isMe: false
-      }
-    ],
-    'maria-garcia': [
-      {
-        id: 1,
-        sender: 'Maria Garcia',
-        content: 'Thanks for the help yesterday!',
-        time: '8:30 AM',
-        isMe: false
-      },
-      {
-        id: 2,
-        content: 'You are welcome! Happy to help.',
-        time: '8:32 AM',
-        isMe: true
-      },
-      {
-        id: 3,
-        sender: 'Maria Garcia',
-        content: 'The project looks amazing now!',
-        time: '8:35 AM',
-        isMe: false
-      }
-    ],
-    'dev-squad': [
-      {
-        id: 1,
-        sender: 'Dev Squad',
-        content: 'New feature is ready for review',
-        time: '7:00 AM',
-        isMe: false
-      },
-      {
-        id: 2,
-        content: 'Awesome! I will check it out.',
-        time: '7:02 AM',
-        isMe: true
-      }
-    ],
-    'yuki-tanaka': [
-      {
-        id: 1,
-        sender: 'Yuki Tanaka',
-        content: "Let's catch up soon 😊",
-        time: 'Yesterday',
-        isMe: false
-      },
-      {
-        id: 2,
-        content: 'Definitely! How about this weekend?',
-        time: 'Yesterday',
-        isMe: true
-      }
-    ]
-  }
-  const selectedConversation = conversations.find(conv => conv.id === selectedChat)
-  const messages = chatMessages[selectedChat] || []
+  const tabs: Tab[] = [
+    { id: 'discover', label: 'Discover', icon: <Search className="w-4 h-4" /> },
+    { id: 'trending', label: 'Trending', icon: <div className="w-4 h-4 flex items-center">📈</div> },
+    { id: 'nearby', label: 'Nearby', icon: <MapPin className="w-4 h-4" /> },
+  ];
 
-  return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
-      {/* Chat List */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-sm h-full">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Messages</h2>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search conversations..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B878] focus:border-transparent shadow-sm"
-            />
-          </div>
-        </div>
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // Only fetch if user is authenticated
+      if (!user.isAuthenticated || !user.token) {
+        console.log("User not authenticated, redirecting to login");
+        navigate('/auth/login');
+        return;
+      }
+      try {
+        setLoading(true);
+        const response = await controller.getAll(endpoints.users);
+        setUsers(response.data); 
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, [user.isAuthenticated, user.token, navigate]); 
 
-        {/* Conversations */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          {conversations.map((conversation) => (
-            <div
-              key={conversation.id}
-              onClick={() => setSelectedChat(conversation.id)}
-              className={`p-4 border-b border-gray-100 cursor-pointer transition-all duration-150 hover:bg-[#E6FAF3] ${selectedChat === conversation.id ? 'bg-[#E6FAF3] border-l-4 border-l-[#00B878] shadow' : ''}`}
-              style={{ minHeight: 80 }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow ${conversation.id === 'alex-chen' || conversation.id === 'maria-garcia' ? '' : ''}`}
-                    style={{ backgroundColor: conversation.id === 'design-team' || conversation.id === 'dev-squad' ? '#a78bfa' : '#00B878' }}>
-                    {conversation.avatar}
-                  </div>
-                  {conversation.online && (
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full" style={{ backgroundColor: '#00B878' }}></div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-gray-900 truncate">{conversation.name}</h3>
-                    <span className="text-xs text-gray-500">{conversation.time}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600 truncate">{conversation.lastMessage}</p>
-                    {conversation.unread > 0 && (
-                      <span className="ml-2 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center shadow"
-                        style={{ backgroundColor: '#00B878' }}>
-                        {conversation.unread}
-                      </span>
-                    )}
-                  </div>
-                  {conversation.isGroup && (
-                    <p className="text-xs text-gray-500">{conversation.members} members</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+  const filteredUsers = users.filter(userData =>
+    userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleConnect = (userId: string) => {
+    // Handle connection logic
+    console.log('Connecting to user:', userId);
+  };
+
+  const handleMessage = (userId: string) => {
+    // Handle messaging logic
+    console.log('Messaging user:', userId);
+  };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading users...</p>
         </div>
       </div>
+    );
+  }
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col bg-[#F8FAFB] h-full">
-        {/* Chat Header */}
-        <div className="bg-white border-b border-gray-200 p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold shadow`}
-                  style={{ backgroundColor: selectedChat === 'design-team' || selectedChat === 'dev-squad' ? '#a78bfa' : '#00B878' }}>
-                  {selectedConversation?.avatar || 'AC'}
-                </div>
-                {selectedConversation?.online && !selectedConversation?.isGroup && (
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 border-2 border-white rounded-full" style={{ backgroundColor: '#00B878' }}></div>
-                )}
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">{selectedConversation?.name || 'Alex Chen'}</h3>
-                <p className="text-sm font-medium" style={{ color: '#00B878' }}>
-                  {selectedConversation?.isGroup
-                    ? `${selectedConversation.members} members`
-                    : selectedConversation?.online
-                      ? 'Online'
-                      : 'Offline'
-                  }
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-                <Phone size={20} />
-              </button>
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-                <Video size={20} />
-              </button>
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-                <MoreHorizontal size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 min-h-0">
-          {messages.map((msg: Message) => (
-            <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-              <div className={`flex items-start gap-2 max-w-xs lg:max-w-md ${msg.isMe ? 'flex-row-reverse' : ''}`}>
-                {!msg.isMe && (
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow`}
-                    style={{ backgroundColor: selectedChat === 'design-team' || selectedChat === 'dev-squad' ? '#a78bfa' : '#00B878' }}>
-                    {selectedConversation?.avatar || 'AC'}
-                  </div>
-                )}
-                <div
-                  className={`px-4 py-2 rounded-2xl shadow ${msg.isMe ? '' : ''}`}
-                  style={msg.isMe
-                    ? { backgroundColor: '#00B878', color: '#fff', borderTopRightRadius: 8, borderBottomRightRadius: 24, borderTopLeftRadius: 24, borderBottomLeftRadius: 8 }
-                    : { backgroundColor: '#F3F4F6', color: '#222', borderTopLeftRadius: 8, borderBottomLeftRadius: 24, borderTopRightRadius: 24, borderBottomRightRadius: 8 }}
-                >
-                  <p>{msg.content}</p>
-                  <p className={`text-xs mt-1`} style={msg.isMe ? { color: '#E6FAF3' } : { color: '#6B7280' }}>
-                    {msg.time}
-                  </p>
-                </div>
-                {msg.isMe && (
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow">
-                    ME
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Message Input */}
-        <div className="bg-white border-t border-gray-200 p-4 shadow-sm">
-          <div className="flex items-center gap-2">
-            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-              <Paperclip size={20} />
-            </button>
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B878] focus:border-transparent shadow-sm"
-              />
-              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-600 hover:bg-gray-100 rounded">
-                <Smile size={16} />
-              </button>
+  return (
+    <div className="w-full flex">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="  px-8 py-8 rounded-t-2xl shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold" style={{ color: '#374151' }}>
+                Discover People
+              </h1>
+              <p className="mt-2 text-base" style={{ color: '#6B7280' }}>
+                Find and connect with other users
+              </p>
             </div>
             <button
-              className="p-2 text-white rounded-lg transition-colors shadow"
               style={{ backgroundColor: '#00B878' }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#00a76d')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#00B878')}
+              className="hover:brightness-110 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all font-medium text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-[#00B878] focus:ring-offset-2"
             >
-              <Send size={20} />
+              <Users className="w-4 h-4" style={{ color: '#fff' }} />
+              Create Group
             </button>
           </div>
+
+          {/* Tabs */}
+          <div className="flex items-center gap-4 sm:gap-8 mb-6">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
+                  ${activeTab === tab.id
+                    ? 'shadow-md scale-105 text-[#00B878]'
+
+                    : 'bg-transparent text-gray-700 hover:bg-gray-100'}
+                  "
+                style={activeTab === tab.id ? { backgroundColor: '#00B878' } : {}}
+                `}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search and Filters */}
+          <div className="flex items-center gap-4 mt-2">
+            <div className="flex-1 relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search for users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 rounded-lg text-base border border-gray-200 bg-white text-gray-700 focus:ring-2 focus:ring-green-400 focus:border-transparent focus:outline-none shadow-sm"
+              />
+            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow-sm"
+            >
+              <Filter className="w-4 h-4" />
+              Filters
+            </button>
+          </div>
+        </div>
+
+        {/* User Grid */}
+        <div className="flex-1 overflow-auto p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredUsers.map((user) => (
+              <div
+                key={user.id}
+                className="rounded-2xl p-6 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200 group"
+              >
+                {/* User Avatar and Status */}
+                <div className="flex items-start mb-4">
+                  <div className="relative">
+                    <div
+                      className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl group-hover:scale-105 transition-transform duration-200"
+                      style={{ backgroundColor: '#00B878' }}
+                    >
+                      <img className='rounded-full' src={user.profile?.avatar} alt={user.profile?.firstName} />
+                    </div>
+                    {user.isOnline && (
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full" style={{ backgroundColor: '#00B878' }}></div>
+                    )}
+                  </div>
+                </div>
+
+                {/* User Info */}
+                <div className="mb-6">
+                  <h3 className="font-bold text-lg mb-1" style={{ color: '#374151' }}>
+                    {user.profile?.firstName} {user.profile?.lastName}
+                  </h3>
+                  <p className="text-sm mb-3" style={{ color: '#6B7280' }}>
+                    {user.username}
+                  </p>
+
+                  {/* Location and Connections */}
+                  <div className="space-y-1 mb-4">
+                    <div className="flex items-center text-sm" style={{ color: '#6B7280' }}>
+                      <MapPin className="w-4 h-4 mr-2" />
+                      <span>{user.profile?.location}</span>
+                    </div>
+                    <div className="flex items-center text-sm" style={{ color: '#6B7280' }}>
+                      <Users className="w-4 h-4 mr-2" />
+                      <span>{user.connections.length} connections</span>
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  <p className="text-sm mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
+                    {user.profile?.bio}
+                  </p>
+
+                  {/* Interests */}
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {user.hobbies?.map((interest, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 text-sm rounded-full font-medium"
+                        style={{
+                          backgroundColor: '#F3F4F6',
+                          color: '#374151'
+                        }}
+                      >
+                        {interest}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleConnect(user.id)}
+                    className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white transition-all shadow group-hover:scale-105"
+                    style={{ backgroundColor: '#00B878' }}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#00a76d')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#00B878')}
+                  >
+                    <UserPlus className="w-4 h-4" style={{ color: '#fff' }} />
+                    Connect
+                  </button>
+                  <button
+                    onClick={() => handleMessage(user.id)}
+                    className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Message
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Empty State */}
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-12">
+              <Users className="w-16 h-16 mx-auto mb-4" style={{ color: '#6B7280' }} />
+              <h3 className="text-lg font-medium mb-2" style={{ color: '#374151' }}>
+                No users found
+              </h3>
+              <p style={{ color: '#6B7280' }}>
+                Try adjusting your search criteria or check back later.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Feed
+export default Feed;

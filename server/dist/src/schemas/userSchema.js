@@ -44,13 +44,27 @@ const userSchema = new mongoose.Schema({
     lastLogin: { type: Date, default: null },
     loginAttempts: { type: Number, default: 0 },
     lockUntil: { type: Date, default: null },
-    lastSeen: { type: Boolean, default: null },
+    lastSeen: { type: Date, default: null },
     isOnline: { type: Boolean, default: false },
+    status: {
+        type: String,
+        enum: ["online", "away", "busy", "offline"],
+        default: "offline",
+    },
+    socketId: { type: String, default: null },
+    profileVisibility: {
+        type: String,
+        enum: ["public", "private"],
+        default: "public",
+    },
     emailVerified: {
         type: Boolean,
         default: function () {
             return this.provider !== "local";
         },
     },
+    connectionsRequests: {
+        type: 
+    }
 }, { timestamps: true, versionKey: false });
 export default userSchema;

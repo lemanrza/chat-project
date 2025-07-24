@@ -1,18 +1,17 @@
 import mongoose from "mongoose";
 import config from "./config.js";
-const connectToDB = (app) => {
-    if (config.DB_URL) {
-        mongoose
-            .connect(config.DB_URL)
-            .then(() => {
-            console.log("🚀 mongodb connected successfully");
-            app.listen(config.PORT, () => {
-                console.log(`✅ Server running on http://localhost:${config.PORT}`);
-            });
-        })
-            .catch(() => {
-            console.warn("❌ db connection failed");
-        });
+const connectToDB = async () => {
+    if (!config.DB_URL) {
+        console.log("❌ DB_URL is not defined in environment variables");
+        process.exit(1);
+    }
+    try {
+        await mongoose.connect(config.DB_URL);
+        console.log("🚀 mongodb connected successfully");
+    }
+    catch (error) {
+        console.log("❌ mongodb connection failed", error);
+        process.exit(1);
     }
 };
 export default connectToDB;

@@ -53,9 +53,22 @@ const userSchema = new mongoose.Schema(
     loginAttempts: { type: Number, default: 0 },
     lockUntil: { type: Date, default: null },
 
-    lastSeen: { type: Boolean, default: null },
+    lastSeen: { type: Date, default: null },
 
     isOnline: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ["online", "away", "busy", "offline"],
+      default: "offline",
+    },
+
+    socketId: { type: String, default: null },
+
+    profileVisibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "public",
+    },
 
     emailVerified: {
       type: Boolean,
@@ -63,6 +76,15 @@ const userSchema = new mongoose.Schema(
         return this.provider !== "local";
       },
     },
+    connectionsRequests: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+      ],
+      default: [],
+    }
   },
   { timestamps: true, versionKey: false }
 );

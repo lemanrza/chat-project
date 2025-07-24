@@ -5,9 +5,13 @@ import {
   generateRefreshToken,
   verifyAccessToken,
 } from "../utils/jwt.js";
-import { sendUnlockAccountEmail } from "../utils/sendMail.js";
+import {
+  sendForgotPasswordEmail,
+  sendUnlockAccountEmail,
+} from "../utils/sendMail.js";
 import config from "../config/config.js";
 
+const CLIENT_URL = config.CLIENT_URL;
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 10 * 60 * 1000;
 
@@ -20,8 +24,58 @@ export const getAll = async () =>
 export const getOne = async (id: any) =>
   await UserModel.findById(id).select("-password");
 
+export const getOneWithPassword = async (id: any) =>
+  await UserModel.findById(id);
+
 export const getByEmail = async (email: string) =>
   await UserModel.find({ email: email }).select("-password");
+
+export const deleteUser = async (id: string) => {
+  try {
+    const deletedUser = await UserModel.findByIdAndDelete(id);
+    if (!deletedUser) {
+      return null;
+    }
+    return {
+      success: true,
+      message: "User deleted successfully",
+    };
+  } catch (error: unknown) {
+    let message = "Internal server error";
+    if (error && typeof error === "object" && "message" in error) {
+      message = (error as any).message;
+    }
+    return {
+      success: false,
+      message,
+    };
+  }
+};
+
+export const updateUser = async (id: string, payload: any) => {
+  try {
+    const user = await UserModel.findByIdAndUpdate(id, payload, { new: true });
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+    return {
+      success: true,
+      data: user,
+    };
+  } catch (error: unknown) {
+    let message = "Internal server error";
+    if (error && typeof error === "object" && "message" in error) {
+      message = (error as any).message;
+    }
+    return {
+      success: false,
+      message,
+    };
+  }
+};
 
 export const register = async (payload: any) => {
   try {
@@ -40,8 +94,12 @@ export const register = async (payload: any) => {
       success: true,
       data: await UserModel.create(payload),
     };
-  } catch (error: any) {
-    return error.message || "Internal server error";
+  } catch (error: unknown) {
+    let message = "Internal server error";
+    if (error && typeof error === "object" && "message" in error) {
+      message = (error as any).message;
+    }
+    return message;
   }
 };
 
@@ -111,7 +169,7 @@ export const login = async (credentials: {
         {
           id: user.id,
           email: user.email,
-          fullName: user.displayName,
+          fullName: user.profile.displayName,
         },
         "6h"
       );
@@ -142,13 +200,13 @@ export const login = async (credentials: {
   const accessToken = generateAccessToken({
     email: user.email,
     id: user.id,
-    fullName: user.displayName,
+    fullName: user.profile.displayName,
   });
 
   const refreshToken = generateRefreshToken({
     email: user.email,
     id: user.id,
-    fullName: user.displayName,
+    fullName: user.profile.displayName,
   });
 
   return {
@@ -181,4 +239,33 @@ export const unlockAcc = async (token: any) => {
   } else {
     throw new Error("Invalid or expired token");
   }
+};
+
+export const forgotPassword = async (email: string) => {
+  const user = await UserModel.findOne({ email });
+  if (!user) {
+    throw new Error("email does not exist!");
+  } else {
+    const token = generateAccessToken(
+      {
+        id: user._id,
+        email: user.email,
+      },
+      "30m"
+    );
+    const resetPasswordLink = `${CLIENT_URL}/auth/reset-password/${token}`;
+    sendForgotPasswordEmail(email, resetPasswordLink);
+  }
+};
+
+export const resetPass = async (newPassword: string, email: string) => {
+  const user = await UserModel.findOne({ email: email });
+  if (!user) throw new Error("user not found!");
+
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+  console.log("inside service: ", newPassword);
+  user.password = hashedPassword;
+  await user.save();
+  return user;
 };

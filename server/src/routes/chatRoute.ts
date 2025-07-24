@@ -1,36 +1,33 @@
 import express from "express";
-import Chat from "../models/chatModel.js";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
+import {
+  createNewChat,
+  getCurrentUserChats,
+  getChatDetails,
+  updateChatDetails,
+  addChatMember,
+  removeChatMember,
+  archiveChatById,
+  deleteChatById,
+  searchUserChats,
+} from "../controllers/chatController.js";
 
 const chatRouter = express.Router();
 
-chatRouter.post("/", async (req, res) => {
-  const { userId1, userId2 } = req.body;
+// All chat routes require authentication
+chatRouter.use(authenticateToken);
 
-  try {
-    let chat = await Chat.findOne({
-      members: { $all: [userId1, userId2], $size: 2 },
-    });
+// Chat management routes
+chatRouter.post("/", createNewChat); // Create new chat
+chatRouter.get("/", getCurrentUserChats); // Get user's chats
+chatRouter.get("/search", searchUserChats); // Search chats
+chatRouter.get("/:chatId", getChatDetails); // Get specific chat
+chatRouter.put("/:chatId", updateChatDetails); // Update chat details
+chatRouter.delete("/:chatId", deleteChatById); // Delete chat
+chatRouter.patch("/:chatId/archive", archiveChatById); // Archive chat
 
-    if (!chat) {
-      chat = await Chat.create({ members: [userId1, userId2] });
-    }
-
-    res.status(200).json(chat);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create/get chat" });
-  }
-});
-
-chatRouter.get("/:userId", async (req, res) => {
-  try {
-    const chats = await Chat.find({ members: req.params.userId })
-      .populate("members", "username profile.displayName avatar")
-      .populate("lastMessage");
-
-    res.status(200).json(chats);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch chats" });
-  }
-});
+// Member management routes
+chatRouter.post("/:chatId/members", addChatMember); // Add member
+chatRouter.delete("/:chatId/members/:memberId", removeChatMember); // Remove member
 
 export default chatRouter;

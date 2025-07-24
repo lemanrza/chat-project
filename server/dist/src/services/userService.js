@@ -1,8 +1,9 @@
 import bcrypt from "bcrypt";
 import UserModel from "../models/userModel.js";
 import { generateAccessToken, generateRefreshToken, verifyAccessToken, } from "../utils/jwt.js";
-import { sendUnlockAccountEmail } from "../utils/sendMail.js";
+import { sendForgotPasswordEmail, sendUnlockAccountEmail, } from "../utils/sendMail.js";
 import config from "../config/config.js";
+const CLIENT_URL = config.CLIENT_URL;
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 10 * 60 * 1000;
 export const getAll = async () => await UserModel.find().select("-password").populate({
@@ -10,7 +11,55 @@ export const getAll = async () => await UserModel.find().select("-password").pop
     select: "-password",
 });
 export const getOne = async (id) => await UserModel.findById(id).select("-password");
+export const getOneWithPassword = async (id) => await UserModel.findById(id);
 export const getByEmail = async (email) => await UserModel.find({ email: email }).select("-password");
+export const deleteUser = async (id) => {
+    try {
+        const deletedUser = await UserModel.findByIdAndDelete(id);
+        if (!deletedUser) {
+            return null;
+        }
+        return {
+            success: true,
+            message: "User deleted successfully",
+        };
+    }
+    catch (error) {
+        let message = "Internal server error";
+        if (error && typeof error === "object" && "message" in error) {
+            message = error.message;
+        }
+        return {
+            success: false,
+            message,
+        };
+    }
+};
+export const updateUser = async (id, payload) => {
+    try {
+        const user = await UserModel.findByIdAndUpdate(id, payload, { new: true });
+        if (!user) {
+            return {
+                success: false,
+                message: "User not found",
+            };
+        }
+        return {
+            success: true,
+            data: user,
+        };
+    }
+    catch (error) {
+        let message = "Internal server error";
+        if (error && typeof error === "object" && "message" in error) {
+            message = error.message;
+        }
+        return {
+            success: false,
+            message,
+        };
+    }
+};
 export const register = async (payload) => {
     try {
         const { email, username } = payload;
@@ -29,7 +78,11 @@ export const register = async (payload) => {
         };
     }
     catch (error) {
-        return error.message || "Internal server error";
+        let message = "Internal server error";
+        if (error && typeof error === "object" && "message" in error) {
+            message = error.message;
+        }
+        return message;
     }
 };
 export const verifyEmail = async (token) => {
@@ -85,7 +138,7 @@ export const login = async (credentials) => {
             const token = generateAccessToken({
                 id: user.id,
                 email: user.email,
-                fullName: user.displayName,
+                fullName: user.profile.displayName,
             }, "6h");
             const unlockAccountLink = `${config.SERVER_URL}/auth/unlock-account?token=${token}`;
             sendUnlockAccountEmail(user.email, user.profile.displayName, user.lockUntil, unlockAccountLink);
@@ -101,12 +154,12 @@ export const login = async (credentials) => {
     const accessToken = generateAccessToken({
         email: user.email,
         id: user.id,
-        fullName: user.displayName,
+        fullName: user.profile.displayName,
     });
     const refreshToken = generateRefreshToken({
         email: user.email,
         id: user.id,
-        fullName: user.displayName,
+        fullName: user.profile.displayName,
     });
     return {
         message: "User login successfully!",
@@ -136,4 +189,29 @@ export const unlockAcc = async (token) => {
     else {
         throw new Error("Invalid or expired token");
     }
+};
+export const forgotPassword = async (email) => {
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+        throw new Error("email does not exist!");
+    }
+    else {
+        const token = generateAccessToken({
+            id: user._id,
+            email: user.email,
+        }, "30m");
+        const resetPasswordLink = `${CLIENT_URL}/auth/reset-password/${token}`;
+        sendForgotPasswordEmail(email, resetPasswordLink);
+    }
+};
+export const resetPass = async (newPassword, email) => {
+    const user = await UserModel.findOne({ email: email });
+    if (!user)
+        throw new Error("user not found!");
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    console.log("inside service: ", newPassword);
+    user.password = hashedPassword;
+    await user.save();
+    return user;
 };

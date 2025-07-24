@@ -1,7 +1,15 @@
+import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import userRouter from "./routes/userRoute.js";
+import chatRouter from "./routes/chatRoute.js";
+import messageRouter from "./routes/messageRoute.js";
 import { errorHandler } from "./errors/errorHandler.js";
+import githubRouter from "./routes/githubRoute.js";
+import googleRouter from "./routes/googleRoute.js";
+import passport from "passport";
+import "./config/passport.js";
+import "./config/passportLogin.js";
 
 const app = express();
 
@@ -14,9 +22,15 @@ const limiter = rateLimit({
 // Global middlewares
 app.use(express.json());
 app.use(limiter);
+app.use(cors());
 
 //routes
+app.use(passport.initialize());
+app.use("/auth", googleRouter);
+app.use("/auth", githubRouter);
 app.use("/auth", userRouter);
+app.use("/api/chats", chatRouter);
+app.use("/api/messages", messageRouter);
 
 app.use(errorHandler);
 

@@ -5,9 +5,10 @@ const profileSchema = Joi.object({
   lastName: Joi.string().min(2).required(),
   displayName: Joi.string().optional(),
   avatar: Joi.string().uri().optional(),
+  public_id: Joi.string().optional(),
   bio: Joi.string().optional(),
-  location: Joi.string().required(),
-  dateOfBirth: Joi.date().iso().required(),
+  location: Joi.string().optional(),
+  dateOfBirth: Joi.date().iso().optional(),
 });
 
 const userValidationSchema = Joi.object({
@@ -18,7 +19,8 @@ const userValidationSchema = Joi.object({
     then: Joi.required(),
     otherwise: Joi.optional(),
   }),
-
+  connections: Joi.array().optional(),
+  hobbies: Joi.array().optional(),
   provider: Joi.string().valid("local", "google", "github").default("local"),
   providerId: Joi.string().allow(null, "").optional(),
 
