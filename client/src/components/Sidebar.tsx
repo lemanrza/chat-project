@@ -65,7 +65,6 @@ const Sidebar = () => {
     await controller.update(`${endpoints.users}/me`, "", {
       isOnline: false,
     });
-
     localStorage.removeItem("token");
 
     enqueueSnackbar("Logged out successfully", {

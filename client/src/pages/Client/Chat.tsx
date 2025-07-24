@@ -3,7 +3,10 @@ import { Search, Filter, Users, MessageCircle, MapPin, UserPlus } from 'lucide-r
 import endpoints from '@/services/api';
 import controller from '@/services/commonRequest';
 import type { UserData } from '@/types/profileType';
-
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
+import type { UserState } from '@/features/userSlice';
+import { useNavigate } from 'react-router-dom';
 
 interface Tab {
   id: string;
@@ -11,12 +14,25 @@ interface Tab {
   icon: React.ReactNode;
 }
 
-
 const Chat = () => {
+  const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.user) as UserState;
+  
   const [activeTab, setActiveTab] = useState('discover');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [users, setUsers] = useState<UserData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+
+  // Check authentication on component mount
+  useEffect(() => {
+    if (!user.isAuthenticated || !user.token) {
+      console.log("User not authenticated, redirecting to login");
+      navigate('/auth/login');
+      return;
+    }
+  }, [user.isAuthenticated, user.token, navigate]);
 
   const tabs: Tab[] = [
     { id: 'discover', label: 'Discover', icon: <Search className="w-4 h-4" /> },
@@ -26,23 +42,29 @@ const Chat = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
+      // Only fetch if user is authenticated
+      if (!user.isAuthenticated || !user.token) {
+        console.log("User not authenticated, redirecting to login");
+        navigate('/auth/login');
+        return;
+      }
       try {
+        setLoading(true);
         const response = await controller.getAll(endpoints.users);
-        console.log('Users fetched:', response.data); 
-        setUsers(response.data); // This assumes the response.data contains the users array
+        setUsers(response.data); 
       } catch (error) {
         console.error('Error fetching users:', error);
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchUsers();
-  }, []); // Empty dependency array to only run once when the component mounts
+  }, [user.isAuthenticated, user.token, navigate]); 
 
-  console.log(users)
-  const filteredUsers = users.filter(user =>
-    user.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter(userData =>
+    userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleConnect = (userId: string) => {
@@ -54,6 +76,18 @@ const Chat = () => {
     // Handle messaging logic
     console.log('Messaging user:', userId);
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading users...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex">
