@@ -22,6 +22,7 @@ const Profile = () => {
     location: "",
     bio: "",
     hobbies: [],
+    connections: [],
     connectionsRequests: [],
     profileVisibility: "public"
   });
@@ -59,7 +60,8 @@ const Profile = () => {
           email: response.data.email || "",
           location: response.data.profile?.location || "",
           bio: response.data.profile?.bio || "",
-          hobbies: response.data.profile?.hobbies || [],
+          hobbies: response.data.hobbies || [],
+          connections: response.data.connections || [],
           connectionsRequests: response.data.connectionsRequests || [],
           profileVisibility: response.data.profileVisibility || "public"
         });
