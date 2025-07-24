@@ -2,6 +2,7 @@ import endpoints from "@/services/api";
 import controller from "@/services/commonRequest";
 import { enqueueSnackbar } from "notistack";
 import Swal from "sweetalert2";
+import { getUserIdFromToken } from "@/utils/auth";
 
 const DangerZone = () => {
   const handleDeleteAccount = async () => {
@@ -40,8 +41,13 @@ const DangerZone = () => {
 
     if (result.isConfirmed) {
       try {
+        const userId = getUserIdFromToken();
+        if (!userId) {
+          throw new Error("User ID not found");
+        }
+
         const response = await fetch(
-          `${import.meta.env.VITE_SERVER_URL}/auth/me`,
+          `${import.meta.env.VITE_SERVER_URL}/auth/me/${userId}`,
           {
             method: "DELETE",
             headers: {
@@ -91,9 +97,12 @@ const DangerZone = () => {
   };
 
   const handleLogout = async () => {
-    await controller.update(`${endpoints.users}/me`, "", {
-      isOnline: false,
-    });
+    const userId = getUserIdFromToken();
+    if (userId) {
+      await controller.update(`${endpoints.users}/me`, userId, {
+        isOnline: false,
+      });
+    }
 
     localStorage.removeItem("token");
     enqueueSnackbar("Logged out successfully", {

@@ -24,6 +24,12 @@ export const getAll = async () =>
 export const getOne = async (id: any) =>
   await UserModel.findById(id).select("-password");
 
+export const getOneWithConnections = async (id: any) =>
+  await UserModel.findById(id).select("-password").populate({
+    path: "connections",
+    select: "-password",
+  });
+
 export const getOneWithPassword = async (id: any) =>
   await UserModel.findById(id);
 

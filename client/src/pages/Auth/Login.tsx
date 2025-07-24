@@ -84,12 +84,16 @@ const Login = () => {
           if (response.token) {
             localStorage.setItem("token", response.token);
 
-            navigate("/app/feed");
-          }
+            // Get user ID from the newly stored token
+            const userId = JSON.parse(atob(response.token.split(".")[1])).id;
 
-          await controller.update(`${endpoints.users}/me`, "", {
-            isOnline: true,
-          });
+            navigate("/app/feed");
+
+            // Update user online status
+            await controller.update(`${endpoints.users}/me`, userId, {
+              isOnline: true,
+            });
+          }
         }
 
         actions.resetForm();

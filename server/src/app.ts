@@ -28,6 +28,7 @@ app.use(cors());
 app.use(passport.initialize());
 app.use("/auth", googleRouter);
 app.use("/auth", githubRouter);
+
 app.use("/auth", userRouter);
 app.use("/api/chats", chatRouter);
 app.use("/api/messages", messageRouter);

@@ -1,4 +1,4 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../types/userType.js";
 import {
   createMessage,
@@ -47,12 +47,12 @@ export const sendMessage = async (
 };
 
 export const getMessages = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.query.userId as string;
     const { chatId } = req.params;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 50;
@@ -61,6 +61,13 @@ export const getMessages = async (
       return res.status(400).json({
         success: false,
         message: "Chat ID is required",
+      });
+    }
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId query parameter is required",
       });
     }
 
@@ -207,12 +214,12 @@ export const reactToMessage = async (
 };
 
 export const searchChatMessages = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.query.userId as string;
     const { chatId } = req.params;
     const { q: query } = req.query;
     const page = parseInt(req.query.page as string) || 1;
@@ -222,6 +229,13 @@ export const searchChatMessages = async (
       return res.status(400).json({
         success: false,
         message: "Chat ID and search query are required",
+      });
+    }
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId query parameter is required",
       });
     }
 
@@ -245,12 +259,20 @@ export const searchChatMessages = async (
 };
 
 export const getUnreadCount = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.query.userId as string;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId query parameter is required",
+      });
+    }
+
     const response = await getUnreadMessageCount(userId);
 
     if (!response.success) {

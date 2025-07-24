@@ -4,6 +4,7 @@ import { LogOut, MessageCircle, Settings, User, Users, X } from "lucide-react";
 import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getUserIdFromToken } from "@/utils/auth";
 
 const Sidebar = () => {
   interface SidebarItemProps {
@@ -62,9 +63,19 @@ const Sidebar = () => {
     );
   };
   const handleLogout = async () => {
+<<<<<<< HEAD
+    const userId = getUserIdFromToken();
+    if (userId) {
+      await controller.update(`${endpoints.users}/me`, userId, {
+        isOnline: false,
+      });
+    }
+
+=======
     await controller.update(`${endpoints.users}/me`, "", {
       isOnline: false,
     });
+>>>>>>> origin
     localStorage.removeItem("token");
 
     enqueueSnackbar("Logged out successfully", {
