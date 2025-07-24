@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   MapPin,
   Heart,
@@ -77,6 +78,7 @@ interface RegisterFormValues {
 }
 
 function Register() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [location, setLocation] = useState("");
   const [selectedLocation, setSelectedLocation] =
@@ -114,7 +116,7 @@ function Register() {
     validationSchema: registerValidation,
     onSubmit: async (values, action) => {
       if (!captchaValue) {
-        enqueueSnackbar("Please complete the CAPTCHA verification", {
+        enqueueSnackbar(t("register_captcha"), {
           variant: "error",
           autoHideDuration: 2000,
         });
@@ -122,7 +124,7 @@ function Register() {
       }
 
       if (!dateOfBirth) {
-        enqueueSnackbar("Please select your date of birth", {
+        enqueueSnackbar(t("register_select_dob"), {
           variant: "error",
           autoHideDuration: 2000,
         });
@@ -130,7 +132,7 @@ function Register() {
       }
 
       if (!selectedLocation) {
-        enqueueSnackbar("Please select your location", {
+        enqueueSnackbar(t("register_select_location"), {
           variant: "error",
           autoHideDuration: 2000,
         });
@@ -139,7 +141,7 @@ function Register() {
 
       if (!values.hobbies || values.hobbies.length < 3) {
         console.log("Hobbies validation failed");
-        enqueueSnackbar("Please select at least 3 hobbies", {
+        enqueueSnackbar(t("register_select_hobbies"), {
           variant: "error",
           autoHideDuration: 2000,
         });
@@ -164,7 +166,7 @@ function Register() {
       try {
         await controller.post(`${endpoints.users}/register`, registrationData);
 
-        enqueueSnackbar("User registered successfully!", {
+        enqueueSnackbar(t("register_success"), {
           autoHideDuration: 2000,
           anchorOrigin: {
             vertical: "bottom",
@@ -178,7 +180,7 @@ function Register() {
       } catch (error: any) {
         console.error("Registration failed", error);
         enqueueSnackbar(
-          error.response?.data?.message || "Registration failed",
+          error.response?.data?.message || t("register_failed"),
           {
             autoHideDuration: 2000,
             anchorOrigin: {
@@ -276,10 +278,10 @@ function Register() {
         {/* Header with title */}
         <div className="flex flex-col items-center mb-2">
           <h1 className="text-4xl font-extrabold text-[#222] mb-2 tracking-tight flex items-center gap-2">
-            <span>Chat</span> <span className="text-[#00B878]">Wave</span>
+            {t("register_title")}
           </h1>
           <p className="text-gray-500 text-base">
-            Create your account and join our unique platform.
+            {t("register_subtitle")}
           </p>
         </div>
 
@@ -293,8 +295,8 @@ function Register() {
               <>
                 <StepHeader
                   icon={MapPin}
-                  title="Where are you from?"
-                  subtitle="Help us connect you with people nearby"
+                  title={t("register_step1_title")}
+                  subtitle={t("register_step1_subtitle")}
                 />
                 <LocationSearch
                   value={location}
@@ -318,10 +320,10 @@ function Register() {
                     <Heart className="w-8 h-8 text-[#00B878]" />
                   </div>
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    What are your interests?
+                    {t("register_step2_title")}
                   </h2>
                   <p className="text-gray-500">
-                    Select 3-5 interests to help us personalize your experience
+                    {t("register_step2_subtitle")}
                   </p>
                 </div>
 
@@ -352,8 +354,7 @@ function Register() {
 
                 <div className="text-center mb-6">
                   <p className="text-sm text-gray-500">
-                    Selected: {registerFormik.values.hobbies.length}/5 (minimum
-                    3 required)
+                    {t("register_step2_selected", { count: registerFormik.values.hobbies.length })}
                   </p>
                 </div>
 
@@ -364,7 +365,7 @@ function Register() {
                     className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <ChevronLeft className="w-5 h-5" />
-                    Back
+                    {t("register_step2_back")}
                   </button>
                   <button
                     type="button"
@@ -376,7 +377,7 @@ function Register() {
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }`}
                   >
-                    Continue
+                    {t("register_step2_continue")}
                     <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
@@ -387,19 +388,19 @@ function Register() {
               <>
                 <StepHeader
                   icon={Calendar}
-                  title="When's your birthday?"
-                  subtitle="Your age will help us connect you with the right people"
+                  title={t("register_step3_title")}
+                  subtitle={t("register_step3_subtitle")}
                 />
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select your birthday
+                      {t("register_step3_label")}
                     </label>
                     <div className="relative">
                       <input
                         type="text"
                         onClick={toggleCalendar}
-                        placeholder="Click to select a date"
+                        placeholder={t("register_step3_label")}
                         className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-[#00B878] focus:ring-opacity-20 focus:border-[#00B878] transition-all bg-gray-50"
                         defaultValue={
                           dateOfBirth ? dateOfBirth.toLocaleDateString() : ""
@@ -419,20 +420,16 @@ function Register() {
                         <div className="flex items-center gap-2 text-green-700">
                           <span className="text-lg">🎂</span>
                           <span className="font-semibold">
-                            Age:{" "}
-                            {new Date().getFullYear() -
-                              dateOfBirth.getFullYear()}{" "}
-                            years old
+                            {t("register_step3_age", { age: new Date().getFullYear() - dateOfBirth.getFullYear() })}
                           </span>
                         </div>
                         <p className="text-sm text-green-600 mt-1">
-                          Born on{" "}
-                          {dateOfBirth.toLocaleDateString("en-US", {
+                          {t("register_step3_born", { date: dateOfBirth.toLocaleDateString("en-US", {
                             weekday: "long",
                             year: "numeric",
                             month: "long",
                             day: "numeric",
-                          })}
+                          }) })}
                         </p>
                       </div>
                     )}
@@ -453,10 +450,10 @@ function Register() {
                     <CircleUser className="w-8 h-8 text-[#00B878]" />
                   </div>
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    Create your account
+                    {t("register_step4_title")}
                   </h2>
                   <p className="text-gray-500">
-                    Almost there! Just a few more details
+                    {t("register_step4_subtitle")}
                   </p>
                 </div>
 
@@ -472,7 +469,7 @@ function Register() {
                   >
                     <FcGoogle className="text-xl" />
                     <span className="text-sm text-semibold text-gray-700">
-                      Continue with Google
+                      {t("register_google")}
                     </span>
                   </button>
                   <button
@@ -490,18 +487,18 @@ function Register() {
                       className="w-5 h-5"
                     />
                     <span className="text-sm text-gray-700 text-semibold">
-                      Continue with GitHub
+                      {t("register_github")}
                     </span>
                   </button>
                   <div className="text-center">
                     <span className="text-gray-400 text-sm">
-                      or create with email
+                      {t("register_or_email")}
                     </span>
                   </div>
 
                   <div>
                     <label className="text-sm font-medium text-[#222]">
-                      First Name
+                      {t("register_first_name")}
                     </label>
                     <input
                       type="text"
@@ -509,7 +506,7 @@ function Register() {
                       onChange={registerFormik.handleChange}
                       onBlur={registerFormik.handleBlur}
                       name="firstName"
-                      placeholder="Enter your first name"
+                      placeholder={t("register_first_name_placeholder")}
                       className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
                     />
                     {registerFormik.errors.firstName &&
@@ -521,7 +518,7 @@ function Register() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-[#222]">
-                      Last Name
+                      {t("register_last_name")}
                     </label>
                     <input
                       type="text"
@@ -529,7 +526,7 @@ function Register() {
                       onChange={registerFormik.handleChange}
                       onBlur={registerFormik.handleBlur}
                       name="lastName"
-                      placeholder="Enter your last name"
+                      placeholder={t("register_last_name_placeholder")}
                       className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
                     />
                     {registerFormik.errors.lastName &&
@@ -541,7 +538,7 @@ function Register() {
                   </div>
                   <div className="col-span-2">
                     <label className="text-sm font-medium text-[#222]">
-                      Username
+                      {t("register_username")}
                     </label>
                     <input
                       type="text"
@@ -549,7 +546,7 @@ function Register() {
                       onChange={registerFormik.handleChange}
                       onBlur={registerFormik.handleBlur}
                       name="username"
-                      placeholder="Choose a username"
+                      placeholder={t("register_username_placeholder")}
                       className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
                     />
                     {registerFormik.errors.username &&
@@ -561,7 +558,7 @@ function Register() {
                   </div>
                   <div className="col-span-2">
                     <label className="text-sm font-medium text-[#222]">
-                      Email
+                      {t("register_email")}
                     </label>
                     <input
                       type="email"
@@ -569,7 +566,7 @@ function Register() {
                       onChange={registerFormik.handleChange}
                       onBlur={registerFormik.handleBlur}
                       name="email"
-                      placeholder="Enter your email"
+                      placeholder={t("register_email_placeholder")}
                       className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
                     />
                     {registerFormik.errors.email &&
@@ -581,7 +578,7 @@ function Register() {
                   </div>
                   <div className="relative">
                     <label className="text-sm font-medium text-[#222]">
-                      Password
+                      {t("register_password")}
                     </label>
                     <input
                       type={showPassword ? "text" : "password"}
@@ -589,7 +586,7 @@ function Register() {
                       onChange={registerFormik.handleChange}
                       onBlur={registerFormik.handleBlur}
                       name="password"
-                      placeholder="Enter password"
+                      placeholder={t("register_password_placeholder")}
                       className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b] pr-10"
                     />
                     <button
@@ -644,7 +641,7 @@ function Register() {
                   </div>
                   <div className="relative">
                     <label className="text-sm font-medium text-[#222]">
-                      Confirm Password
+                      {t("register_confirm_password")}
                     </label>
                     <input
                       type={showConfirm ? "text" : "password"}
@@ -652,7 +649,7 @@ function Register() {
                       onChange={registerFormik.handleChange}
                       onBlur={registerFormik.handleBlur}
                       name="confirmPassword"
-                      placeholder="Confirm password"
+                      placeholder={t("register_confirm_password_placeholder")}
                       className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b] pr-10"
                     />
                     <button
@@ -726,8 +723,8 @@ function Register() {
                       className="flex-1 bg-[#00B878] hover:bg-[#00a76d] text-white py-4 rounded-xl font-semibold transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {registerFormik.isSubmitting
-                        ? "Creating Account..."
-                        : "Create Account"}
+                        ? t("register_creating")
+                        : t("register_create")}
                     </button>
                   </div>
                 </div>
@@ -737,12 +734,12 @@ function Register() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              <span className="mr-1">Already have an account?</span>
+              <span className="mr-1">{t("register_already_account")}</span>
               <a
                 href="/auth/login"
                 className="text-[#00B878] font-semibold hover:text-[#00a76d] transition-colors"
               >
-                Sign In
+                {t("register_signin")}
               </a>
             </p>
           </div>
