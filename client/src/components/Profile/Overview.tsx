@@ -103,25 +103,6 @@ const Overview = () => {
               </button>
             </div>
           </div>
-
-          {/* Another Sample Connection Request */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-full bg-gray-200"></div>
-              <div>
-                <div className="font-medium text-gray-900">Jane Smith</div>
-                <div className="text-sm text-gray-500">Sent you a connection request</div>
-              </div>
-            </div>
-            <div className="space-x-2">
-              <button className="bg-[#00B878] text-white px-4 py-2 rounded-lg hover:bg-[#00a76d] focus:outline-none transition duration-200">
-                Accept
-              </button>
-              <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 focus:outline-none transition duration-200">
-                Reject
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
