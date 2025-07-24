@@ -66,6 +66,7 @@ async function post(endpoint: string, data: any, headers?: object) {
       },
       variant: "error",
     });
+    throw error; // Re-throw the error so the component can handle it
   }
 }
 

@@ -9,6 +9,10 @@ import {
 import { enqueueSnackbar } from "notistack";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
+<<<<<<< HEAD
+import type { UserData, FormData } from "./types";
+import { getUserIdFromToken } from "@/utils/auth";
+=======
 import axios from "axios";
 import type { UserData, FormData } from "@/types/profileType";
 
@@ -17,6 +21,7 @@ interface LocationData {
   city: string;
   country: string;
 }
+>>>>>>> origin
 
 interface PersonalInformationsProps {
   formData: FormData;
@@ -143,7 +148,12 @@ const PersonalInformations = ({
         hobbies: selectedHobbies,
       };
 
-      await controller.update(`${endpoints.users}/me`, "", updateData);
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
+      await controller.update(`${endpoints.users}/me`, userId, updateData);
       enqueueSnackbar("Profile updated successfully!", {
         variant: "success",
         autoHideDuration: 2000,

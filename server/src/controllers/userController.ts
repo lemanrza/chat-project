@@ -4,6 +4,7 @@ import {
   getByEmail,
   getOne,
   getOneWithPassword,
+  getOneWithConnections,
   login,
   register,
   resetPass,
@@ -11,6 +12,7 @@ import {
   forgotPassword as forgotPasswordService,
   deleteUser as deleteUserService,
   updateUser,
+  verifyEmail,
 } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
@@ -191,23 +193,12 @@ export const registerUser = async (
   next: NextFunction
 ) => {
   try {
-    const {
-      password,
-      firstName,
-      lastName,
-      location,
-      dateOfBirth,
-      hobbies,
-      ...otherData
-    } = req.body;
+    const { password, profile, hobbies, ...otherData } = req.body;
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const profileData: any = {
-      firstName,
-      lastName,
-      location,
-      dateOfBirth,
+      ...profile,
     };
 
     if (req.file) {
@@ -236,7 +227,7 @@ export const registerUser = async (
       {
         id: response.data._id,
         email: req.body.email,
-        fullName: req.body.profile.displayName,
+        fullName: `${req.body.profile.firstName} ${req.body.profile.lastName}`,
       },
       "6h"
     );
@@ -260,10 +251,25 @@ export const registerUser = async (
   }
 };
 
-export const loginUser = async (
+export const verifyUserEmail = async (
   req: Request,
   res: Response,
+  next: NextFunction
 ) => {
+  try {
+    const { token } = req.query;
+
+    const response = await verifyEmail(token);
+
+    res.redirect(
+      `${config.CLIENT_URL}/auth/email-verified?message=${response?.message}`
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const loginUser = async (req: Request, res: Response) => {
   try {
     const credentials = {
       email: req.body.email,
@@ -321,12 +327,19 @@ export const logout = (_: Request, res: Response) => {
 };
 
 export const updateCurrentUser = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
+
     const user: any = await getOne(userId);
 
     if (!user) {
@@ -410,12 +423,18 @@ export const updateCurrentUser = async (
 };
 
 export const uploadProfileImage = async (
-  req: AuthenticatedMulterRequest,
+  req: MulterRequest,
   res: Response,
   _: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
 
     if (!req.file) {
       console.log("No file provided");
@@ -496,12 +515,19 @@ export const uploadProfileImage = async (
 };
 
 export const deleteProfileImage = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
+
     console.log("Delete image request from user:", userId);
 
     const currentUser = await getOne(userId);
@@ -563,13 +589,20 @@ export const deleteProfileImage = async (
 };
 
 export const getCurrentUser = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
-    const user = await getOne(userId);
+    const userId = req.params.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
+
+    const user = await getOneWithConnections(userId);
 
     if (!user) {
       return res.status(404).json({
@@ -587,12 +620,19 @@ export const getCurrentUser = async (
 };
 
 export const deleteCurrentUser = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
+
     console.log("Delete account request from user:", userId);
 
     const currentUser = await getOne(userId);
@@ -658,12 +698,19 @@ export const deleteCurrentUser = async (
 };
 
 export const changePassword = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
+
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {

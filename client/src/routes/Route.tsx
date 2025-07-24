@@ -11,6 +11,7 @@ import Profile from "../pages/Client/Profile";
 import AuthLayout from "../layout/AuthLayout";
 import Welcome from "@/pages/Client/Welcome";
 import AuthCallback from "@/pages/Auth/AuthCallback";
+import EmailVerify from "@/pages/Auth/EmailVerify";
 
 const ROUTES: RouteObject[] = [
   // client layout
@@ -49,8 +50,8 @@ const ROUTES: RouteObject[] = [
         element: <Register />,
       },
       {
-        path: "success/:token",
-        element: <AuthCallback />,
+        path: "email-verified",
+        element: <EmailVerify />,
       },
       {
         path: "forgot-password",
@@ -59,6 +60,10 @@ const ROUTES: RouteObject[] = [
       {
         path: "reset-password/:token",
         element: <ResetPassword />,
+      },
+      {
+        path: "success/:token",
+        element: <AuthCallback />,
       },
     ],
   },

@@ -1,5 +1,4 @@
 import express from "express";
-import { authenticateToken } from "../middlewares/authMiddleware.js";
 import {
   createNewChat,
   getCurrentUserChats,
@@ -14,20 +13,15 @@ import {
 
 const chatRouter = express.Router();
 
-// All chat routes require authentication
-chatRouter.use(authenticateToken);
+chatRouter.post("/", createNewChat);
+chatRouter.get("/", getCurrentUserChats);
+chatRouter.get("/search", searchUserChats);
+chatRouter.get("/:chatId", getChatDetails);
+chatRouter.put("/:chatId", updateChatDetails);
+chatRouter.delete("/:chatId", deleteChatById);
+chatRouter.patch("/:chatId/archive", archiveChatById);
 
-// Chat management routes
-chatRouter.post("/", createNewChat); // Create new chat
-chatRouter.get("/", getCurrentUserChats); // Get user's chats
-chatRouter.get("/search", searchUserChats); // Search chats
-chatRouter.get("/:chatId", getChatDetails); // Get specific chat
-chatRouter.put("/:chatId", updateChatDetails); // Update chat details
-chatRouter.delete("/:chatId", deleteChatById); // Delete chat
-chatRouter.patch("/:chatId/archive", archiveChatById); // Archive chat
-
-// Member management routes
-chatRouter.post("/:chatId/members", addChatMember); // Add member
-chatRouter.delete("/:chatId/members/:memberId", removeChatMember); // Remove member
+chatRouter.post("/:chatId/members", addChatMember);
+chatRouter.delete("/:chatId/members/:memberId", removeChatMember);
 
 export default chatRouter;
