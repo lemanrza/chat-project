@@ -25,7 +25,6 @@ const Feed = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
 
-
   const tabs: Tab[] = [
     { id: 'discover', label: 'Discover', icon: <Search className="w-4 h-4" /> },
     { id: 'trending', label: 'Trending', icon: <div className="w-4 h-4 flex items-center">📈</div> },
@@ -34,11 +33,6 @@ const Feed = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      if ( !user.token) {
-        console.log("User not authenticated, redirecting to login");
-        navigate('/auth/login');
-        return;
-      }
       try {
         setLoading(true);
         const response = await controller.getAll(endpoints.users);
@@ -50,7 +44,7 @@ const Feed = () => {
       }
     };
     fetchUsers();
-  }, [user.isAuthenticated, user.token, navigate]);
+  }, [ navigate]);
 
   const filteredUsers = users.filter(userData =>
     userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
