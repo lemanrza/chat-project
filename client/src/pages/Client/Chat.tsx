@@ -1,17 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Users, MessageCircle, MapPin, UserPlus, User } from 'lucide-react';
+import { Search, Filter, Users, MessageCircle, MapPin, UserPlus } from 'lucide-react';
+import endpoints from '@/services/api';
+import controller from '@/services/commonRequest';
+import type { UserData } from '@/types/profileType';
 
-interface User {
-  id: string;
-  name: string;
-  username: string;
-  location: string;
-  mutualConnections: number;
-  bio: string;
-  interests: string[];
-  avatar: string;
-  isOnline: boolean;
-}
 
 interface Tab {
   id: string;
@@ -24,7 +16,7 @@ const Chat = () => {
   const [activeTab, setActiveTab] = useState('discover');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
 
   const tabs: Tab[] = [
     { id: 'discover', label: 'Discover', icon: <Search className="w-4 h-4" /> },
@@ -32,83 +24,25 @@ const Chat = () => {
     { id: 'nearby', label: 'Nearby', icon: <MapPin className="w-4 h-4" /> },
   ];
 
-  // Mock data - replace with actual API calls
   useEffect(() => {
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        name: 'Alex Chen',
-        username: '@alexc',
-        location: 'San Francisco',
-        mutualConnections: 5,
-        bio: "Hey there! I'm using ChatWave to connect with friends.",
-        interests: ['Tech', 'Travel', 'Coffee'],
-        avatar: 'A',
-        isOnline: true,
-      },
-      {
-        id: '2',
-        name: 'Maria Garcia',
-        username: '@mariag',
-        location: 'Barcelona',
-        mutualConnections: 12,
-        bio: "Hey there! I'm using ChatWave to connect with friends.",
-        interests: ['Art', 'Music', 'Design'],
-        avatar: 'M',
-        isOnline: false,
-      },
-      {
-        id: '3',
-        name: 'Yuki Tanaka',
-        username: '@yukitanaka',
-        location: 'Tokyo',
-        mutualConnections: 3,
-        bio: "Hey there! I'm using ChatWave to connect with friends.",
-        interests: ['Gaming', 'Anime', 'Tech'],
-        avatar: 'Y',
-        isOnline: true,
-      },
-      {
-        id: '4',
-        name: 'James Wilson',
-        username: '@jameswilson',
-        location: 'London',
-        mutualConnections: 8,
-        bio: "Hey there! I'm using ChatWave to connect with friends.",
-        interests: ['Business', 'Sports', 'Music'],
-        avatar: 'J',
-        isOnline: false,
-      },
-      {
-        id: '5',
-        name: 'Priya Sharma',
-        username: '@priyasharma',
-        location: 'Mumbai',
-        mutualConnections: 15,
-        bio: "Hey there! I'm using ChatWave to connect with friends.",
-        interests: ['Photography', 'Travel', 'Food'],
-        avatar: 'P',
-        isOnline: true,
-      },
-      {
-        id: '6',
-        name: 'Lucas Silva',
-        username: '@lucassilva',
-        location: 'São Paulo',
-        mutualConnections: 7,
-        bio: "Hey there! I'm using ChatWave to connect with friends.",
-        interests: ['Football', 'Music', 'Tech'],
-        avatar: 'L',
-        isOnline: false,
-      },
-    ];
-    setUsers(mockUsers);
-  }, []);
+    const fetchUsers = async () => {
+      try {
+        const response = await controller.getAll(endpoints.users);
+        console.log('Users fetched:', response.data); 
+        setUsers(response.data); // This assumes the response.data contains the users array
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
 
+    fetchUsers();
+  }, []); // Empty dependency array to only run once when the component mounts
+
+  console.log(users)
   const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.location.toLowerCase().includes(searchQuery.toLowerCase())
+    user.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleConnect = (userId: string) => {
@@ -122,7 +56,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="w-full flex bg-gray-50">
+    <div className="w-full flex">
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
@@ -199,11 +133,11 @@ const Chat = () => {
                 {/* User Avatar and Status */}
                 <div className="flex items-start mb-4">
                   <div className="relative">
-                    <div 
-                      className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl group-hover:scale-105 transition-transform duration-200"
+                    <div
+                      className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl group-hover:scale-105 transition-transform duration-200"
                       style={{ backgroundColor: '#00B878' }}
                     >
-                      {user.avatar}
+                      <img className='rounded-full' src={user.profile?.avatar} alt={user.profile?.firstName} />
                     </div>
                     {user.isOnline && (
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full" style={{ backgroundColor: '#00B878' }}></div>
@@ -214,32 +148,32 @@ const Chat = () => {
                 {/* User Info */}
                 <div className="mb-6">
                   <h3 className="font-bold text-lg mb-1" style={{ color: '#374151' }}>
-                    {user.name}
+                    {user.profile?.firstName} {user.profile?.lastName}
                   </h3>
                   <p className="text-sm mb-3" style={{ color: '#6B7280' }}>
                     {user.username}
                   </p>
-                  
+
                   {/* Location and Connections */}
                   <div className="space-y-1 mb-4">
                     <div className="flex items-center text-sm" style={{ color: '#6B7280' }}>
                       <MapPin className="w-4 h-4 mr-2" />
-                      <span>{user.location}</span>
+                      <span>{user.profile?.location}</span>
                     </div>
                     <div className="flex items-center text-sm" style={{ color: '#6B7280' }}>
                       <Users className="w-4 h-4 mr-2" />
-                      <span>{user.mutualConnections} mutual connections</span>
+                      <span>{user.connections.length} connections</span>
                     </div>
                   </div>
 
                   {/* Bio */}
                   <p className="text-sm mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
-                    {user.bio}
+                    {user.profile?.bio}
                   </p>
 
                   {/* Interests */}
                   <div className="flex flex-wrap gap-2 mb-6">
-                    {user.interests.map((interest, index) => (
+                    {user.hobbies?.map((interest, index) => (
                       <span
                         key={index}
                         className="px-3 py-1 text-sm rounded-full font-medium"

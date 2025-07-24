@@ -1,13 +1,20 @@
 export interface UserData {
+  id: string;
   username?: string;
   email?: string;
   provider?: "local" | "google" | "github";
   emailVerified?: boolean;
+  hobbies?: string[];
+  connections: string[];
+  lastLogin?: Date;
+  lastSeen?: Date;
+  isOnline?: boolean;
   profile?: {
     firstName?: string;
     lastName?: string;
     location?: string;
     bio?: string;
+    displayName?: string;
     avatar?: string;
   };
 }

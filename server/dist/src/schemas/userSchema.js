@@ -63,5 +63,8 @@ const userSchema = new mongoose.Schema({
             return this.provider !== "local";
         },
     },
+    connectionsRequests: {
+        type: 
+    }
 }, { timestamps: true, versionKey: false });
 export default userSchema;

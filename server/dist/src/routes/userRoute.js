@@ -14,5 +14,5 @@ userRouter.post("/me/change-password", authenticateToken, changePassword);
 userRouter.post("/me/upload-image", authenticateToken, upload.single("avatar"), uploadProfileImage);
 userRouter.delete("/me/delete-image", authenticateToken, deleteProfileImage);
 userRouter.get("/:id", getUserById);
-userRouter.delete("/:id", authenticateToken, deleteUser);
+userRouter.delete("/:id", deleteUser);
 export default userRouter;

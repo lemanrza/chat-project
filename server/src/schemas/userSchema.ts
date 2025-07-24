@@ -76,6 +76,15 @@ const userSchema = new mongoose.Schema(
         return this.provider !== "local";
       },
     },
+    connectionsRequests: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+      ],
+      default: [],
+    }
   },
   { timestamps: true, versionKey: false }
 );
