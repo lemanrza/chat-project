@@ -25,14 +25,6 @@ const Feed = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Check authentication on component mount
-  useEffect(() => {
-    if (!user.isAuthenticated || !user.token) {
-      console.log("User not authenticated, redirecting to login");
-      navigate('/auth/login');
-      return;
-    }
-  }, [user.isAuthenticated, user.token, navigate]);
 
   const tabs: Tab[] = [
     { id: 'discover', label: 'Discover', icon: <Search className="w-4 h-4" /> },
@@ -42,7 +34,7 @@ const Feed = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      if (!user.isAuthenticated || !user.token) {
+      if ( !user.token) {
         console.log("User not authenticated, redirecting to login");
         navigate('/auth/login');
         return;

@@ -16,7 +16,7 @@ export interface Message {
   isMe?: boolean;
 }
 
-export interface Chat {
+export interface ChatType {
   _id: string;
   name?: string;
   isGroup: boolean;

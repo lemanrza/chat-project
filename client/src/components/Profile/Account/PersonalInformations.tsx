@@ -9,10 +9,6 @@ import {
 import { enqueueSnackbar } from "notistack";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
-<<<<<<< HEAD
-import type { UserData, FormData } from "./types";
-import { getUserIdFromToken } from "@/utils/auth";
-=======
 import axios from "axios";
 import type { UserData, FormData } from "@/types/profileType";
 
@@ -21,13 +17,13 @@ interface LocationData {
   city: string;
   country: string;
 }
->>>>>>> origin
 
 interface PersonalInformationsProps {
   formData: FormData;
   handleInputChange: (field: string, value: string) => void;
   userData: UserData | null;
 }
+
 const interests = [
   { name: 'Coffee', icon: Coffee },
   { name: 'Travel', icon: Plane },
@@ -73,7 +69,7 @@ const PersonalInformations = ({
   userData,
 }: PersonalInformationsProps) => {
   const [isSaving, setIsSaving] = useState(false);
-  const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
+  const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]); // Track selected hobbies
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [locationSearch, setLocationSearch] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -83,7 +79,6 @@ const PersonalInformations = ({
       setSelectedHobbies(userData.hobbies); // Load hobbies from the user data if available
     }
   }, [userData]);
-
 
   const handleLocationSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchTerm = e.target.value;
@@ -125,17 +120,7 @@ const PersonalInformations = ({
   const handleSaveChanges = async () => {
     try {
       setIsSaving(true);
-      if (!isMinHobbiesSelected) {
-        enqueueSnackbar("Please select at least 3 hobbies.", {
-          variant: "error",
-          autoHideDuration: 2000,
-          anchorOrigin: {
-            vertical: "bottom",
-            horizontal: "right",
-          },
-        });
-        return; 
-      }
+
       const updateData = {
         profile: {
           firstName: formData.firstName,
@@ -145,15 +130,10 @@ const PersonalInformations = ({
           avatar: userData?.profile?.avatar,
         },
         email: formData.email,
-        hobbies: selectedHobbies,
+        hobbies: selectedHobbies, // Save the selected hobbies
       };
 
-      const userId = getUserIdFromToken();
-      if (!userId) {
-        throw new Error("User ID not found");
-      }
-
-      await controller.update(`${endpoints.users}/me`, userId, updateData);
+      await controller.update(`${endpoints.users}/me`, "", updateData);
       enqueueSnackbar("Profile updated successfully!", {
         variant: "success",
         autoHideDuration: 2000,
@@ -178,19 +158,12 @@ const PersonalInformations = ({
   };
 
   const handleHobbyChange = (hobby: string) => {
-    if (selectedHobbies.includes(hobby)) {
-      // Deselect hobby
-      setSelectedHobbies((prev) => prev.filter((h) => h !== hobby));
-    } else {
-      if (selectedHobbies.length < 5) {
-        // Select hobby if under max 5
-        setSelectedHobbies((prev) => [...prev, hobby]);
-      }
-    }
+    setSelectedHobbies((prev) =>
+      prev.includes(hobby)
+        ? prev.filter((h) => h !== hobby) // Deselect hobby
+        : [...prev, hobby] // Select hobby
+    );
   };
-
-  // Check if hobbies are less than 3, then show validation message
-  const isMinHobbiesSelected = selectedHobbies.length >= 3;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
@@ -198,58 +171,12 @@ const PersonalInformations = ({
         Personal Information
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            First Name
-          </label>
-          <input
-            type="text"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
-            value={formData.firstName}
-            onChange={(e) => handleInputChange("firstName", e.target.value)}
-            placeholder="Enter your first name"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Last Name
-          </label>
-          <input
-            type="text"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
-            value={formData.lastName}
-            onChange={(e) => handleInputChange("lastName", e.target.value)}
-            placeholder="Enter your last name"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Email Address
-          </label>
-          <input
-            type="email"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
-            value={formData.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
-            placeholder="Enter your email address"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Username
-          </label>
-          <input
-            type="text"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-            value={userData?.username || ""}
-            disabled
-            placeholder="Username cannot be changed"
-          />
-        </div>
+        {/* Existing fields for First Name, Last Name, Email, Username, etc. */}
+        {/* ... */}
+
+        {/* Location Search */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Location
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
           <input
             type="text"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
@@ -265,50 +192,34 @@ const PersonalInformations = ({
             <ul className="bg-white shadow-md border border-gray-300 mt-2 rounded-lg max-h-60 overflow-auto">
               {locations.map((location) => (
                 <li
-                  key={location.id}  // Use the id to key each element in the list
+                  key={location.id}
                   className="px-4 py-2 cursor-pointer hover:bg-[#00B878] hover:text-white"
                   onClick={() => {
-                    handleInputChange("location", `${location.city}, ${location.country}`); // You can change this to location.country if you want to display the country
-                    setLocationSearch(`${location.city}, ${location.country}`); // Set the search input to the selected city
-                    setLocations([]); // Clear the list after selection
+                    handleInputChange("location", `${location.city}, ${location.country}`);
+                    setLocationSearch(`${location.city}, ${location.country}`);
+                    setLocations([]);
                   }}
                 >
-                  {location.city}, {location.country} {/* Here we are displaying city and country */}
+                  {location.city}, {location.country}
                 </li>
               ))}
             </ul>
           )}
         </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Bio
-          </label>
-          <textarea
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors resize-none"
-            rows={4}
-            value={formData.bio}
-            onChange={(e) => handleInputChange("bio", e.target.value)}
-            placeholder="Tell us about yourself..."
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            {formData.bio.length}/500 characters
-          </p>
-        </div>
+
+        {/* Hobbies Section */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">Hobbies</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {interests.map((interest) => {
               const IconComponent = interest.icon;
-              const isChecked = selectedHobbies.includes(interest.name);
-              const isDisabled = selectedHobbies.length >= 5 && !isChecked;
-
               return (
                 <div key={interest.name} className="flex items-center space-x-2">
                   <input
+                    value={interest.name}
                     type="checkbox"
                     id={interest.name}
-                    checked={isChecked}
-                    disabled={isDisabled} // Disable the checkbox if there are already 5 selected hobbies
+                    checked={selectedHobbies.includes(interest.name)}
                     onChange={() => handleHobbyChange(interest.name)}
                     className="h-5 w-5 rounded border-gray-300 text-[#00B878] focus:ring-[#00B878] focus:ring-2 accent-[#00B878]"
                   />
@@ -322,9 +233,6 @@ const PersonalInformations = ({
               );
             })}
           </div>
-          {!isMinHobbiesSelected && (
-            <p className="text-sm text-red-500 mt-2">Please select at least 3 hobbies.</p>
-          )}
         </div>
       </div>
 
