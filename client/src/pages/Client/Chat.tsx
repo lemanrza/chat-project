@@ -15,13 +15,13 @@ import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { getUserIdFromToken } from "@/utils/auth";
 import { enqueueSnackbar } from "notistack";
-import type { ChatType, Connection, Message } from "@/types/chatType";
+import type { ChatData, Connection, Message } from "@/types/chatType";
 
 const Chat = () => {
   const [selectedChat, setSelectedChat] = useState<string>("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [chats, setChats] = useState<ChatType[]>([]);
+  const [chats, setChats] = useState<ChatData[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [typing, setTyping] = useState<{ [key: string]: boolean }>({});
