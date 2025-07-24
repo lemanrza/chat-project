@@ -11,6 +11,8 @@ const Sidebar = () => {
     label: string;
     active: boolean;
     collapsed: boolean;
+    className?: string;
+    onClick?: () => void;
   }
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
@@ -22,17 +24,27 @@ const Sidebar = () => {
     active,
     collapsed,
     to,
+    className = "",
+    onClick,
   }) => {
+    const handleClick = () => {
+      if (onClick) {
+        onClick();
+      } else if (to) {
+        navigate(to);
+      }
+    };
+
     return (
       <button
         className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
           collapsed ? "justify-center" : ""
-        }`}
+        } ${className}`}
         style={{
           backgroundColor: active ? "#00B878" : "transparent",
           color: active ? "#FFFFFF" : "#374151",
         }}
-        onClick={() => to && navigate(to)}
+        onClick={handleClick}
         onMouseEnter={(e) => {
           if (!active) {
             e.currentTarget.style.backgroundColor = "#E5E7EB";
@@ -141,9 +153,16 @@ const Sidebar = () => {
             label="Settings"
             active={false}
             collapsed={sidebarCollapsed}
+            className="cursor-pointer"
+            onClick={() => {
+              navigate("/app/profile");
+            }}
           />
           <button
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+            onClick={() => {
+              handleLogout();
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer ${
               sidebarCollapsed ? "justify-center" : ""
             }`}
             style={{ color: "#EF4444" }}
@@ -156,14 +175,7 @@ const Sidebar = () => {
           >
             <LogOut className="w-5 h-5" />
             {!sidebarCollapsed && (
-              <div
-                className="font-medium text-sm"
-                onClick={() => {
-                  handleLogout();
-                }}
-              >
-                Logout
-              </div>
+              <div className="font-medium text-sm">Logout</div>
             )}
           </button>
         </div>

@@ -9,7 +9,7 @@ const authenticateSocket = async (socket, next) => {
         if (!token) {
             return next(new Error("Authentication error"));
         }
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET_KEY || "secret");
         const user = await User.findById(decoded.id);
         if (!user) {
             return next(new Error("User not found"));
