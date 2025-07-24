@@ -20,6 +20,7 @@ const Profile = () => {
     email: "",
     location: "",
     bio: "",
+    hobbies: []
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +36,7 @@ const Profile = () => {
           email: response.data.email || "",
           location: response.data.profile?.location || "",
           bio: response.data.profile?.bio || "",
+          hobbies: response.data.profile?.hobbies || []
         });
       } catch (error: any) {
         console.error("Error fetching user data:", error);

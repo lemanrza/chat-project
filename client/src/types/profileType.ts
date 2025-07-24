@@ -25,6 +25,7 @@ export interface FormData {
   email: string;
   location: string;
   bio: string;
+  hobbies: string[];
 }
 
 export interface AccountProps {
