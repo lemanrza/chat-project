@@ -3,7 +3,6 @@ import { CheckCircleIcon } from "lucide-react";
 
 const EmailVerify = () => {
   const [searchParams] = useSearchParams();
-
   const message = searchParams.get("message");
 
   return (

@@ -4,6 +4,7 @@ import {
   getByEmail,
   getOne,
   getOneWithPassword,
+  getOneWithConnections,
   login,
   register,
   resetPass,
@@ -601,7 +602,7 @@ export const getCurrentUser = async (
       });
     }
 
-    const user = await getOne(userId);
+    const user = await getOneWithConnections(userId);
 
     if (!user) {
       return res.status(404).json({

@@ -7,53 +7,15 @@ import {
   Paperclip,
   Smile,
   Send,
+  Plus,
+  Users,
 } from "lucide-react";
 import socket from "@/socket/socket";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { getUserIdFromToken } from "@/utils/auth";
 import { enqueueSnackbar } from "notistack";
-
-interface Message {
-  _id: string;
-  content: string;
-  sender: {
-    _id: string;
-    username: string;
-    profile: {
-      firstName: string;
-      lastName: string;
-      avatar?: string;
-    };
-  };
-  chat: string;
-  createdAt: string;
-  updatedAt: string;
-  isMe?: boolean;
-}
-
-interface Chat {
-  _id: string;
-  name?: string;
-  isGroup: boolean;
-  members: Array<{
-    _id: string;
-    username: string;
-    profile: {
-      firstName: string;
-      lastName: string;
-      avatar?: string;
-    };
-  }>;
-  lastMessage?: {
-    content: string;
-    createdAt: string;
-    sender: string;
-  };
-  unreadCount?: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { Chat, Connection, Message } from "@/types/chatType";
 
 const Chat = () => {
   const [selectedChat, setSelectedChat] = useState<string>("");
@@ -63,8 +25,9 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [typing, setTyping] = useState<{ [key: string]: boolean }>({});
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [showConnectionsModal, setShowConnectionsModal] = useState(false);
 
-  // Initialize user and load chats
   useEffect(() => {
     initializeUser();
     setupSocketListeners();
@@ -79,7 +42,7 @@ const Chat = () => {
       const userId = getUserIdFromToken();
       if (userId) {
         setCurrentUserId(userId);
-        await loadUserChats(userId);
+        await Promise.all([loadUserChats(userId), loadUserConnections(userId)]);
       } else {
         enqueueSnackbar("Please login to view chats", {
           variant: "error",
@@ -91,7 +54,6 @@ const Chat = () => {
     }
   };
 
-  // Load user's chats from API
   const loadUserChats = async (userId: string) => {
     try {
       setLoading(true);
@@ -101,7 +63,6 @@ const Chat = () => {
 
       if (response.success && response.data) {
         setChats(response.data);
-        // Select first chat if available
         if (response.data.length > 0) {
           setSelectedChat(response.data[0]._id);
         }
@@ -117,11 +78,53 @@ const Chat = () => {
     }
   };
 
-  // Load messages for selected chat
+  const loadUserConnections = async (userId: string) => {
+    try {
+      // Get current user data with populated connections using the /me/:id endpoint
+      const response = await controller.getAll(
+        `${endpoints.users}/me/${userId}`
+      );
+
+      if (response.success && response.data && response.data.connections) {
+        setConnections(response.data.connections);
+      }
+    } catch (error) {
+      console.error("Error loading connections:", error);
+    }
+  };
+  const createDirectChatWithConnection = async (connectionId: string) => {
+    try {
+      const response = await controller.post(
+        `${endpoints.chats}?userId=${currentUserId}`,
+        {
+          type: "direct",
+          members: [connectionId],
+        }
+      );
+
+      if (response.success && response.data) {
+        // Refresh chat list to show the new chat
+        await loadUserChats(currentUserId);
+        // Select the new chat
+        setSelectedChat(response.data._id);
+        setShowConnectionsModal(false);
+        enqueueSnackbar("Chat created successfully!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Error creating chat:", error);
+      enqueueSnackbar("Failed to create chat", {
+        variant: "error",
+        autoHideDuration: 3000,
+      });
+    }
+  };
+
   useEffect(() => {
     if (selectedChat && currentUserId) {
       loadChatMessages(selectedChat);
-      // Join the selected chat room via Socket.io
       socket.emit("join:chats", [selectedChat]);
     }
   }, [selectedChat, currentUserId]);
@@ -148,20 +151,15 @@ const Chat = () => {
     }
   };
 
-  // Socket.io event listeners
   const setupSocketListeners = () => {
-    // Listen for new messages
     socket.on("message:new", handleNewMessage);
 
-    // Listen for typing indicators
     socket.on("message:typing", handleTyping);
     socket.on("message:stopTyping", handleStopTyping);
 
-    // Listen for user status changes
     socket.on("user:online", handleUserOnline);
     socket.on("user:offline", handleUserOffline);
 
-    // Handle socket errors
     socket.on("error", handleSocketError);
   };
 
@@ -174,7 +172,6 @@ const Chat = () => {
     socket.off("error", handleSocketError);
   };
 
-  // Socket event handlers
   const handleNewMessage = (newMessage: Message) => {
     const messageWithFlag = {
       ...newMessage,
@@ -183,7 +180,6 @@ const Chat = () => {
 
     setMessages((prev) => [...prev, messageWithFlag]);
 
-    // Update last message in chat list
     setChats((prevChats) =>
       prevChats.map((chat) =>
         chat._id === newMessage.chat
@@ -218,12 +214,10 @@ const Chat = () => {
 
   const handleUserOnline = (data: { userId: string; username: string }) => {
     console.log(`${data.username} came online`);
-    // Update user online status in chat list if needed
   };
 
   const handleUserOffline = (data: { userId: string; username: string }) => {
     console.log(`${data.username} went offline`);
-    // Update user offline status in chat list if needed
   };
 
   const handleSocketError = (error: any) => {
@@ -234,36 +228,31 @@ const Chat = () => {
     });
   };
 
-  // Send message via Socket.io and API
   const sendMessage = async () => {
     if (!message.trim() || !selectedChat || !currentUserId) return;
 
     const messageContent = message.trim();
-    setMessage(""); // Clear input immediately for better UX
+    setMessage("");
 
     try {
-      // Create message data for API
       const messageData = {
         content: messageContent,
         chat: selectedChat,
         sender: currentUserId,
       };
 
-      // Send to API first for persistence
       const response = await controller.post(
         `${endpoints.messages}?userId=${currentUserId}`,
         messageData
       );
 
       if (response.success && response.data) {
-        // Send via Socket.io for real-time updates
         socket.emit("message:send", {
           chatId: selectedChat,
           content: messageContent,
           type: "text",
         });
 
-        // Add message to local state immediately
         const newMessage: Message = {
           _id: response.data._id || Date.now().toString(),
           content: messageContent,
@@ -283,7 +272,6 @@ const Chat = () => {
 
         setMessages((prev) => [...prev, newMessage]);
 
-        // Update last message in chat list
         setChats((prevChats) =>
           prevChats.map((chat) =>
             chat._id === selectedChat
@@ -326,14 +314,11 @@ const Chat = () => {
     }
   };
 
-  // Handle input changes with typing indicators
   const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessage(e.target.value);
 
-    // Throttled typing indicator
     if (e.target.value.trim()) {
       emitTyping();
-      // Auto stop typing after 2 seconds of no typing
       setTimeout(() => {
         emitStopTyping();
       }, 2000);
@@ -342,7 +327,6 @@ const Chat = () => {
     }
   };
 
-  // Handle Enter key press
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -350,7 +334,6 @@ const Chat = () => {
     }
   };
 
-  // Get chat display info
   const getSelectedChatInfo = () => {
     const chat = chats.find((c) => c._id === selectedChat);
     if (!chat) return null;
@@ -363,7 +346,6 @@ const Chat = () => {
         isOnline: false,
       };
     } else {
-      // For direct chats, show the other person's info
       const otherMember = chat.members.find((m) => m._id !== currentUserId);
       if (otherMember) {
         return {
@@ -371,7 +353,7 @@ const Chat = () => {
           avatar:
             otherMember.profile.avatar ||
             `${otherMember.profile.firstName[0]}${otherMember.profile.lastName[0]}`,
-          status: "Online", // You can implement real online status later
+          status: "Online",
           isOnline: true,
         };
       }
@@ -379,7 +361,6 @@ const Chat = () => {
     return null;
   };
 
-  // Format time functions
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], {
@@ -403,7 +384,6 @@ const Chat = () => {
     return date.toLocaleDateString();
   };
 
-  // Check if someone is typing
   const isTyping = Object.values(typing).some(Boolean);
   const selectedChatInfo = getSelectedChatInfo();
 
@@ -424,7 +404,17 @@ const Chat = () => {
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-sm h-full">
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Messages</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Messages</h2>
+            <button
+              onClick={() => setShowConnectionsModal(true)}
+              className="p-2 text-white rounded-lg transition-colors shadow hover:bg-[#00a76d]"
+              style={{ backgroundColor: "#00B878" }}
+              title="Start new chat with connections"
+            >
+              <Plus size={20} />
+            </button>
+          </div>
           <div className="relative">
             <Search
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -442,8 +432,18 @@ const Chat = () => {
         <div className="flex-1 overflow-y-auto min-h-0">
           {chats.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
-              <p>No chats available</p>
-              <p className="text-sm mt-2">Start a new conversation!</p>
+              <Send size={48} className="mx-auto mb-4 text-gray-300" />
+              <p className="text-lg font-medium mb-2">No chats available</p>
+              <p className="text-sm mb-4">
+                Start conversations with your connections!
+              </p>
+              <button
+                onClick={() => setShowConnectionsModal(true)}
+                className="px-4 py-2 text-white rounded-lg transition-colors shadow hover:bg-[#00a76d]"
+                style={{ backgroundColor: "#00B878" }}
+              >
+                View Connections
+              </button>
             </div>
           ) : (
             chats.map((chat) => {
@@ -708,6 +708,105 @@ const Chat = () => {
           </div>
         )}
       </div>
+
+      {/* Connections Modal */}
+      {showConnectionsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Start New Chat
+                </h3>
+                <button
+                  onClick={() => setShowConnectionsModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-xl"
+                >
+                  ×
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
+                Choose from your connections to start a conversation
+              </p>
+            </div>
+
+            <div className="overflow-y-auto max-h-96">
+              {connections.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <Users size={48} className="mx-auto mb-4 text-gray-300" />
+                  <p className="text-lg font-medium mb-2">No connections yet</p>
+                  <p className="text-sm">
+                    Connect with other users to start chatting with them!
+                  </p>
+                </div>
+              ) : (
+                connections.map((connection) => {
+                  // Check if chat already exists with this connection
+                  const existingChat = chats.find(
+                    (chat) =>
+                      !chat.isGroup &&
+                      chat.members.some(
+                        (member) => member._id === connection._id
+                      )
+                  );
+
+                  return (
+                    <div
+                      key={connection._id}
+                      onClick={() => {
+                        if (existingChat) {
+                          setSelectedChat(existingChat._id);
+                          setShowConnectionsModal(false);
+                        } else {
+                          createDirectChatWithConnection(connection._id);
+                        }
+                      }}
+                      className="p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow"
+                          style={{ backgroundColor: "#00B878" }}
+                        >
+                          {connection.profile.firstName[0]}
+                          {connection.profile.lastName[0]}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">
+                            {connection.profile.firstName}{" "}
+                            {connection.profile.lastName}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            @{connection.username}
+                          </p>
+                          {existingChat ? (
+                            <p className="text-xs text-green-600 mt-1">
+                              Chat exists - click to open
+                            </p>
+                          ) : (
+                            <p className="text-xs text-blue-600 mt-1">
+                              Click to start chat
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="p-4 border-t border-gray-200 bg-gray-50">
+              <button
+                onClick={() => setShowConnectionsModal(false)}
+                className="w-full px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
