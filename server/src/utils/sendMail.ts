@@ -183,21 +183,23 @@ export const sendVerificationEmail = async (
             &copy; ${new Date().getFullYear()} ChatWave. All rights reserved.
         </div>
     </div>
-</div>`
+</div>`,
     });
   } catch (error) {
     console.error("Error sending email:", error);
   }
 };
 
-export
-  const sendForgotPasswordEmail = async (toEmail: string, resetPasswordLink: string) => {
-    try {
-      await transporter.sendMail({
-        from: `"ChatWave" <${ process.env.GMAIL_USER }> `,
-        to: toEmail,
-        subject: "Reset Your ChatWave Account Password",
-        html: ` < div style = "font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 40px;" >
+export const sendForgotPasswordEmail = async (
+  toEmail: string,
+  resetPasswordLink: string
+) => {
+  try {
+    await transporter.sendMail({
+      from: `"ChatWave" <${process.env.GMAIL_USER}> `,
+      to: toEmail,
+      subject: "Reset Your ChatWave Account Password",
+      html: ` < div style = "font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 40px;" >
     <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" >
     <div style="background-color: #1e90ff; padding: 20px; color: white; text-align: center;" >
     <h2 style="margin: 0;" > Reset Your Password </h2>
@@ -223,12 +225,12 @@ export
             </p>
               </div>
               < div style = "background-color: #f4f4f4; padding: 20px; text-align: center; font-size: 12px; color: #999;" >
-            & copy; ${ new Date().getFullYear() } Bazaar.All rights reserved.
+            & copy; ${new Date().getFullYear()} Bazaar.All rights reserved.
           </div>
       </div>
       </div>`,
-  });
-} catch (error) {
-  console.error("Error sending forgot password email:", error);
-}
-  };
+    });
+  } catch (error) {
+    console.error("Error sending forgot password email:", error);
+  }
+};

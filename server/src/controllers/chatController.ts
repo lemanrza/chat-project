@@ -1,4 +1,4 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../types/userType.js";
 import {
   createChat,
@@ -63,12 +63,20 @@ export const createNewChat = async (
 };
 
 export const getCurrentUserChats = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.query.userId as string;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId query parameter is required",
+      });
+    }
+
     const response = await getUserChats(userId);
 
     if (!response.success) {
@@ -82,18 +90,25 @@ export const getCurrentUserChats = async (
 };
 
 export const getChatDetails = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.query.userId as string;
     const { chatId } = req.params;
 
     if (!chatId) {
       return res.status(400).json({
         success: false,
         message: "Chat ID is required",
+      });
+    }
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId query parameter is required",
       });
     }
 
@@ -252,13 +267,20 @@ export const deleteChatById = async (
 };
 
 export const searchUserChats = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.query.userId as string;
     const { q: query } = req.query;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId query parameter is required",
+      });
+    }
 
     if (!query || typeof query !== "string") {
       return res.status(400).json({

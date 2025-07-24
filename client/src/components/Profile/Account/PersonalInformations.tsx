@@ -3,6 +3,7 @@ import { enqueueSnackbar } from "notistack";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import type { UserData, FormData } from "./types";
+import { getUserIdFromToken } from "@/utils/auth";
 
 interface PersonalInformationsProps {
   formData: FormData;
@@ -32,7 +33,12 @@ const PersonalInformations = ({
         email: formData.email,
       };
 
-      await controller.update(`${endpoints.users}/me`, "", updateData);
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
+      await controller.update(`${endpoints.users}/me`, userId, updateData);
       enqueueSnackbar("Profile updated successfully!", {
         variant: "success",
         autoHideDuration: 2000,

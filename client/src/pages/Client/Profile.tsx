@@ -7,6 +7,7 @@ import Privacy from "@/components/Profile/Privacy";
 import Overview from "@/components/Profile/Overview";
 import Navigation from "@/components/Profile/Navigation";
 import Settings from "@/components/Profile/Settings";
+import { getUserIdFromToken, isTokenExpired } from "@/utils/auth";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -26,7 +27,27 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await controller.getOne(`${endpoints.users}/me`);
+        // Check if token is expired first
+        if (isTokenExpired()) {
+          localStorage.removeItem("token");
+          window.location.href = "/auth/login";
+          return;
+        }
+
+        // Get user ID from token
+        const userId = getUserIdFromToken();
+        if (!userId) {
+          console.log("No user ID found in token, redirecting to login...");
+          localStorage.removeItem("token");
+          window.location.href = "/auth/login";
+          return;
+        }
+
+        // Use the new endpoint format: /auth/me/:userId
+        const response = await controller.getOne(
+          `${endpoints.users}/me`,
+          userId
+        );
         setUserData(response.data);
 
         setFormData({
@@ -100,8 +121,14 @@ const Profile = () => {
       const uploadFormData = new FormData();
       uploadFormData.append("avatar", file);
 
+      // Get user ID from token for the API call
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/me/upload-image`,
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/${userId}/upload-image`,
         {
           method: "POST",
           headers: {
@@ -168,8 +195,14 @@ const Profile = () => {
     try {
       setIsUploadingImage(true);
 
+      // Get user ID from token for the API call
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/me/delete-image`,
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/${userId}/delete-image`,
         {
           method: "DELETE",
           headers: {
