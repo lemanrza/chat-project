@@ -17,7 +17,7 @@ const authenticateSocket = async (socket: any, next: any) => {
 
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET || "secret"
+      process.env.JWT_ACCESS_SECRET_KEY || "secret"
     ) as any;
     const user = await User.findById(decoded.id);
     if (!user) {
