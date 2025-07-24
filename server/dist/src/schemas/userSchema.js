@@ -63,6 +63,9 @@ const userSchema = new mongoose.Schema({
             return this.provider !== "local";
         },
     },
+    connectionsRequests: {
+        type: 
+    }
 }, { timestamps: true, versionKey: false });
 userSchema.index({ isOnline: 1, lastSeen: -1 });
 userSchema.index({ socketId: 1 });
