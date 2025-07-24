@@ -6,8 +6,8 @@ export interface UserData {
   emailVerified?: boolean;
   hobbies?: string[];
   connections: string[];
-  lastLogin?: Date;
-  lastSeen?: Date;
+  lastLogin?: string | null;
+  lastSeen?: string | null;
   isOnline?: boolean;
   profile?: {
     firstName?: string;

@@ -84,12 +84,10 @@ const Login = () => {
           if (response.token) {
             localStorage.setItem("token", response.token);
 
-            // Get user ID from the newly stored token
             const userId = JSON.parse(atob(response.token.split(".")[1])).id;
 
             navigate("/app/feed");
 
-            // Update user online status
             await controller.update(`${endpoints.users}/me`, userId, {
               isOnline: true,
             });

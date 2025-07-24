@@ -48,3 +48,9 @@ export interface FormData {
   location: string;
   bio: string;
 }
+
+export interface PasswordRequirement {
+  id: string;
+  label: string;
+  isValid: boolean;
+}
