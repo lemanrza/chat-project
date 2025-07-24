@@ -3,6 +3,7 @@ import controller from "@/services/commonRequest";
 import { LogOut, MessageCircle, Settings, User, Users, X } from "lucide-react";
 import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getUserIdFromToken } from "@/utils/auth";
 
@@ -19,6 +20,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { t } = useTranslation();
   const SidebarItem: React.FC<SidebarItemProps & { to?: string }> = ({
     icon,
     label,
@@ -103,8 +105,8 @@ const Sidebar = () => {
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold">
-                <span style={{ color: "#374151" }}>Chat </span>
-                <span style={{ color: "#22C55E" }}>Wave</span>
+                <span style={{ color: "#374151" }}>{t('sidebar_title_main')}</span>
+                <span style={{ color: "#22C55E" }}>{t('sidebar_title_accent')}</span>
               </h2>
             </div>
           )}
@@ -129,21 +131,21 @@ const Sidebar = () => {
         <nav className="space-y-2">
           <SidebarItem
             icon={<Users className="w-5 h-5" />}
-            label="Feed"
+            label={t('sidebar_feed')}
             to="/app/feed"
             active={location.pathname === "/app/feed"}
             collapsed={sidebarCollapsed}
           />
           <SidebarItem
             icon={<MessageCircle className="w-5 h-5" />}
-            label="Chat"
+            label={t('sidebar_chat')}
             to="/app/chat"
             active={location.pathname === "/app/chat"}
             collapsed={sidebarCollapsed}
           />
           <SidebarItem
             icon={<User className="w-5 h-5" />}
-            label="Profile"
+            label={t('sidebar_profile')}
             to="/app/profile"
             active={location.pathname === "/app/profile"}
             collapsed={sidebarCollapsed}
@@ -156,7 +158,7 @@ const Sidebar = () => {
         <div className="space-y-2 ">
           <SidebarItem
             icon={<Settings className="w-5 h-5" />}
-            label="Settings"
+            label={t('sidebar_settings')}
             active={false}
             collapsed={sidebarCollapsed}
             className="cursor-pointer"
@@ -181,7 +183,7 @@ const Sidebar = () => {
           >
             <LogOut className="w-5 h-5" />
             {!sidebarCollapsed && (
-              <div className="font-medium text-sm">Logout</div>
+              <div className="font-medium text-sm">{t('sidebar_logout')}</div>
             )}
           </button>
         </div>
