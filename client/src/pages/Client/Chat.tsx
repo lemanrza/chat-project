@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Search,
   Phone,
@@ -18,6 +19,7 @@ import { enqueueSnackbar } from "notistack";
 import type { ChatType, Connection, Message } from "@/types/chatType";
 
 const Chat = () => {
+  const { t } = useTranslation();
   const [selectedChat, setSelectedChat] = useState<string>("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -44,7 +46,7 @@ const Chat = () => {
         setCurrentUserId(userId);
         await Promise.all([loadUserChats(userId), loadUserConnections(userId)]);
       } else {
-        enqueueSnackbar("Please login to view chats", {
+        enqueueSnackbar(t('chat_login_to_view'), {
           variant: "error",
           autoHideDuration: 3000,
         });
@@ -69,7 +71,7 @@ const Chat = () => {
       }
     } catch (error) {
       console.error("Error loading chats:", error);
-      enqueueSnackbar("Failed to load chats", {
+      enqueueSnackbar(t('chat_failed_to_load'), {
         variant: "error",
         autoHideDuration: 3000,
       });
@@ -108,14 +110,14 @@ const Chat = () => {
         // Select the new chat
         setSelectedChat(response.data._id);
         setShowConnectionsModal(false);
-        enqueueSnackbar("Chat created successfully!", {
+        enqueueSnackbar(t('chat_created_success'), {
           variant: "success",
           autoHideDuration: 3000,
         });
       }
     } catch (error) {
       console.error("Error creating chat:", error);
-      enqueueSnackbar("Failed to create chat", {
+      enqueueSnackbar(t('chat_failed_to_create'), {
         variant: "error",
         autoHideDuration: 3000,
       });
@@ -144,7 +146,7 @@ const Chat = () => {
       }
     } catch (error) {
       console.error("Error loading messages:", error);
-      enqueueSnackbar("Failed to load messages", {
+      enqueueSnackbar(t('chat_failed_to_load_messages'), {
         variant: "error",
         autoHideDuration: 3000,
       });
@@ -222,7 +224,7 @@ const Chat = () => {
 
   const handleSocketError = (error: any) => {
     console.error("Socket error:", error);
-    enqueueSnackbar("Connection error occurred", {
+    enqueueSnackbar(t('chat_connection_error'), {
       variant: "error",
       autoHideDuration: 3000,
     });
@@ -289,7 +291,7 @@ const Chat = () => {
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      enqueueSnackbar("Failed to send message", {
+      enqueueSnackbar(t('chat_failed_to_send'), {
         variant: "error",
         autoHideDuration: 3000,
       });
@@ -392,7 +394,7 @@ const Chat = () => {
       <div className="h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00B878] mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading chats...</p>
+          <p className="text-gray-600">{t('chat_loading')}</p>
         </div>
       </div>
     );
@@ -405,7 +407,7 @@ const Chat = () => {
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Messages</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{t('chat_messages')}</h2>
             <button
               onClick={() => setShowConnectionsModal(true)}
               className="p-2 text-white rounded-lg transition-colors shadow hover:bg-[#00a76d]"
@@ -422,7 +424,7 @@ const Chat = () => {
             />
             <input
               type="text"
-              placeholder="Search conversations..."
+              placeholder={t('chat_search_conversations')}
               className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B878] focus:border-transparent shadow-sm"
             />
           </div>
@@ -433,16 +435,14 @@ const Chat = () => {
           {chats.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
               <Send size={48} className="mx-auto mb-4 text-gray-300" />
-              <p className="text-lg font-medium mb-2">No chats available</p>
-              <p className="text-sm mb-4">
-                Start conversations with your connections!
-              </p>
+              <p className="text-lg font-medium mb-2">{t('chat_no_chats')}</p>
+              <p className="text-sm mb-4">{t('chat_start_conversation')}</p>
               <button
                 onClick={() => setShowConnectionsModal(true)}
                 className="px-4 py-2 text-white rounded-lg transition-colors shadow hover:bg-[#00a76d]"
                 style={{ backgroundColor: "#00B878" }}
               >
-                View Connections
+                {t('chat_view_connections')}
               </button>
             </div>
           ) : (
@@ -453,7 +453,7 @@ const Chat = () => {
                 : chat.members
                     .filter((m) => m._id !== currentUserId)
                     .map((m) => `${m.profile.firstName} ${m.profile.lastName}`)
-                    .join(", ") || "Unknown";
+                    .join(", ") || t('chat_unknown');
 
               const avatarText = chat.isGroup
                 ? "GC"
@@ -503,7 +503,7 @@ const Chat = () => {
                       </div>
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-600 truncate">
-                          {chat.lastMessage?.content || "No messages yet"}
+                          {chat.lastMessage?.content || t('chat_no_messages_yet')}
                         </p>
                         {(chat.unreadCount || 0) > 0 && (
                           <span
@@ -516,7 +516,7 @@ const Chat = () => {
                       </div>
                       {chat.isGroup && (
                         <p className="text-xs text-gray-500">
-                          {chat.members.length} members
+                          {t('chat_members_count', { count: chat.members.length })}
                         </p>
                       )}
                     </div>
@@ -563,7 +563,7 @@ const Chat = () => {
                       style={{ color: "#00B878" }}
                     >
                       {selectedChatInfo.status}
-                      {isTyping && " • typing..."}
+                      {isTyping && ` • ${t('chat_typing')}`}
                     </p>
                   </div>
                 </div>
@@ -586,7 +586,7 @@ const Chat = () => {
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
                   <p className="text-gray-500">
-                    No messages yet. Start the conversation!
+                    {t('chat_no_messages_yet_start')}
                   </p>
                 </div>
               ) : (
@@ -668,7 +668,7 @@ const Chat = () => {
                     value={message}
                     onChange={handleMessageChange}
                     onKeyPress={handleKeyPress}
-                    placeholder="Type a message..."
+                    placeholder={t('chat_type_message')}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B878] focus:border-transparent shadow-sm"
                   />
                   <button className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-600 hover:bg-gray-100 rounded">
@@ -686,6 +686,7 @@ const Chat = () => {
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.backgroundColor = "#00B878")
                   }
+                  title={t('chat_send_message')}
                 >
                   <Send size={20} />
                 </button>
@@ -699,10 +700,10 @@ const Chat = () => {
                 <Send size={32} className="text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Select a conversation
+                {t('chat_select_conversation')}
               </h3>
               <p className="text-gray-500">
-                Choose a chat from the sidebar to start messaging
+                {t('chat_choose_sidebar')}
               </p>
             </div>
           </div>
@@ -716,7 +717,7 @@ const Chat = () => {
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Start New Chat
+                  {t('chat_start_new_chat')}
                 </h3>
                 <button
                   onClick={() => setShowConnectionsModal(false)}
@@ -726,7 +727,7 @@ const Chat = () => {
                 </button>
               </div>
               <p className="text-sm text-gray-600 mt-1">
-                Choose from your connections to start a conversation
+                {t('chat_choose_connection')}
               </p>
             </div>
 
@@ -734,10 +735,8 @@ const Chat = () => {
               {connections.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
                   <Users size={48} className="mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg font-medium mb-2">No connections yet</p>
-                  <p className="text-sm">
-                    Connect with other users to start chatting with them!
-                  </p>
+                  <p className="text-lg font-medium mb-2">{t('chat_no_connections')}</p>
+                  <p className="text-sm">{t('chat_connect_with_users')}</p>
                 </div>
               ) : (
                 connections.map((connection) => {
@@ -781,11 +780,11 @@ const Chat = () => {
                           </p>
                           {existingChat ? (
                             <p className="text-xs text-green-600 mt-1">
-                              Chat exists - click to open
+                              {t('chat_exists_click_open')}
                             </p>
                           ) : (
                             <p className="text-xs text-blue-600 mt-1">
-                              Click to start chat
+                              {t('chat_click_start')}
                             </p>
                           )}
                         </div>
@@ -801,7 +800,7 @@ const Chat = () => {
                 onClick={() => setShowConnectionsModal(false)}
                 className="w-full px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                Cancel
+                {t('chat_cancel')}
               </button>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { Sun, Bell, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,10 +24,10 @@ const Settings = () => {
     setIsDarkMode(!isDarkMode);
     if (!isDarkMode) {
       localStorage.setItem('theme', 'dark');
-      document.documentElement.classList.add('dark'); // Apply dark mode
+      document.documentElement.classList.add('dark');
     } else {
       localStorage.setItem('theme', 'light');
-      document.documentElement.classList.remove('dark'); // Apply light mode
+      document.documentElement.classList.remove('dark');
     }
   };
 
@@ -44,15 +45,15 @@ const Settings = () => {
     <div className="space-y-8">
       {/* Language & Region */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Language & Region</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t("settings_language_region", "Language & Region")}</h3>
         <div className="grid grid-cols-4 gap-4">
           <div
             className={`rounded-lg p-4 cursor-pointer ${getLanguageClass('en')}`}
             onClick={() => handleLanguageChange('en')}  // Change to English
           >
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">US</span>
-              <span className="text-sm text-gray-600">English</span>
+              <span className="text-sm font-medium text-gray-900">{t('settings_language_us', 'US')}</span>
+              <span className="text-sm text-gray-600">{t('settings_language_en', 'English')}</span>
             </div>
           </div>
           <div
@@ -60,8 +61,8 @@ const Settings = () => {
             onClick={() => handleLanguageChange('az')}  // Change to Azerbaijani
           >
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">AZ</span>
-              <span className="text-sm text-gray-600">Azərbaycan</span>
+              <span className="text-sm font-medium text-gray-900">{t('settings_language_az', 'AZ')}</span>
+              <span className="text-sm text-gray-600">{t('settings_language_az_full', 'Azərbaycan')}</span>
             </div>
           </div>
           <div
@@ -69,8 +70,8 @@ const Settings = () => {
             onClick={() => handleLanguageChange('ru')}  // Change to Russian
           >
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">RU</span>
-              <span className="text-sm text-gray-600">Русский</span>
+              <span className="text-sm font-medium text-gray-900">{t('settings_language_ru', 'RU')}</span>
+              <span className="text-sm text-gray-600">{t('settings_language_ru_full', 'Русский')}</span>
             </div>
           </div>
           <div
@@ -78,8 +79,8 @@ const Settings = () => {
             onClick={() => handleLanguageChange('tr')}  // Change to Turkish
           >
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">TR</span>
-              <span className="text-sm text-gray-600">Türkçe</span>
+              <span className="text-sm font-medium text-gray-900">{t('settings_language_tr', 'TR')}</span>
+              <span className="text-sm text-gray-600">{t('settings_language_tr_full', 'Türkçe')}</span>
             </div>
           </div>
         </div>
@@ -87,7 +88,7 @@ const Settings = () => {
 
       {/* Appearance */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Appearance</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('settings_appearance', 'Appearance')}</h3>
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -100,10 +101,8 @@ const Settings = () => {
                 )}
               </div>
               <div>
-                <div className="font-medium text-gray-900">Dark Mode</div>
-                <div className="text-sm text-gray-500">
-                  Switch between light and dark themes
-                </div>
+                <div className="font-medium text-gray-900">{t('settings_dark_mode', 'Dark Mode')}</div>
+                <div className="text-sm text-gray-500">{t('settings_dark_mode_description', 'Switch between light and dark themes')}</div>
               </div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -121,9 +120,7 @@ const Settings = () => {
 
       {/* Notifications */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Notifications
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('settings_notifications', 'Notifications')}</h3>
         <div className="space-y-4">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center justify-between">
@@ -132,12 +129,8 @@ const Settings = () => {
                   <Bell className="text-gray-600" size={20} />
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">
-                    Message Notifications
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Get notified when you receive new messages
-                  </div>
+                  <div className="font-medium text-gray-900">{t('settings_message_notifications', 'Message Notifications')}</div>
+                  <div className="text-sm text-gray-500">{t('settings_message_notifications_desc', 'Get notified when you receive new messages')}</div>
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -154,12 +147,8 @@ const Settings = () => {
                   <Bell className="text-gray-600" size={20} />
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">
-                    Connection Requests
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Get notified when someone wants to connect
-                  </div>
+                  <div className="font-medium text-gray-900">{t('settings_connection_requests', 'Connection Requests')}</div>
+                  <div className="text-sm text-gray-500">{t('settings_connection_requests_desc', 'Get notified when someone wants to connect')}</div>
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -176,10 +165,8 @@ const Settings = () => {
                   <Bell className="text-gray-600" size={20} />
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">App Updates</div>
-                  <div className="text-sm text-gray-500">
-                    Get notified about new features and updates
-                  </div>
+                  <div className="font-medium text-gray-900">{t('settings_app_updates', 'App Updates')}</div>
+                  <div className="text-sm text-gray-500">{t('settings_app_updates_desc', 'Get notified about new features and updates')}</div>
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
