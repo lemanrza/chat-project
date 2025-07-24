@@ -1,5 +1,6 @@
 import controller from "@/services/commonRequest";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useFormik } from "formik";
@@ -8,12 +9,12 @@ import endpoints from "@/services/api";
 import { enqueueSnackbar } from "notistack";
 
 const Login = () => {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const message = searchParams.get("message");
-
   const error = searchParams.get("error");
 
   useEffect(() => {
@@ -72,7 +73,7 @@ const Login = () => {
             variant: "error",
           });
         } else {
-          enqueueSnackbar("User successfully login", {
+          enqueueSnackbar(t("login_success", "User successfully login"), {
             autoHideDuration: 2000,
             anchorOrigin: {
               vertical: "bottom",
@@ -106,10 +107,10 @@ const Login = () => {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 flex flex-col gap-5">
         <div className="flex flex-col items-center mb-2">
           <h1 className="text-3xl font-bold text-[#222] mb-1">
-            Chat <span className="text-[#43e97b]">Wave</span>
+            {t("login_title")}
           </h1>
           <p className="text-gray-500 text-sm">
-            Welcome back to your conversations
+            {t("login_welcome")}
           </p>
         </div>
 
@@ -123,7 +124,7 @@ const Login = () => {
             className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
           >
             <FcGoogle className="text-xl" />
-            <span className="text-sm text-gray-700">Continue with Google</span>
+            <span className="text-sm text-gray-700">{t("login_google")}</span>
           </button>
           <button
             onClick={() => {
@@ -138,12 +139,12 @@ const Login = () => {
               alt="GitHub"
               className="w-5 h-5"
             />
-            <span className="text-sm text-gray-700">Continue with GitHub</span>
+            <span className="text-sm text-gray-700">{t("login_github")}</span>
           </button>
           <div className="flex items-center gap-2 mt-1">
             <span className="flex-1 h-px bg-gray-200" />
             <span className="text-xs text-gray-400">
-              Or continue with email
+              {t("login_or_email")}
             </span>
             <span className="flex-1 h-px bg-gray-200" />
           </div>
@@ -154,14 +155,14 @@ const Login = () => {
           className="flex flex-col gap-4"
         >
           <div>
-            <label className="text-sm font-medium text-[#222]">Email</label>
+            <label className="text-sm font-medium text-[#222]">{t("login_email_label")}</label>
             <input
               type="text"
               name="email"
               onChange={loginFormik.handleChange}
               value={loginFormik.values.email}
               onBlur={loginFormik.handleBlur}
-              placeholder="Enter email or username"
+              placeholder={t("login_email_placeholder")}
               className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b]"
             />
             {loginFormik.errors.email && loginFormik.touched.email && (
@@ -171,14 +172,14 @@ const Login = () => {
             )}
           </div>
           <div className="relative">
-            <label className="text-sm font-medium text-[#222]">Password</label>
+            <label className="text-sm font-medium text-[#222]">{t("login_password_label")}</label>
             <input
               type={showPassword ? "text" : "password"}
               name="password"
               onChange={loginFormik.handleChange}
               value={loginFormik.values.password}
               onBlur={loginFormik.handleBlur}
-              placeholder="Enter password"
+              placeholder={t("login_password_placeholder")}
               className="mt-1 border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#43e97b] pr-10"
             />
             <button
@@ -232,13 +233,13 @@ const Login = () => {
           </div>
           <div className="flex items-center justify-between text-xs text-gray-500">
             <label className="flex items-center gap-2">
-              <input type="checkbox" className="accent-[#43e97b]" /> Remember me
+              <input type="checkbox" className="accent-[#43e97b]" /> {t("login_remember")}
             </label>
             <a
               href="/auth/forgot-password"
               className="hover:underline text-[#43e97b]"
             >
-              Forgot password?
+              {t("login_forgot")}
             </a>
           </div>
           <button
@@ -250,16 +251,16 @@ const Login = () => {
             }
             className="bg-[#43e97b] text-white rounded-lg py-2 font-semibold hover:bg-[#38d46d] transition disabled:cursor-not-allowed disabled:bg-[#43e97add] cursor-pointer"
           >
-            Sign In
+            {t("login_signin")}
           </button>
         </form>
         <p className="text-center text-sm mt-4 text-gray-500">
-          Don't have an account?{" "}
+          {t("login_no_account")}
           <a
             href="/auth/register"
             className="text-[#43e97b] font-semibold hover:underline"
           >
-            Create one now
+            {t("login_create_now")}
           </a>
         </p>
       </div>

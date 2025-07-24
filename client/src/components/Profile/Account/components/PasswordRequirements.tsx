@@ -1,4 +1,4 @@
-import type { PasswordRequirement } from "../types";
+import type { PasswordRequirement } from "@/types/profileType";
 
 interface PasswordRequirementsProps {
   requirements: PasswordRequirement[];

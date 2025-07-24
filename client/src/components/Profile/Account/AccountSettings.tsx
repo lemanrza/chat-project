@@ -1,5 +1,7 @@
+import type { UserData } from "@/types/profileType";
+
 interface AccountSettingsProps {
-  userData: any;
+  userData: UserData | null;
 }
 
 const AccountSettings = ({ userData }: AccountSettingsProps) => {

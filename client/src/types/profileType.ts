@@ -17,6 +17,8 @@ export interface UserData {
     displayName?: string;
     avatar?: string;
   };
+  connectionsRequests?: string[];
+  profileVisibility?: "public" | "private";
 }
 
 export interface FormData {

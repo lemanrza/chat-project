@@ -1,9 +1,9 @@
 import { enqueueSnackbar } from "notistack";
 import PasswordInput from "./components/PasswordInput";
 import PasswordRequirements from "./components/PasswordRequirements";
-import type { UserData } from "./types";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
 import { validatePassword } from "@/lib/validatePassword";
+import type { UserData } from "@/types/profileType";
 
 interface ChangePasswordProps {
   userData: UserData | null;

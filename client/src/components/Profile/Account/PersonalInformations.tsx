@@ -38,9 +38,9 @@ import {
 import { enqueueSnackbar } from "notistack";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
-import type { UserData, FormData } from "./types";
 import { getUserIdFromToken } from "@/utils/auth";
 import axios from "axios";
+import type { UserData, FormData } from "@/types/profileType";
 
 interface LocationData {
   id: string;
@@ -105,7 +105,7 @@ const PersonalInformations = ({
 
   useEffect(() => {
     if (userData?.hobbies) {
-      setSelectedHobbies(userData.hobbies);
+      setSelectedHobbies(userData.hobbies); // Load hobbies from the user data if available
     }
   }, [userData]);
 
