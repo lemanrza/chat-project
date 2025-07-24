@@ -23,11 +23,11 @@ const ROUTES: RouteObject[] = [
     children: [
       {
         path: "app/chat",
-        element: <Feed />,
+        element: <Chat />,
       },
       {
         path: "app/feed",
-        element: <Chat />,
+        element: <Feed />,
       },
       {
         path: "app/profile",
