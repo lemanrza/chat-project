@@ -83,6 +83,32 @@ const Chat = () => {
     }
   }, []);
 
+  const fetchMessages = async (chatId: string, userId?: string) => {
+    const userIdToUse = userId || currentUserId;
+    try {
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/api/messages/chat/${chatId}?userId=${userIdToUse}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const messagesArray = data.data || data.messages || data || [];
+        setMessages(Array.isArray(messagesArray) ? messagesArray : []);
+      } else {
+        setMessages([]);
+      }
+    } catch (error) {
+      setMessages([]);
+    }
+  };
+
   const fetchUserData = async (userId: string) => {
     setIsLoading(true);
     try {
@@ -113,7 +139,15 @@ const Chat = () => {
 
       if (chatsResponse.ok) {
         const chatsData = await chatsResponse.json();
-        setChats(chatsData.data || chatsData);
+        const chatsArray = chatsData.data || chatsData;
+        setChats(chatsArray);
+
+        // Auto-select the first chat and load its messages
+        if (chatsArray.length > 0 && !selectedChat) {
+          const firstChat = chatsArray[0];
+          setSelectedChat(firstChat);
+          fetchMessages(firstChat._id, userId);
+        }
       } else {
         setChats([]);
       }
@@ -184,6 +218,12 @@ const Chat = () => {
     }
   }, [chats, currentUserId]);
 
+  useEffect(() => {
+    if (selectedChat && currentUserId) {
+      fetchMessages(selectedChat._id);
+    }
+  }, [selectedChat, currentUserId]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -199,31 +239,6 @@ const Chat = () => {
       </div>
     );
   }
-
-  const fetchMessages = async (chatId: string) => {
-    try {
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL
-        }/api/messages/chat/${chatId}?userId=${currentUserId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const messagesArray = data.data || data.messages || data || [];
-        setMessages(Array.isArray(messagesArray) ? messagesArray : []);
-      } else {
-        setMessages([]);
-      }
-    } catch (error) {
-      setMessages([]);
-    }
-  };
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedChat || !currentUserId) return;
@@ -273,7 +288,6 @@ const Chat = () => {
 
   const handleChatSelect = (chat: ChatType) => {
     setSelectedChat(chat);
-    fetchMessages(chat._id);
   };
 
   const createChatWithConnection = async (connection: Connection) => {
@@ -303,8 +317,13 @@ const Chat = () => {
   };
 
   const getOtherParticipant = (chat: any) => {
-    return chat.members.find((member: any) => member.user.id !== currentUserId)
-      ?.user;
+    if (!chat || !chat.members || !Array.isArray(chat.members)) {
+      return null;
+    }
+    return chat.members.find(
+      (member: any) =>
+        member && member.user && member.user._id !== currentUserId
+    )?.user;
   };
 
   const formatTime = (dateString: string) => {
@@ -313,14 +332,12 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-neutral-800">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="w-1/3 bg-white border-r dark:bg-neutral-800 border-gray-200 flex flex-col">
+      <div className="w-1/3 bg-white border-r border-gray-200 flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-            Chats
-          </h2>
+        <div className="p-4 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-800">Chats</h2>
         </div>
 
         {/* Chat List */}
@@ -329,6 +346,8 @@ const Chat = () => {
             {/* Existing Chats */}
             {chats.map((chat: any) => {
               const otherParticipant = getOtherParticipant(chat);
+              if (!otherParticipant) return null; // Skip if no valid participant found
+
               return (
                 <div
                   key={chat._id}
@@ -340,24 +359,25 @@ const Chat = () => {
                   onClick={() => handleChatSelect(chat)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 dark:bg-gray-700 bg-gray-300 rounded-full flex items-center justify-center">
-                      {otherParticipant?.profile.avatar ? (
+                    <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                      {otherParticipant?.profile?.avatar ? (
                         <img
                           src={otherParticipant.profile.avatar}
-                          alt={otherParticipant.profile.displayName}
+                          alt={otherParticipant.profile.displayName || "User"}
                           className="h-10 w-10 rounded-full object-cover"
                         />
                       ) : (
                         <span className="text-gray-600 font-medium">
-                          {otherParticipant?.profile.displayName
+                          {otherParticipant?.profile?.displayName
                             ?.charAt(0)
-                            .toUpperCase()}
+                            .toUpperCase() || "U"}
                         </span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 truncate">
-                        {otherParticipant?.profile.displayName}
+                        {otherParticipant?.profile?.displayName ||
+                          "Unknown User"}
                       </h3>
                       {chat.lastMessage && (
                         <p className="text-sm text-gray-500 truncate">
@@ -377,10 +397,17 @@ const Chat = () => {
 
             {/* Available Connections */}
             {connections.map((connection) => {
-              const hasExistingChat = chats.some((chat) =>
-                chat.members.some(
-                  (member) => member.user._id === connection._id
-                )
+              if (!connection || !connection._id) return null;
+
+              const hasExistingChat = chats.some(
+                (chat) =>
+                  chat.members &&
+                  chat.members.some(
+                    (member) =>
+                      member &&
+                      member.user &&
+                      member.user._id === connection._id
+                  )
               );
 
               if (hasExistingChat) return null;
@@ -392,25 +419,30 @@ const Chat = () => {
                   onClick={() => createChatWithConnection(connection)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-gray-300 dark:bg-neutral-800 rounded-full flex items-center justify-center">
-                      {connection?.profile.avatar ? (
+                    <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                      {connection?.profile?.avatar ? (
                         <img
                           src={connection.profile.avatar}
-                          alt={connection.name}
+                          alt={connection.name || "User"}
                           className="h-10 w-10 rounded-full object-cover"
                         />
                       ) : (
                         <span className="text-gray-600 font-medium">
-                          {connection.profile.displayName
+                          {connection.profile?.displayName
                             ?.charAt(0)
-                            .toUpperCase()}
+                            .toUpperCase() ||
+                            connection.firstName?.charAt(0).toUpperCase() ||
+                            "U"}
                         </span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 truncate">
-                        {connection.profile.displayName ||
-                          `${connection.firstName} ${connection.lastName}`}
+                        {connection.profile?.displayName ||
+                          `${connection.firstName || ""} ${
+                            connection.lastName || ""
+                          }`.trim() ||
+                          "Unknown User"}
                       </h3>
                       <p className="text-sm text-green-600">
                         Click to start chat
@@ -440,31 +472,33 @@ const Chat = () => {
         {selectedChat ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 bg-white dark:bg-neutral-800 border-b border-gray-200">
+            <div className="p-4 bg-white border-b border-gray-200">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-                  {getOtherParticipant(selectedChat)?.profile.avatar ? (
+                  {getOtherParticipant(selectedChat)?.profile?.avatar ? (
                     <img
                       src={getOtherParticipant(selectedChat)?.profile.avatar}
                       alt={
-                        getOtherParticipant(selectedChat)?.profile.displayName
+                        getOtherParticipant(selectedChat)?.profile
+                          ?.displayName || "User"
                       }
                       className="h-10 w-10 rounded-full object-cover"
                     />
                   ) : (
                     <span className="text-gray-600 font-medium">
                       {getOtherParticipant(selectedChat)
-                        ?.profile.displayName?.charAt(0)
-                        .toUpperCase()}
+                        ?.profile?.displayName?.charAt(0)
+                        .toUpperCase() || "U"}
                     </span>
                   )}
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">
-                    {getOtherParticipant(selectedChat)?.profile.displayName}
+                    {getOtherParticipant(selectedChat)?.profile?.displayName ||
+                      "Unknown User"}
                   </h3>
 
-                  {getOtherParticipant(selectedChat)?.profile.isOnline ? (
+                  {getOtherParticipant(selectedChat)?.profile?.isOnline ? (
                     <p className="text-sm text-green-500">Online</p>
                   ) : (
                     <p className="text-sm text-red-500">Offline</p>
@@ -531,10 +565,10 @@ const Chat = () => {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center dark:bg-neutral-800 bg-gray-50">
+          <div className="flex-1 flex items-center justify-center bg-gray-50">
             <div className="text-center">
-              <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-whtie" />
-              <h3 className="text-xl font-medium text-gray-900 mb-2 dark:text-white">
+              <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-xl font-medium text-gray-900 mb-2">
                 Welcome to Chat
               </h3>
               <p className="text-gray-500">
