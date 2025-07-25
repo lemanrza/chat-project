@@ -25,9 +25,7 @@ import cloudinary from "../config/cloudinaryConfig.js";
 import config from "../config/config.js";
 import multer from "multer";
 import path from "path";
-import {
-  MulterRequest,
-} from "../types/userType.js";
+import { AuthenticatedRequest, MulterRequest } from "../types/userType.js";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

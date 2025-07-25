@@ -8,7 +8,16 @@ import type { RootState } from "@/store/store";
 import type { UserState } from "@/features/userSlice";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
-import { Search, Filter, Users, MessageCircle, MapPin, UserPlus, Clock, Check } from 'lucide-react';
+import {
+  Search,
+  Filter,
+  Users,
+  MessageCircle,
+  MapPin,
+  UserPlus,
+  Clock,
+  Check,
+} from "lucide-react";
 
 interface Tab {
   id: string;
@@ -61,11 +70,20 @@ const Feed = () => {
     fetchUsers();
   }, [navigate]);
 
-  const filteredUsers = users.filter(userData =>
-    userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase())
-  ).filter(userData => userData.id !== user.id);
+  const filteredUsers = users
+    .filter(
+      (userData) =>
+        userData.profile?.firstName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        userData.profile?.lastName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        userData.profile?.location
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase())
+    )
+    .filter((userData) => userData.id !== user.id);
 
   // Handle connection request logic
   const handleConnect = async (targetUserId: string) => {
@@ -73,12 +91,16 @@ const Feed = () => {
       const isAlreadyConnected = user.connections.includes(targetUserId);
 
       // 🔍 Doğru endpoint və cavab strukturuna əsasən istifadəçini alırıq
-      const targetUserResponse = await controller.getOne(endpoints.users, targetUserId);
+      const targetUserResponse = await controller.getOne(
+        endpoints.users,
+        targetUserId
+      );
       const targetUser = targetUserResponse.data; // <-- Əsas düzəliş buradadır
 
       console.log("Target user:", targetUser);
 
-      const isRequestPending = targetUser.connectionsRequests?.includes(user.id) || false;
+      const isRequestPending =
+        targetUser.connectionsRequests?.includes(user.id) || false;
 
       if (isAlreadyConnected) {
         enqueueSnackbar("Already connected with this user", {
@@ -99,7 +121,10 @@ const Feed = () => {
       }
 
       await controller.update(`${endpoints.users}/update/${targetUserId}`, "", {
-        connectionsRequests: [...(targetUser.connectionsRequests || []), user.id],
+        connectionsRequests: [
+          ...(targetUser.connectionsRequests || []),
+          user.id,
+        ],
       });
 
       enqueueSnackbar("Connection request sent!", {
@@ -126,7 +151,6 @@ const Feed = () => {
       });
     }
   };
-
 
   const handleMessage = (userId: string) => {
     console.log("Messaging user:", userId);
@@ -313,15 +337,14 @@ const Feed = () => {
                         disabled
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-green-600 cursor-not-allowed"
                       >
-                        <Check />  {t('feed_connected')}
-
+                        <Check /> {t("feed_connected")}
                       </button>
                     ) : isRequestPending ? (
                       <button
                         disabled
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-gray-400 cursor-not-allowed"
                       >
-                        <Clock />  {t('feed_pending')}
+                        <Clock /> {t("feed_pending")}
                       </button>
                     ) : (
                       <button
