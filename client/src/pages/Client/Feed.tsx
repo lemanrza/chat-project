@@ -1,28 +1,15 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, Users, MessageCircle, MapPin, UserPlus } from 'lucide-react';
 import endpoints from '@/services/api';
 import controller from '@/services/commonRequest';
-import type { UserData } from '@/types/profileType';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/store/store';
-import type { UserState } from '@/features/userSlice';
 import { useNavigate } from 'react-router-dom';
 import { enqueueSnackbar } from 'notistack';
-=======
-import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import endpoints from "@/services/api";
-import controller from "@/services/commonRequest";
 import type { UserData } from "@/types/profileType";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
 import type { UserState } from "@/features/userSlice";
 import { addConnection } from "@/features/userSlice";
-import { useNavigate } from "react-router-dom";
-import { enqueueSnackbar } from "notistack";
 import {
   Search,
   Filter,
@@ -33,7 +20,6 @@ import {
   Clock,
   Check,
 } from "lucide-react";
->>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
 
 interface Tab {
   id: string;
@@ -63,10 +49,6 @@ const Feed = () => {
 
   const { t } = useTranslation();
 
-<<<<<<< HEAD
-  const { t } = useTranslation();
-=======
->>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
   const tabs: Tab[] = [
     {
       id: "discover",
@@ -100,7 +82,6 @@ const Feed = () => {
     fetchUsers();
   }, [navigate]);
 
-<<<<<<< HEAD
   const filteredUsers = users.filter(userData => {
     const matchesSearch =
       userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -117,22 +98,6 @@ const Feed = () => {
 
     return matchesSearch && matchesHobbies && matchesCountry;
   });
-=======
-  const filteredUsers = users
-    .filter(
-      (userData) =>
-        userData.profile?.firstName
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        userData.profile?.lastName
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        userData.profile?.location
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase())
-    )
-    .filter((userData) => userData.id !== user.id);
->>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
 
   // Handle connection request logic
   // const handleConnect = async (targetUserId: string) => {
