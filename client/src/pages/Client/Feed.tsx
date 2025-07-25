@@ -88,10 +88,82 @@ const Feed = () => {
     .filter((userData) => userData.id !== user.id);
 
   // Handle connection request logic
+  // const handleConnect = async (targetUserId: string) => {
+  //   try {
+  //     const isAlreadyConnected = user.connections.includes(targetUserId);
+
+  // if (isAlreadyConnected) {
+  //   enqueueSnackbar("Already connected with this user", {
+  //     variant: "info",
+  //     autoHideDuration: 2000,
+  //     anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //   });
+  //   return;
+  // }
+
+  //     // Use the new connection API that handles public/private profiles
+  //     const response = await controller.post(`${endpoints.users}/me/${user.id}/connections`, {
+  //       connectionId: targetUserId,
+  //     });
+
+  //     console.log("Connection response:", response);
+
+  //     if (response.data.type === 'connected') {
+  //       // Public profile - immediate connection
+  //       enqueueSnackbar("Connected successfully!", {
+  //         variant: "success",
+  //         autoHideDuration: 2000,
+  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //       });
+
+  //       // Update Redux state to reflect the new connection
+  //       dispatch(addConnection(targetUserId));
+  //     } else if (response.data.type === 'request_sent') {
+  //       // Private profile - request sent
+  //       enqueueSnackbar("Connection request sent! Waiting for approval.", {
+  //         variant: "info",
+  //         autoHideDuration: 3000,
+  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //       });
+  //     } else {
+  //       // Default success message
+  //       enqueueSnackbar(response.data.message || "Connection request processed!", {
+  //         variant: "success",
+  //         autoHideDuration: 2000,
+  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //       });
+  //     }
+  // } catch (error: any) {
+  //   console.error("Error sending connection request:", error);
+
+  //   let errorMessage = "Failed to send connection request";
+
+  //   if (error.response?.data?.message) {
+  //     errorMessage = error.response.data.message;
+  //   } else if (error.response?.status === 404) {
+  //     errorMessage = "User not found";
+  //   } else if (error.response?.status === 401) {
+  //     errorMessage = "Unauthorized: Please log in again";
+  //     localStorage.removeItem("token");
+  //     navigate("/auth/login");
+  //   }
+
+  //   enqueueSnackbar(errorMessage, {
+  //     variant: "error",
+  //     autoHideDuration: 2000,
+  //     anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //   });
+  // }
+  // };
   const handleConnect = async (targetUserId: string) => {
     try {
-      const isAlreadyConnected = user.connections.includes(targetUserId);
-
+      // Check if already connected
+      const userConnections = Array.isArray(user.connections)
+        ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
+        : [];
+      
+      const isAlreadyConnected = userConnections.includes(targetUserId);
+      
       if (isAlreadyConnected) {
         enqueueSnackbar("Already connected with this user", {
           variant: "info",
@@ -101,44 +173,79 @@ const Feed = () => {
         return;
       }
 
-      // Use the new connection API that handles public/private profiles
-      const response = await controller.post(`${endpoints.users}/me/${user.id}/connections`, {
-        connectionId: targetUserId,
-      });
+      const targetUserResponse = await controller.getOne(endpoints.users, targetUserId);
+      const targetUser = targetUserResponse.data;
 
-      console.log("Connection response:", response);
-
-      // Handle different response types
-      if (response.data.type === 'connected') {
-        // Public profile - immediate connection
-        enqueueSnackbar("Connected successfully!", {
-          variant: "success",
+      if (!targetUser) {
+        enqueueSnackbar("User not found", {
+          variant: "error",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
+        return;
+      }
+
+      // Check if request already pending
+      const targetUserConnectionRequests = Array.isArray(targetUser.connectionsRequests)
+        ? targetUser.connectionsRequests.map((req: any) => typeof req === 'string' ? req : (req as UserData).id)
+        : [];
         
-        // Update Redux state to reflect the new connection
-        dispatch(addConnection(targetUserId));
-      } else if (response.data.type === 'request_sent') {
-        // Private profile - request sent
+      const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
+      
+      if (isRequestPending) {
+        enqueueSnackbar("Connection request is already pending", {
+          variant: "info",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
+        return;
+      }
+
+      if (targetUser.profileVisibility === "private") {
+        // For private profile, add to connectionsRequests
+        const updatedConnectionsRequests = [...targetUserConnectionRequests, user.id];
+        
+        await controller.update(`${endpoints.users}/update`, targetUserId, {
+          connectionsRequests: updatedConnectionsRequests,
+        });
+
         enqueueSnackbar("Connection request sent! Waiting for approval.", {
           variant: "info",
           autoHideDuration: 3000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
       } else {
-        // Default success message
-        enqueueSnackbar(response.data.message || "Connection request processed!", {
+        // For public profile, connect both users immediately
+        const targetUserConnections = Array.isArray(targetUser.connections)
+          ? targetUser.connections.map((conn: any) => typeof conn === 'string' ? conn : (conn as UserData).id)
+          : [];
+
+        // Update target user's connections
+        await controller.update(`${endpoints.users}/update`, targetUserId, {
+          connections: [...targetUserConnections, user.id],
+        });
+
+        // Update current user's connections (check user.id exists)
+        if (user.id) {
+          await controller.update(`${endpoints.users}/update`, user.id, {
+            connections: [...userConnections, targetUserId],
+          });
+        }
+
+        enqueueSnackbar("Connected successfully!", {
           variant: "success",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
+
+        // Update Redux state to reflect the new connection
+        dispatch(addConnection(targetUserId));
       }
     } catch (error: any) {
       console.error("Error sending connection request:", error);
-      
+
       let errorMessage = "Failed to send connection request";
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.status === 404) {
@@ -155,7 +262,7 @@ const Feed = () => {
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
       });
     }
-  };
+  }
 
   const handleMessage = (userId: string) => {
     console.log("Messaging user:", userId);
@@ -244,18 +351,18 @@ const Feed = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredUsers.map((userData) => {
               // Handle connections as either string[] or UserData[]
-              const userConnections = Array.isArray(user.connections) 
+              const userConnections = Array.isArray(user.connections)
                 ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
                 : [];
-              
+
               const isAlreadyConnected = userConnections.includes(userData.id);
-              
+
               // Check if current user has sent a request to this target user
               // This means the target user's connectionsRequests should contain current user's ID
               const targetUserConnectionRequests = Array.isArray(userData.connectionsRequests)
                 ? userData.connectionsRequests.map(req => typeof req === 'string' ? req : (req as UserData).id)
                 : [];
-                
+
               const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
 
               // Handle click for connected button
