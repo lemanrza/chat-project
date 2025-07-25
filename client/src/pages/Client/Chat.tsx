@@ -203,7 +203,8 @@ const Chat = () => {
   const fetchMessages = async (chatId: string) => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL
+        `${
+          import.meta.env.VITE_SERVER_URL
         }/api/messages/chat/${chatId}?userId=${currentUserId}`,
         {
           headers: {
@@ -302,7 +303,7 @@ const Chat = () => {
   };
 
   const getOtherParticipant = (chat: any) => {
-    return chat.members.find((member: any) => member.user._id !== currentUserId)
+    return chat.members.find((member: any) => member.user.id !== currentUserId)
       ?.user;
   };
 
@@ -317,7 +318,9 @@ const Chat = () => {
       <div className="w-1/3 bg-white border-r dark:bg-neutral-800 border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Chats</h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+            Chats
+          </h2>
         </div>
 
         {/* Chat List */}
@@ -329,10 +332,11 @@ const Chat = () => {
               return (
                 <div
                   key={chat._id}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${selectedChat?._id === chat._id
-                    ? "bg-blue-100 border-l-4 border-blue-500"
-                    : "hover:bg-gray-100"
-                    }`}
+                  className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
+                    selectedChat?._id === chat._id
+                      ? "bg-blue-100 border-l-4 border-blue-500"
+                      : "hover:bg-gray-100"
+                  }`}
                   onClick={() => handleChatSelect(chat)}
                 >
                   <div className="flex items-center gap-3">
@@ -478,19 +482,22 @@ const Chat = () => {
                     return (
                       <div
                         key={message._id}
-                        className={`flex ${isOwn ? "justify-end" : "justify-start"
-                          }`}
+                        className={`flex ${
+                          isOwn ? "justify-end" : "justify-start"
+                        }`}
                       >
                         <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isOwn
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-200 text-gray-900"
-                            }`}
+                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                            isOwn
+                              ? "bg-blue-500 text-white"
+                              : "bg-gray-200 text-gray-900"
+                          }`}
                         >
                           <p>{message.content}</p>
                           <p
-                            className={`text-xs mt-1 ${isOwn ? "text-blue-100" : "text-gray-500"
-                              }`}
+                            className={`text-xs mt-1 ${
+                              isOwn ? "text-blue-100" : "text-gray-500"
+                            }`}
                           >
                             {formatTime(message.createdAt)}
                           </p>
