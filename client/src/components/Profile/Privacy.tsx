@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { MessageCircle, Eye } from "lucide-react";
-
 import { useTranslation } from "react-i18next";
 import { enqueueSnackbar } from "notistack";
 import controller from "@/services/commonRequest";
@@ -40,12 +39,17 @@ const Privacy = ({
         },
         email: formData.email,
         profileVisibility: formData.profileVisibility,
+        messagePrivacy: formData.messagePrivacy,
       };
 
       const userId = getUserIdFromToken();
       if (!userId) throw new Error("User ID not found");
 
-      const response = await controller.update(`${endpoints.users}/me`, userId, updateData);
+      const response = await controller.update(
+        `${endpoints.users}/me`,
+        userId,
+        updateData
+      );
 
       setUserData(response.data);
       setFormData({
@@ -56,6 +60,7 @@ const Privacy = ({
         location: response.data.profile?.location || "",
         bio: response.data.profile?.bio || "",
         profileVisibility: response.data.profileVisibility || "public",
+        messagePrivacy: response.data.messagePrivacy || "everyone",
       });
 
       enqueueSnackbar("Privacy settings updated successfully!", {
@@ -80,63 +85,72 @@ const Privacy = ({
       <h3 className="text-xl font-semibold text-gray-900 mb-6">
         {t("privacy_settings", "Privacy Settings")}
       </h3>
-      <div className="space-y-6">
-      {/* Profile Visibility */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-            <Eye className="text-gray-600" size={20} />
-          </div>
-          <div>
-            <div className="font-medium text-gray-900">
-              {t("profile_visibility", "Profile Visibility")}
-            </div>
-            <div className="text-sm text-gray-500">
-              {t("control_who_can_see_profile", "Control who can see your profile")>   
-            </div>
-          </div>
-        </div>
-    <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={formData.profileVisibility === "public"}
-                onChange={() =>
-                  handleInputChange(
-                    "profileVisibility",
-                    formData.profileVisibility === "public" ? "private" : "public"
-                  )
-                }
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B878]"></div>
-            </label>
-      </div>
 
-      {/* Message Privacy */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-            <MessageCircle className="text-gray-600" size={20} />
-          </div>
-          <div>
-            <div className="font-medium text-gray-900">
-              {t("message_privacy", "Message Privacy")}
+      {/* Profile Visibility */}
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+              <Eye className="text-gray-600" size={20} />
             </div>
-            <div className="text-sm text-gray-500">
-              {t("control_who_can_send_messages", "Control who can send you messages")}
+            <div>
+              <div className="font-medium text-gray-900">
+                {t("profile_visibility", "Profile Visibility")}
+              </div>
+              <div className="text-sm text-gray-500">
+                {t(
+                  "control_who_can_see_profile",
+                  "Control who can see your profile"
+                )}
+              </div>
             </div>
           </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={formData.profileVisibility === "public"}
+              onChange={() =>
+                handleInputChange(
+                  "profileVisibility",
+                  formData.profileVisibility === "public" ? "private" : "public"
+                )
+              }
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B878]"></div>
+          </label>
         </div>
-        <select
-          value={formData.messagePrivacy || "everyone"}
-          onChange={(e) => handleInputChange("messagePrivacy", e.target.value)}
-          className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-          <option value="everyone">{t("everyone", "Everyone")}</option>
-          <option value="friends">{t("friends_only", "Friends Only")}</option>
-          <option value="none">{t("no_one", "No One")}</option>
-        </select>
+
+        {/* Message Privacy */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+              <MessageCircle className="text-gray-600" size={20} />
+            </div>
+            <div>
+              <div className="font-medium text-gray-900">
+                {t("message_privacy", "Message Privacy")}
+              </div>
+              <div className="text-sm text-gray-500">
+                {t(
+                  "control_who_can_send_messages",
+                  "Control who can send you messages"
+                )}
+              </div>
+            </div>
+          </div>
+          <select
+            value={formData.messagePrivacy || "everyone"}
+            onChange={(e) =>
+              handleInputChange("messagePrivacy", e.target.value)
+            }
+            className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="everyone">{t("everyone", "Everyone")}</option>
+            <option value="friends">{t("friends_only", "Friends Only")}</option>
+            <option value="none">{t("no_one", "No One")}</option>
+          </select>
+        </div>
       </div>
 
       {/* Save Button */}
@@ -144,10 +158,11 @@ const Privacy = ({
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
+          className={`px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+            isSaving
               ? "bg-gray-400 cursor-not-allowed text-white"
               : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
-            }`}
+          }`}
         >
           {isSaving ? (
             <span className="flex items-center">
@@ -181,7 +196,12 @@ const Privacy = ({
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
               Save Changes
             </>

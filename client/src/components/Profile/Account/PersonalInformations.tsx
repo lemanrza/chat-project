@@ -41,6 +41,7 @@ import endpoints from "@/services/api";
 import { getUserIdFromToken } from "@/utils/auth";
 import axios from "axios";
 import type { UserData, FormData } from "@/types/profileType";
+import { useTranslation } from "react-i18next";
 
 interface LocationData {
   id: string;
@@ -98,6 +99,7 @@ const PersonalInformations = ({
   handleInputChange,
   userData,
 }: PersonalInformationsProps) => {
+  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
   const [locations, setLocations] = useState<LocationData[]>([]);
@@ -336,7 +338,10 @@ const PersonalInformations = ({
               const isDisabled = selectedHobbies.length >= 5 && !isChecked;
 
               return (
-                <div key={interest.name} className="flex items-center space-x-2">
+                <div
+                  key={interest.name}
+                  className="flex items-center space-x-2"
+                >
                   <input
                     type="checkbox"
                     id={interest.name}
@@ -370,10 +375,11 @@ const PersonalInformations = ({
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
+          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+            isSaving
               ? "bg-gray-400 cursor-not-allowed text-white"
               : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
-            }`}
+          }`}
         >
           {isSaving ? (
             <span className="flex items-center">
