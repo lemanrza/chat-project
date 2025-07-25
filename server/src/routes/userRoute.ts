@@ -18,6 +18,8 @@ import {
   removeUserConnection,
   getAvailableUsersToConnect,
   updateUserController,
+  acceptConnection,
+  rejectConnection,
 } from "../controllers/userController.js";
 import userValidate from "../middlewares/userValidate.js";
 
@@ -47,6 +49,10 @@ userRouter.delete(
   "/me/:userId/connections/:connectionId",
   removeUserConnection
 );
+
+// Connection request management routes
+userRouter.post("/me/:userId/connections/accept", acceptConnection);
+userRouter.post("/me/:userId/connections/reject", rejectConnection);
 
 userRouter.get("/:id", getUserById);
 userRouter.put("/update/:id", updateUserController);

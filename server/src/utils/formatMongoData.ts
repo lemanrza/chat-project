@@ -9,7 +9,7 @@ const formatMongoData = (doc: any) => {
 };
 
 const formatDocument = (item: any) => {
-  const obj = item.toObject ? item.toObject() : { ...item };
+  const obj = item.toObject ? item.toObject({ depopulate: false }) : { ...item };
   const { _id, public_id, ...rest } = obj;
 
   return {

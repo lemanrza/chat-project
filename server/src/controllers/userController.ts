@@ -15,6 +15,8 @@ import {
   verifyEmail,
   addConnection,
   removeConnection,
+  acceptConnectionRequest,
+  rejectConnectionRequest,
   getAvailableUsers,
 } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
@@ -26,6 +28,7 @@ import config from "../config/config.js";
 import multer from "multer";
 import path from "path";
 import { AuthenticatedRequest, MulterRequest } from "../types/userType.js";
+import UserModel from "../models/userModel.js";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -621,7 +624,6 @@ export const getCurrentUser = async (
 export const deleteCurrentUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
 ) => {
   try {
     const userId = req.params.userId;
@@ -813,6 +815,7 @@ export const addUserConnection = async (
 
     res.status(200).json({
       message: result.message,
+      type: result.type, // Include the type (connected or request_sent)
     });
   } catch (error) {
     next(error);
@@ -892,5 +895,96 @@ export const updateUserController = async (req: Request, res: Response) => {
       success: false,
       message: "Unexpected server error",
     });
+  }
+};
+
+export const getPendingConnectionRequests = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.params.userId;
+    const user = await UserModel.findById(userId)
+      .populate('connectionsRequests') // Populate full user data
+      .exec();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: user.connectionsRequests,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Accept a connection request
+export const acceptConnection = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.params.userId;
+    const { requesterId } = req.body;
+
+    if (!requesterId) {
+      return res.status(400).json({
+        message: "Requester ID is required",
+      });
+    }
+
+    const result = await acceptConnectionRequest(userId, requesterId);
+
+    if (!result.success) {
+      return res.status(500).json({
+        message: result.message,
+      });
+    }
+
+    res.status(200).json({
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Reject a connection request
+export const rejectConnection = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.params.userId;
+    const { requesterId } = req.body;
+
+    if (!requesterId) {
+      return res.status(400).json({
+        message: "Requester ID is required",
+      });
+    }
+
+    const result = await rejectConnectionRequest(userId, requesterId);
+
+    if (!result.success) {
+      return res.status(500).json({
+        message: result.message,
+      });
+    }
+
+    res.status(200).json({
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
   }
 };
