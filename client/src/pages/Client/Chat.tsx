@@ -60,6 +60,7 @@ interface Connection {
 const Chat = () => {
   const [chats, setChats] = useState<ChatType[]>([]);
   const [connections, setConnections] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -83,6 +84,7 @@ const Chat = () => {
   }, []);
 
   const fetchUserData = async (userId: string) => {
+    setIsLoading(true);
     try {
       const userResponse = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/auth/me/${userId}`,
@@ -121,9 +123,12 @@ const Chat = () => {
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Move this useEffect BEFORE any early returns
   useEffect(() => {
     if (!currentUserId) return;
 
@@ -147,6 +152,22 @@ const Chat = () => {
       socket.off("newMessage", handleNewMessage);
     };
   }, [currentUserId, selectedChat?._id]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        Loading chats...
+      </div>
+    );
+  }
+
+  if (!currentUserId) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        Please log in to access chat.
+      </div>
+    );
+  }
 
   const fetchMessages = async (chatId: string) => {
     try {
@@ -196,8 +217,6 @@ const Chat = () => {
         const responseData = await response.json();
 
         const newMessageObj = responseData.data || responseData;
-
-        console.log(newMessageObj);
 
         setMessages((prev) => [...prev, newMessageObj]);
 
@@ -266,14 +285,6 @@ const Chat = () => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  if (!currentUserId) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        Please log in to access chat.
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -301,21 +312,23 @@ const Chat = () => {
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-                      {otherParticipant?.profilePicture ? (
+                      {otherParticipant?.profile.avatar ? (
                         <img
-                          src={otherParticipant.profilePicture}
-                          alt={otherParticipant.name}
+                          src={otherParticipant.profile.avatar}
+                          alt={otherParticipant.profile.displayName}
                           className="h-10 w-10 rounded-full object-cover"
                         />
                       ) : (
                         <span className="text-gray-600 font-medium">
-                          {otherParticipant?.name?.charAt(0).toUpperCase()}
+                          {otherParticipant?.profile.displayName
+                            ?.charAt(0)
+                            .toUpperCase()}
                         </span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 truncate">
-                        {otherParticipant?.name}
+                        {otherParticipant?.profile.displayName}
                       </h3>
                       {chat.lastMessage && (
                         <p className="text-sm text-gray-500 truncate">
@@ -365,7 +378,8 @@ const Chat = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 truncate">
-                        {connection.name}
+                        {connection.profile.displayName ||
+                          `${connection.firstName} ${connection.lastName}`}
                       </h3>
                       <p className="text-sm text-green-600">
                         Click to start chat
@@ -409,16 +423,20 @@ const Chat = () => {
                   ) : (
                     <span className="text-gray-600 font-medium">
                       {getOtherParticipant(selectedChat)
-                        ?.name?.charAt(0)
+                        ?.profile.displayName?.charAt(0)
                         .toUpperCase()}
                     </span>
                   )}
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">
-                    {getOtherParticipant(selectedChat)?.name}
+                    {getOtherParticipant(selectedChat)?.profile.displayName}
                   </h3>
-                  <p className="text-sm text-gray-500">Active now</p>
+                  {getOtherParticipant(selectedChat).isOnline ? (
+                    <p className="text-sm text-green-500">Online</p>
+                  ) : (
+                    <p className="text-sm text-red-500">Offline</p>
+                  )}
                 </div>
               </div>
             </div>
