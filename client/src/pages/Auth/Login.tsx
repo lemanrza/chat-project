@@ -107,7 +107,7 @@ const Login = () => {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 flex flex-col gap-5">
         <div className="flex flex-col items-center mb-2">
           <h1 className="text-3xl font-bold text-[#222] mb-1">
-            {t("login_title")}
+            Cat <span className="text-green-600">Wave</span>
           </h1>
           <p className="text-gray-500 text-sm">
             {t("login_welcome")}
@@ -117,9 +117,8 @@ const Login = () => {
         <div className="grid grid-cols-1 gap-3">
           <button
             onClick={() => {
-              window.location.href = `${
-                import.meta.env.VITE_SERVER_URL
-              }/auth/google?mode=login`;
+              window.location.href = `${import.meta.env.VITE_SERVER_URL
+                }/auth/google?mode=login`;
             }}
             className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
           >
@@ -128,9 +127,8 @@ const Login = () => {
           </button>
           <button
             onClick={() => {
-              window.location.href = `${
-                import.meta.env.VITE_SERVER_URL
-              }/auth/github?mode=login`;
+              window.location.href = `${import.meta.env.VITE_SERVER_URL
+                }/auth/github?mode=login`;
             }}
             className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
           >

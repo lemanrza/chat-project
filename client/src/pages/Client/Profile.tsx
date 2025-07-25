@@ -284,8 +284,9 @@ const Profile = () => {
           <h1 className="text-2xl font-semibold">{t("profile_title")}</h1>
         </div>
 
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-neutral-700 mb-8">
           <div className="flex items-start gap-6">
+            {/* Profile Image */}
             <div className="relative group">
               <div
                 className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold overflow-hidden transition-all duration-200 group-hover:shadow-xl group-hover:scale-[1.02] mx-auto"
@@ -318,6 +319,7 @@ const Profile = () => {
               />
 
               <div className="mt-3 flex flex-col items-center gap-2">
+                {/* Upload Button */}
                 <button
                   className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
                     isUploadingImage
@@ -334,15 +336,7 @@ const Profile = () => {
                     </>
                   ) : (
                     <>
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 2L12 22M2 12L22 12" />
                       </svg>
                       <span>{t("profile_change_photo")}</span>
@@ -350,6 +344,7 @@ const Profile = () => {
                   )}
                 </button>
 
+                {/* Delete Button */}
                 {userData?.profile?.avatar &&
                   userData.profile.avatar !==
                     "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
@@ -372,15 +367,7 @@ const Profile = () => {
                         </>
                       ) : (
                         <>
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14ZM10 11v6M14 11v6" />
                           </svg>
                           <span>{t("profile_remove_photo")}</span>
@@ -391,17 +378,17 @@ const Profile = () => {
               </div>
             </div>
 
+            {/* User Info */}
             <div className="flex-1">
-              <h2 className="text-3xl font-semibold text-gray-900 mb-1">
-                {userData?.profile?.displayName ||
-                  `${formData.firstName} ${formData.lastName}`}
+              <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-1">
+                {userData?.profile?.displayName || `${formData.firstName} ${formData.lastName}`}
               </h2>
               <p className="text-gray-500 mb-4">@{userData?.username}</p>
               <p className="text-gray-600 mb-6 leading-relaxed">
                 {formData.bio || t("profile_no_bio")}
               </p>
 
-              <div className="flex items-center gap-6 text-gray-500 text-sm mb-6">
+              <div className="flex items-center gap-6 text-gray-500 dark:text-gray-400 text-sm mb-6">
                 <div className="flex items-center gap-1">
                   <span>📍</span>
                   <span>{formData.location || t("profile_no_location")}</span>
@@ -420,7 +407,7 @@ const Profile = () => {
 
               <div className="flex items-center gap-8">
                 <div>
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
                     {userData?.connections?.length || 0}
                   </span>
                   <p className="text-gray-500 text-sm">
@@ -437,6 +424,7 @@ const Profile = () => {
             </div>
           </div>
         </div>
+
 
         <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
 

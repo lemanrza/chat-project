@@ -1,6 +1,4 @@
 {
-  "chat": "Çat",
-  "wave": "Dalğa",
   "reset_password": "Şifrənizi sıfırlayın",
   "forgot_password": "Şifrənizi unutmusunuz?",
   "email_address": "Email ünvanı",
@@ -320,5 +318,20 @@
   "account_deleted": "Account Deleted",
   "continue_to_login": "Continue to Login",
   "logged_out": "Logged out successfully",
-  "try_again": "Yenidən cəhd et"
+  "try_again": "Yenidən cəhd et",
+  "connection_request_sent": "Əlaqə sorğusu göndərildi",
+  "connection_request_accepted": "Əlaqə sorğusu qəbul edildi",
+  "connection_request_rejected": "Əlaqə sorğusu rədd edildi",
+  "connection_request_already_sent": "Əlaqə sorğusu artıq göndərilib",
+  "feed_filter_hobbies": "Hobbilər",
+  "feed_filter_countries": "Ölkələr",
+  "feed_filter_clear": "Filtrləri təmizlə",
+  "feed_filter_apply": "Filtrləri tətbiq et",
+  "feed_filter_no_hobbies": "Hobbi seçilməyib",
+  "feed_filter_no_countries": "Ölkə seçilməyib",
+  "feed_filter_select_hobbies": "Hobbiləri seçin",
+  "feed_filter_select_countries": "Ölkələri seçin",
+  "feed_filter_hobbies_placeholder": "Hobbiləri axtarın",
+  "feed_filter_countries_placeholder": "Ölkələri axtarın",
+  "feed_filters_title": "Filtrlər"
 }

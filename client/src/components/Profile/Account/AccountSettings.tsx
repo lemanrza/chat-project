@@ -9,35 +9,40 @@ interface AccountSettingsProps {
 const AccountSettings = ({ userData }: AccountSettingsProps) => {
   const { t } = useTranslation();
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-neutral-700">
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
         {t("account.settingsTitle")}
       </h3>
+
       <div className="space-y-6">
-        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        {/* Account Type */}
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-700 rounded-lg">
           <div>
-            <h4 className="font-medium text-gray-900">{t("account.accountTypeTitle")}</h4>
-            <p className="text-sm text-gray-500">
+            <h4 className="font-medium text-gray-900 dark:text-white">
+              {t("account.accountTypeTitle")}
+            </h4>
+            <p className="text-sm text-gray-500 dark:text-neutral-400">
               {userData?.provider === "local"
                 ? t("account.accountTypeEmail")
                 : userData?.provider === "google"
-                ? t("account.accountTypeGoogle")
-                : userData?.provider === "github"
-                ? t("account.accountTypeGithub")
-                : t("account.accountTypeStandard")}
+                  ? t("account.accountTypeGoogle")
+                  : userData?.provider === "github"
+                    ? t("account.accountTypeGithub")
+                    : t("account.accountTypeStandard")}
             </p>
           </div>
-          <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+          <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-sm font-medium rounded-full">
             {userData?.emailVerified ? t("account.verified") : t("account.unverified")}
           </span>
         </div>
 
-        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+        {/* Two-Factor Authentication */}
+        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-neutral-700 rounded-lg">
           <div>
-            <h4 className="font-medium text-gray-900">
+            <h4 className="font-medium text-gray-900 dark:text-white">
               {t("account.twoFactorTitle")}
             </h4>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-neutral-400">
               {t("account.twoFactorDesc")}
             </p>
           </div>
@@ -46,14 +51,17 @@ const AccountSettings = ({ userData }: AccountSettingsProps) => {
           </button>
         </div>
 
-        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+        {/* Login Sessions */}
+        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-neutral-700 rounded-lg">
           <div>
-            <h4 className="font-medium text-gray-900">{t("account.loginSessionsTitle")}</h4>
-            <p className="text-sm text-gray-500">
+            <h4 className="font-medium text-gray-900 dark:text-white">
+              {t("account.loginSessionsTitle")}
+            </h4>
+            <p className="text-sm text-gray-500 dark:text-neutral-400">
               {t("account.loginSessionsDesc")}
             </p>
           </div>
-          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+          <button className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm font-medium">
             {t("account.viewSessionsBtn")}
           </button>
         </div>
