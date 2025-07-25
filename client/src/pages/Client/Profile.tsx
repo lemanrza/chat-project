@@ -9,7 +9,6 @@ import Privacy from "@/components/Profile/Privacy";
 import Navigation from "@/components/Profile/Navigation";
 import Settings from "@/components/Profile/Settings";
 import { getUserIdFromToken, isTokenExpired } from "@/utils/auth";
-import type { FormData } from "@/types/profileType";
 
 const Profile = () => {
   const { t } = useTranslation();
@@ -18,7 +17,7 @@ const Profile = () => {
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<any>({
     messagePrivacy: "public",
     firstName: "",
     lastName: "",
@@ -28,7 +27,7 @@ const Profile = () => {
     hobbies: [],
     connections: [],
     connectionsRequests: [],
-    profileVisibility: "public"
+    profileVisibility: "public",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,13 +42,15 @@ const Profile = () => {
 
         const userId = getUserIdFromToken();
         if (!userId) {
-          console.log("No user ID found in token, redirecting to login...");
           localStorage.removeItem("token");
           window.location.href = "/auth/login";
           return;
         }
 
-        const response = await controller.getOne(`${endpoints.users}/me`, userId);
+        const response = await controller.getOne(
+          `${endpoints.users}/me`,
+          userId
+        );
         setUserData(response.data);
 
         setFormData({
@@ -62,19 +63,20 @@ const Profile = () => {
           hobbies: response.data.hobbies || [],
           connections: response.data.connections || [],
           connectionsRequests: response.data.connectionsRequests || [],
-          profileVisibility: (response.data.profileVisibility as "public" | "private") || "public",
+          profileVisibility:
+            (response.data.profileVisibility as "public" | "private") ||
+            "public",
         });
       } catch (error: any) {
         console.error("Error fetching user data:", error);
 
         if (error.response?.status === 401 || error.response?.status === 403) {
-          console.log("Authentication failed, redirecting to login...");
           localStorage.removeItem("token");
           window.location.href = "/auth/login";
           return;
         }
 
-        enqueueSnackbar(t('profile_failed_to_load'), {
+        enqueueSnackbar(t("profile_failed_to_load"), {
           variant: "error",
           autoHideDuration: 2000,
           anchorOrigin: {
@@ -96,7 +98,7 @@ const Profile = () => {
 
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
-      enqueueSnackbar(t('profile_invalid_image'), {
+      enqueueSnackbar(t("profile_invalid_image"), {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -108,7 +110,7 @@ const Profile = () => {
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      enqueueSnackbar(t('profile_image_size_error'), {
+      enqueueSnackbar(t("profile_image_size_error"), {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -161,7 +163,7 @@ const Profile = () => {
       URL.revokeObjectURL(previewUrl);
       setImagePreview("");
 
-      enqueueSnackbar(t('profile_image_updated'), {
+      enqueueSnackbar(t("profile_image_updated"), {
         variant: "success",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -177,7 +179,7 @@ const Profile = () => {
         setImagePreview("");
       }
 
-      enqueueSnackbar(t('profile_failed_upload_image'), {
+      enqueueSnackbar(t("profile_failed_upload_image"), {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -234,7 +236,7 @@ const Profile = () => {
         setImagePreview("");
       }
 
-      enqueueSnackbar(t('profile_image_deleted'), {
+      enqueueSnackbar(t("profile_image_deleted"), {
         variant: "success",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -244,7 +246,7 @@ const Profile = () => {
       });
     } catch (error) {
       console.error("Error deleting image:", error);
-      enqueueSnackbar(t('profile_failed_delete_image'), {
+      enqueueSnackbar(t("profile_failed_delete_image"), {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -258,7 +260,7 @@ const Profile = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [field]: value,
     }));
@@ -269,7 +271,7 @@ const Profile = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t('profile_loading')}</p>
+          <p className="mt-4 text-gray-600">{t("profile_loading")}</p>
         </div>
       </div>
     );
@@ -279,7 +281,7 @@ const Profile = () => {
     <div className="min-h-screen flex">
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-semibold">{t('profile_title')}</h1>
+          <h1 className="text-2xl font-semibold">{t("profile_title")}</h1>
         </div>
 
         <div className="bg-white dark:bg-neutral-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-neutral-700 mb-8">
@@ -291,11 +293,20 @@ const Profile = () => {
                 style={{ backgroundColor: "#00B878" }}
               >
                 {imagePreview ? (
-                  <img src={imagePreview} alt="Profile Preview" className="w-full h-full object-cover" />
-                ) : userData?.profile?.avatar ? (
-                  <img src={userData.profile.avatar} alt="Profile" className="w-full h-full object-cover" />
+                  <img
+                    src={imagePreview}
+                    alt="Profile Preview"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  userData?.profile?.firstName?.charAt(0) + userData?.profile?.lastName?.charAt(0) || "U"
+                  <img
+                    src={
+                      userData?.profile?.avatar ||
+                      "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png"
+                    }
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
                 )}
               </div>
 
@@ -310,10 +321,11 @@ const Profile = () => {
               <div className="mt-3 flex flex-col items-center gap-2">
                 {/* Upload Button */}
                 <button
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${isUploadingImage
-                      ? "bg-gray-100 dark:bg-neutral-700 text-gray-400 cursor-not-allowed"
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
+                    isUploadingImage
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-[#00B878] text-white hover:bg-emerald-600 border border-[#00B878] hover:border-emerald-600"
-                    }`}
+                  }`}
                   onClick={!isUploadingImage ? triggerFileInput : undefined}
                   disabled={isUploadingImage}
                 >
@@ -335,14 +347,17 @@ const Profile = () => {
                 {/* Delete Button */}
                 {userData?.profile?.avatar &&
                   userData.profile.avatar !==
-                  "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
+                    "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
                   !imagePreview && (
                     <button
-                      className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${isUploadingImage
-                          ? "bg-gray-100 dark:bg-neutral-700 text-gray-400 cursor-not-allowed"
-                          : "bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-800 hover:text-red-700 dark:hover:text-red-200 border border-red-200 dark:border-red-600"
-                        }`}
-                      onClick={!isUploadingImage ? handleDeleteImage : undefined}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
+                        isUploadingImage
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-200 hover:border-red-300"
+                      }`}
+                      onClick={
+                        !isUploadingImage ? handleDeleteImage : undefined
+                      }
                       disabled={isUploadingImage}
                     >
                       {isUploadingImage ? (
@@ -368,8 +383,8 @@ const Profile = () => {
               <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-1">
                 {userData?.profile?.displayName || `${formData.firstName} ${formData.lastName}`}
               </h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">@{userData?.username}</p>
-              <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+              <p className="text-gray-500 mb-4">@{userData?.username}</p>
+              <p className="text-gray-600 mb-6 leading-relaxed">
                 {formData.bio || t("profile_no_bio")}
               </p>
 
@@ -395,11 +410,15 @@ const Profile = () => {
                   <span className="text-2xl font-bold text-gray-900 dark:text-white">
                     {userData?.connections?.length || 0}
                   </span>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">{t("profile_connections")}</p>
+                  <p className="text-gray-500 text-sm">
+                    {t("profile_connections")}
+                  </p>
                 </div>
                 <div>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">23</span>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">{t("profile_active_chats")}</p>
+                  <span className="text-2xl font-bold text-gray-900">23</span>
+                  <p className="text-gray-500 text-sm">
+                    {t("profile_active_chats")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -409,7 +428,13 @@ const Profile = () => {
 
         <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {activeTab === "overview" && <Overview formData={formData} setFormData={setFormData} userData={userData} />}
+        {activeTab === "overview" && (
+          <Overview
+            formData={formData}
+            setFormData={setFormData}
+            userData={userData}
+          />
+        )}
 
         {activeTab === "settings" && <Settings />}
 

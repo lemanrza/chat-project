@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import fs from "fs";
 import {
   getAll,
   getByEmail,
@@ -29,6 +30,12 @@ import multer from "multer";
 import path from "path";
 import { AuthenticatedRequest, MulterRequest } from "../types/userType.js";
 import UserModel from "../models/userModel.js";
+
+// Ensure uploads directory exists
+const uploadsDir = "uploads";
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -425,7 +432,7 @@ export const updateCurrentUser = async (
 };
 
 export const uploadProfileImage = async (
-  req: MulterRequest,
+  req: AuthenticatedRequest & { file?: Express.Multer.File },
   res: Response,
   _: NextFunction
 ) => {
@@ -438,10 +445,21 @@ export const uploadProfileImage = async (
       });
     }
 
+    if (req.user?.id !== userId) {
+      return res.status(403).json({
+        message: "Not authorized to upload image for this user",
+      });
+    }
+
     if (!req.file) {
-      console.log("No file provided");
       return res.status(400).json({
         message: "No image file provided",
+      });
+    }
+
+    if (!fs.existsSync(req.file.path)) {
+      return res.status(500).json({
+        message: "Uploaded file not found on server",
       });
     }
 
@@ -485,12 +503,16 @@ export const uploadProfileImage = async (
       ],
     });
 
+    try {
+      fs.unlinkSync(req.file.path);
+    } catch (unlinkError) {
+      console.error("⚠️ Error cleaning up temporary file:", unlinkError);
+    }
+
     const response = await updateUser(userId, {
-      $set: {
-        "profile.avatar": uploadResult.secure_url,
-        "profile.public_id": uploadResult.public_id,
-        "profile.updatedAt": new Date(),
-      },
+      "profile.avatar": uploadResult.secure_url,
+      "profile.public_id": uploadResult.public_id,
+      "profile.updatedAt": new Date(),
     });
 
     if (!response.success) {
@@ -508,7 +530,16 @@ export const uploadProfileImage = async (
       },
     });
   } catch (error: any) {
-    console.error("Error uploading image:", error);
+    console.error("💥 Error uploading image:", error);
+
+    if (req.file?.path && fs.existsSync(req.file.path)) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkError) {
+        console.error("⚠️ Error cleaning up temporary file:", unlinkError);
+      }
+    }
+
     res.status(500).json({
       message: "Failed to upload image",
       error: error.message,
@@ -529,8 +560,6 @@ export const deleteProfileImage = async (
         message: "User ID is required",
       });
     }
-
-    console.log("Delete image request from user:", userId);
 
     const currentUser = await getOne(userId);
     if (!currentUser) {
@@ -553,19 +582,17 @@ export const deleteProfileImage = async (
           const fileWithExtension = urlParts[urlParts.length - 1];
           const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
 
-          console.log("Deleting from Cloudinary with public_id:", publicId);
           await cloudinary.uploader.destroy(publicId);
-          console.log("Successfully deleted from Cloudinary");
         } catch (cloudinaryError) {
-          console.error("Error deleting from Cloudinary:", cloudinaryError);
+          console.error("❌ Error deleting from Cloudinary:", cloudinaryError);
         }
       }
     }
 
     const response = await updateUser(userId, {
-      $set: {
-        "profile.avatar": defaultAvatarUrl,
-      },
+      "profile.avatar": defaultAvatarUrl,
+      "profile.public_id": null,
+      "profile.updatedAt": new Date(),
     });
 
     if (!response.success) {
@@ -582,7 +609,7 @@ export const deleteProfileImage = async (
       },
     });
   } catch (error: any) {
-    console.error("Error deleting image:", error);
+    console.error("💥 Error deleting image:", error);
     res.status(500).json({
       message: "Failed to delete image",
       error: error.message,
@@ -621,10 +648,7 @@ export const getCurrentUser = async (
   }
 };
 
-export const deleteCurrentUser = async (
-  req: Request,
-  res: Response,
-) => {
+export const deleteCurrentUser = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
 
@@ -633,8 +657,6 @@ export const deleteCurrentUser = async (
         message: "User ID is required",
       });
     }
-
-    console.log("Delete account request from user:", userId);
 
     const currentUser = await getOne(userId);
     if (!currentUser) {
@@ -657,12 +679,7 @@ export const deleteCurrentUser = async (
           const fileWithExtension = urlParts[urlParts.length - 1];
           const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
 
-          console.log(
-            "Deleting avatar from Cloudinary with public_id:",
-            publicId
-          );
           await cloudinary.uploader.destroy(publicId);
-          console.log("Successfully deleted avatar from Cloudinary");
         } catch (cloudinaryError) {
           console.error(
             "Error deleting avatar from Cloudinary:",
@@ -733,15 +750,6 @@ export const changePassword = async (
       });
     }
 
-    console.log("User provider:", user.provider);
-    console.log("User has password:", !!user.password);
-    console.log("Password field type:", typeof user.password);
-    console.log("Password comparison input:", {
-      currentPasswordLength: currentPassword.length,
-      hasStoredPassword: !!user.password,
-      storedPasswordLength: user.password?.length,
-    });
-
     if (!user.password) {
       return res.status(400).json({
         message: "No password found for this account",
@@ -753,8 +761,6 @@ export const changePassword = async (
       user.password
     );
 
-    console.log("Password validation result:", isCurrentPasswordValid);
-
     if (!isCurrentPasswordValid) {
       return res.status(400).json({
         message: "Current password is incorrect",
@@ -765,9 +771,7 @@ export const changePassword = async (
     const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
 
     const response = await updateUser(userId, {
-      $set: {
-        password: hashedNewPassword,
-      },
+      password: hashedNewPassword,
     });
 
     if (!response.success) {
@@ -906,7 +910,7 @@ export const getPendingConnectionRequests = async (
   try {
     const userId = req.params.userId;
     const user = await UserModel.findById(userId)
-      .populate('connectionsRequests') // Populate full user data
+      .populate("connectionsRequests")
       .exec();
 
     if (!user) {

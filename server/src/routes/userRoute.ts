@@ -20,6 +20,8 @@ import {
   updateUserController,
   acceptConnection,
   rejectConnection,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/userController.js";
 import userValidate from "../middlewares/userValidate.js";
 import { authenticateToken } from "../middlewares/authMiddleware.js";
@@ -46,13 +48,15 @@ userRouter.post(
   upload.single("avatar"),
   uploadProfileImage
 );
+userRouter.post('/forgot-password', forgotPassword);
+userRouter.post("/reset-password", resetPassword);
+
 userRouter.delete(
   "/me/:userId/delete-image",
   authenticateToken,
   deleteProfileImage
 );
 
-// Connection management routes
 userRouter.get(
   "/me/:userId/available",
   authenticateToken,
@@ -69,7 +73,6 @@ userRouter.delete(
   removeUserConnection
 );
 
-// Connection request management routes
 userRouter.post("/me/:userId/connections/accept", acceptConnection);
 userRouter.post("/me/:userId/connections/reject", rejectConnection);
 
