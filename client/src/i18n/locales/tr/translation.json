@@ -281,5 +281,8 @@
   "changePassword.success": "Şifre başarıyla değiştirildi!",
   "changePassword.failed": "Şifre değiştirilemedi",
   "changePassword.updating": "Şifre güncelleniyor...",
-  "changePassword.update": "Şifreyi Güncelle"
+  "changePassword.update": "Şifreyi Güncelle",
+  "changePassword.cancel": "İptal",
+  "account.minHobbiesError": "Lütfen en az 3 hobi seçin.",
+  "500_characters": "Her alan için maksimum 500 karakter"
 }

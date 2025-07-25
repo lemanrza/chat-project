@@ -308,5 +308,17 @@
   "changePassword.success": "Şifrə uğurla dəyişdirildi!",
   "changePassword.failed": "Şifrəni dəyişmək mümkün olmadı",
   "changePassword.updating": "Şifrə yenilənir...",
-  "changePassword.update": "Şifrəni yenilə"
+  "changePassword.update": "Şifrəni yenilə",
+  "changePassword.cancel": "Ləğv et",
+  "account.minHobbiesError": "Ən azı 3 hobbi seçin.",
+  "500_characters": "Hər bir sahə üçün maksimum 500 simvol",
+  "deletion_failed": "Silinmə uğursuz oldu",
+  "save_changes": "Dəyişiklikləri yadda saxla",
+  "saving": "Yadda saxlanılır...",
+  "delete_account_confirm_button": "Yes, delete my account",
+  "delete_account_cancel_button": "Cancel",
+  "account_deleted": "Account Deleted",
+  "continue_to_login": "Continue to Login",
+  "logged_out": "Logged out successfully",
+  "try_again": "Yenidən cəhd et"
 }

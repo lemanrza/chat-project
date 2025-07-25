@@ -265,5 +265,11 @@
   "changePassword.success": "Пароль успешно изменен!",
   "changePassword.failed": "Не удалось изменить пароль",
   "changePassword.updating": "Обновление пароля...",
-  "changePassword.update": "Обновить пароль"
+  "changePassword.update": "Обновить пароль",
+  "changePassword.cancel": "Отмена",
+  "account.minHobbiesError": "Пожалуйста, выберите минимум 3 хобби.",
+  "500_characters": "Максимум 500 символов для каждого поля",
+  "deletion_failed": "Удаление не удалось",
+  "save_changes": "Сохранить изменения",
+  "saving": "Сохранение..."
 }

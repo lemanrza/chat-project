@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
   Coffee,
   Plane,
@@ -42,6 +41,7 @@ import endpoints from "@/services/api";
 import { getUserIdFromToken } from "@/utils/auth";
 import axios from "axios";
 import type { UserData, FormData } from "@/types/profileType";
+import { useTranslation } from "react-i18next";
 
 interface LocationData {
   id: string;
@@ -99,13 +99,12 @@ const PersonalInformations = ({
   handleInputChange,
   userData,
 }: PersonalInformationsProps) => {
-  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [locationSearch, setLocationSearch] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
-
+  const { t } = useTranslation();
   useEffect(() => {
     if (userData?.hobbies) {
       setSelectedHobbies(userData.hobbies);
@@ -221,12 +220,12 @@ const PersonalInformations = ({
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
       <h3 className="text-xl font-semibold text-gray-900 mb-6">
-        {t("account.personalInfoTitle")}
+        Personal Information
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            First Name
+            {(t("first_name", "First Name"))}
           </label>
           <input
             type="text"
@@ -238,7 +237,7 @@ const PersonalInformations = ({
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Last Name
+            {t("last_name", "Last Name")}
           </label>
           <input
             type="text"
@@ -250,7 +249,7 @@ const PersonalInformations = ({
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Email Address
+            Email
           </label>
           <input
             type="email"
@@ -262,7 +261,7 @@ const PersonalInformations = ({
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Username
+            {t("username", "Username")}
           </label>
           <input
             type="text"
@@ -284,7 +283,7 @@ const PersonalInformations = ({
               handleInputChange("location", e.target.value);
               handleLocationSearch(e);
             }}
-            placeholder={t("account.locationPlaceholder")}
+            placeholder="Search and select your location"
           />
           {isSearching && (
             <div className="text-sm text-gray-500">
@@ -324,7 +323,7 @@ const PersonalInformations = ({
             placeholder="Tell us about yourself..."
           />
           <p className="text-xs text-gray-500 mt-1">
-            {formData.bio.length}/500 characters
+            {formData.bio.length}/{t("500_characters", "characters")}
           </p>
         </div>
         <div className="md:col-span-2">
@@ -354,7 +353,7 @@ const PersonalInformations = ({
                     <span className="mr-2">
                       <IconComponent size={16} className="inline" />
                     </span>
-                    {t(`account.hobby.${interest.name}`, interest.name)}
+                    {interest.name}
                   </label>
                 </div>
               );
@@ -362,7 +361,7 @@ const PersonalInformations = ({
           </div>
           {!isMinHobbiesSelected && (
             <p className="text-sm text-red-500 mt-2">
-              Please select at least 3 hobbies.
+              {t("account.minHobbiesError", "Please select at least 3 hobbies.")}
             </p>
           )}
         </div>
@@ -373,8 +372,8 @@ const PersonalInformations = ({
           onClick={handleSaveChanges}
           disabled={isSaving}
           className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
-              ? "bg-gray-400 cursor-not-allowed text-white"
-              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
+            ? "bg-gray-400 cursor-not-allowed text-white"
+            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
             }`}
         >
           {isSaving ? (
@@ -399,7 +398,7 @@ const PersonalInformations = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              {t("account.saving", "Saving...")}
+              {t("saving", "Saving...")}
             </span>
           ) : (
             <>
@@ -416,7 +415,7 @@ const PersonalInformations = ({
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              {t("account.saveChanges", "Save Changes")}
+              {t("save_changes", "Save Changes")}
             </>
           )}
         </button>
