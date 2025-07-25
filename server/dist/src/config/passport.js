@@ -7,7 +7,8 @@ passport.use(new GoogleStrategy({
     clientID: config.GOOGLE_CLIENT_ID,
     clientSecret: config.GOOGLE_CLIENT_SECRET,
     callbackURL: `${config.SERVER_URL}/auth/google/callback`,
-}, async (_accessToken, _refreshToken, profile, done) => {
+    passReqToCallback: true,
+}, async (req, _accessToken, _refreshToken, profile, done) => {
     try {
         if (!profile.id || !profile.emails?.length) {
             return done(new Error("Invalid Google profile"), false);
@@ -29,8 +30,36 @@ passport.use(new GoogleStrategy({
         const displayName = profile.displayName;
         const nameParts = displayName.split(" ");
         const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(" ") || firstName; // Use firstName as lastName if no last name
+        const lastName = nameParts.slice(1).join(" ") || firstName;
         const DEFAULT_BIO = `Welcome to my profile! I'm just getting started here and looking forward to meeting new people, learning new things, and sharing great conversations. Stay tuned as I update more about myself!`;
+        let location = "";
+        if (profile._json) {
+            const jsonData = profile._json;
+            location =
+                jsonData.locale || jsonData.location || jsonData.country || "";
+            if (jsonData.locale && !location.includes(",")) {
+                const localeMap = {
+                    "en-US": "United States",
+                    "en-GB": "United Kingdom",
+                    "tr-TR": "Turkey",
+                    "de-DE": "Germany",
+                    "fr-FR": "France",
+                    "es-ES": "Spain",
+                    "it-IT": "Italy",
+                    "pt-BR": "Brazil",
+                    "ru-RU": "Russia",
+                    "ja-JP": "Japan",
+                    "ko-KR": "South Korea",
+                    "zh-CN": "China",
+                };
+                location = localeMap[jsonData.locale] || jsonData.locale;
+            }
+        }
+        if (!location && profile.emails?.[0]?.value) {
+            const emailDomain = profile.emails[0].value.split("@")[1];
+        }
+        console.log("Google profile location extracted:", location);
+        console.log("Google profile data available:", Object.keys(profile._json || {}));
         const newUser = await UserModel.create({
             username: `${profile.emails?.[0]?.value.split("@")[0]}-${Date.now()}`,
             email: profile.emails?.[0]?.value,
@@ -38,9 +67,9 @@ passport.use(new GoogleStrategy({
                 firstName,
                 lastName,
                 displayName,
-                avatar: profile.photos?.[0]?.value,
+                avatar: profile.photos?.[0]?.value || "",
                 bio: DEFAULT_BIO,
-                location: "",
+                location: location,
                 dateOfBirth: null,
             },
             provider: "google",
@@ -50,7 +79,7 @@ passport.use(new GoogleStrategy({
         return done(null, newUser);
     }
     catch (error) {
-        done(error, false);
+        return done(error, false);
     }
 }));
 passport.use(new GitHubStrategy({
@@ -58,7 +87,8 @@ passport.use(new GitHubStrategy({
     clientSecret: config.GITHUB_CLIENT_SECRET,
     callbackURL: `${config.SERVER_URL}/auth/github/callback`,
     scope: ["user:email"],
-}, async (_accessToken, _refreshToken, profile, done) => {
+    passReqToCallback: true,
+}, async (req, _accessToken, _refreshToken, profile, done) => {
     try {
         if (!profile.id) {
             return done(new Error("Invalid GitHub profile"), false);
@@ -85,6 +115,19 @@ passport.use(new GitHubStrategy({
         const firstName = nameParts[0];
         const lastName = nameParts.slice(1).join(" ") || firstName; // Use firstName as lastName if no last name
         const DEFAULT_BIO = `Welcome to my profile! I'm just getting started here and looking forward to meeting new people, learning new things, and sharing great conversations. Stay tuned as I update more about myself!`;
+        // Extract location from GitHub profile - try multiple sources
+        let location = "";
+        if (profile._json) {
+            const jsonData = profile._json;
+            location = jsonData.location || jsonData.company || "";
+            if (location) {
+                location = location.trim();
+            }
+        }
+        if (!location && profile.profileUrl) {
+        }
+        console.log("GitHub profile location extracted:", location);
+        console.log("GitHub profile data available:", Object.keys(profile._json || {}));
         const newUser = await UserModel.create({
             username: `${profile.username}-${Date.now()}`,
             email,
@@ -97,7 +140,7 @@ passport.use(new GitHubStrategy({
                 displayName,
                 avatar: profile.photos?.[0]?.value || "",
                 bio: DEFAULT_BIO,
-                location: "",
+                location: location,
                 dateOfBirth: null,
             },
         });
@@ -107,3 +150,16 @@ passport.use(new GitHubStrategy({
         return done(error, false);
     }
 }));
+passport.serializeUser((user, done) => {
+    done(null, user._id);
+});
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await UserModel.findById(id);
+        done(null, user);
+    }
+    catch (error) {
+        done(error, null);
+    }
+});
+export default passport;

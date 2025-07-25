@@ -1,4 +1,4 @@
-import { getAll, getByEmail, getOne, getOneWithPassword, login, register, resetPass, unlockAcc, forgotPassword as forgotPasswordService, deleteUser as deleteUserService, updateUser, } from "../services/userService.js";
+import { getAll, getByEmail, getOne, getOneWithPassword, getOneWithConnections, login, register, resetPass, unlockAcc, forgotPassword as forgotPasswordService, deleteUser as deleteUserService, updateUser, verifyEmail, addConnection, removeConnection, getAvailableUsers, } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken } from "../utils/jwt.js";
@@ -139,14 +139,11 @@ export const resetPassword = async (req, res, next) => {
 };
 export const registerUser = async (req, res, next) => {
     try {
-        const { password, firstName, lastName, location, dateOfBirth, hobbies, ...otherData } = req.body;
+        const { password, profile, hobbies, ...otherData } = req.body;
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const profileData = {
-            firstName,
-            lastName,
-            location,
-            dateOfBirth,
+            ...profile,
         };
         if (req.file) {
             const uploadedImage = await cloudinary.uploader.upload(req.file.path, {
@@ -168,7 +165,7 @@ export const registerUser = async (req, res, next) => {
         const token = generateAccessToken({
             id: response.data._id,
             email: req.body.email,
-            fullName: req.body.profile.displayName,
+            fullName: `${req.body.profile.firstName} ${req.body.profile.lastName}`,
         }, "6h");
         const verificationLink = `${process.env.SERVER_URL}/auth/verify-email?token=${token}`;
         sendVerificationEmail(req.body.email, req.body.profile.firstName + " " + req.body.profile.lastName, verificationLink);
@@ -184,6 +181,16 @@ export const registerUser = async (req, res, next) => {
         else {
             next(new Error("Internal server error"));
         }
+    }
+};
+export const verifyUserEmail = async (req, res, next) => {
+    try {
+        const { token } = req.query;
+        const response = await verifyEmail(token);
+        res.redirect(`${config.CLIENT_URL}/auth/email-verified?message=${response?.message}`);
+    }
+    catch (error) {
+        next(error);
     }
 };
 export const loginUser = async (req, res) => {
@@ -236,7 +243,12 @@ export const logout = (_, res) => {
 };
 export const updateCurrentUser = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.params.userId;
+        if (!userId) {
+            return res.status(400).json({
+                message: "User ID is required",
+            });
+        }
         const user = await getOne(userId);
         if (!user) {
             return res.status(404).json({
@@ -301,7 +313,12 @@ export const updateCurrentUser = async (req, res, next) => {
 };
 export const uploadProfileImage = async (req, res, _) => {
     try {
-        const userId = req.user.id;
+        const userId = req.params.userId;
+        if (!userId) {
+            return res.status(400).json({
+                message: "User ID is required",
+            });
+        }
         if (!req.file) {
             console.log("No file provided");
             return res.status(400).json({
@@ -369,7 +386,12 @@ export const uploadProfileImage = async (req, res, _) => {
 };
 export const deleteProfileImage = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.params.userId;
+        if (!userId) {
+            return res.status(400).json({
+                message: "User ID is required",
+            });
+        }
         console.log("Delete image request from user:", userId);
         const currentUser = await getOne(userId);
         if (!currentUser) {
@@ -423,8 +445,13 @@ export const deleteProfileImage = async (req, res, next) => {
 };
 export const getCurrentUser = async (req, res, next) => {
     try {
-        const userId = req.user.id;
-        const user = await getOne(userId);
+        const userId = req.params.userId;
+        if (!userId) {
+            return res.status(400).json({
+                message: "User ID is required",
+            });
+        }
+        const user = await getOneWithConnections(userId);
         if (!user) {
             return res.status(404).json({
                 message: "User not found",
@@ -441,7 +468,12 @@ export const getCurrentUser = async (req, res, next) => {
 };
 export const deleteCurrentUser = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.params.userId;
+        if (!userId) {
+            return res.status(400).json({
+                message: "User ID is required",
+            });
+        }
         console.log("Delete account request from user:", userId);
         const currentUser = await getOne(userId);
         if (!currentUser) {
@@ -492,7 +524,12 @@ export const deleteCurrentUser = async (req, res, next) => {
 };
 export const changePassword = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.params.userId;
+        if (!userId) {
+            return res.status(400).json({
+                message: "User ID is required",
+            });
+        }
         const { currentPassword, newPassword } = req.body;
         if (!currentPassword || !newPassword) {
             return res.status(400).json({
@@ -544,6 +581,73 @@ export const changePassword = async (req, res, next) => {
         }
         res.status(200).json({
             message: "Password changed successfully",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+// Add connection between users
+export const addUserConnection = async (req, res, next) => {
+    try {
+        const userId = req.params.userId;
+        const { connectionId } = req.body;
+        if (!connectionId) {
+            return res.status(400).json({
+                message: "Connection ID is required",
+            });
+        }
+        if (userId === connectionId) {
+            return res.status(400).json({
+                message: "Cannot connect to yourself",
+            });
+        }
+        const result = await addConnection(userId, connectionId);
+        if (!result.success) {
+            return res.status(500).json({
+                message: result.message,
+            });
+        }
+        res.status(200).json({
+            message: result.message,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+// Remove connection between users
+export const removeUserConnection = async (req, res, next) => {
+    try {
+        const userId = req.params.userId;
+        const { connectionId } = req.params;
+        const result = await removeConnection(userId, connectionId);
+        if (!result.success) {
+            return res.status(500).json({
+                message: result.message,
+            });
+        }
+        res.status(200).json({
+            message: result.message,
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+// Get available users to connect with
+export const getAvailableUsersToConnect = async (req, res, next) => {
+    try {
+        const userId = req.params.userId;
+        const result = await getAvailableUsers(userId);
+        if (!result.success) {
+            return res.status(500).json({
+                message: result.message,
+            });
+        }
+        res.status(200).json({
+            message: "Available users retrieved successfully",
+            data: result.data,
         });
     }
     catch (error) {
