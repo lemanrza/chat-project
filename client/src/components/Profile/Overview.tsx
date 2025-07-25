@@ -8,8 +8,7 @@ const Overview = () => {
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { enqueueSnackbar } from "notistack";
-import type { UserData, FormData, ConnectionRequest } from "@/types/profileType";
-import { useEffect, useState } from "react";
+import type { UserData, FormData } from "@/types/profileType";
 
 interface OverviewProps {
   formData: FormData;
@@ -18,7 +17,6 @@ interface OverviewProps {
 }
 
 const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
-  // Since userData.connectionsRequests are now populated user objects, we can use them directly
   const connectionRequests = userData?.connectionsRequests || [];
   if (connectionRequests.length > 0) {
     console.log("First connection request:", connectionRequests[0]);

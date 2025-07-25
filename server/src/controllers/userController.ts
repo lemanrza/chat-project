@@ -925,7 +925,6 @@ export const getPendingConnectionRequests = async (
   }
 };
 
-// Accept a connection request
 export const acceptConnection = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -957,7 +956,6 @@ export const acceptConnection = async (
   }
 };
 
-// Reject a connection request
 export const rejectConnection = async (
   req: AuthenticatedRequest,
   res: Response,
