@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { enqueueSnackbar } from "notistack";
 import Account from "@/components/Profile/Account/Account";
-import Privacy from "@/components/Profile/Privacy";
 import Overview from "@/components/Profile/Overview";
+import Privacy from "@/components/Profile/Privacy";
 import Navigation from "@/components/Profile/Navigation";
 import Settings from "@/components/Profile/Settings";
 import { getUserIdFromToken, isTokenExpired } from "@/utils/auth";
 import type { FormData } from "@/types/profileType";
 
 const Profile = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("overview");
   const [imagePreview, setImagePreview] = useState<string>("");
   const [userData, setUserData] = useState<any>(null);
@@ -70,7 +72,7 @@ const Profile = () => {
           return;
         }
 
-        enqueueSnackbar("Failed to load user data", {
+        enqueueSnackbar(t('profile_failed_to_load'), {
           variant: "error",
           autoHideDuration: 2000,
           anchorOrigin: {
@@ -92,7 +94,7 @@ const Profile = () => {
 
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
-      enqueueSnackbar("Please select a valid image file (JPEG, PNG, or GIF)", {
+      enqueueSnackbar(t('profile_invalid_image'), {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -104,7 +106,7 @@ const Profile = () => {
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      enqueueSnackbar("Image size must be less than 5MB", {
+      enqueueSnackbar(t('profile_image_size_error'), {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -157,7 +159,7 @@ const Profile = () => {
       URL.revokeObjectURL(previewUrl);
       setImagePreview("");
 
-      enqueueSnackbar("Profile image updated successfully!", {
+      enqueueSnackbar(t('profile_image_updated'), {
         variant: "success",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -173,7 +175,7 @@ const Profile = () => {
         setImagePreview("");
       }
 
-      enqueueSnackbar("Failed to upload image. Please try again.", {
+      enqueueSnackbar(t('profile_failed_upload_image'), {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -230,7 +232,7 @@ const Profile = () => {
         setImagePreview("");
       }
 
-      enqueueSnackbar("Profile image deleted successfully!", {
+      enqueueSnackbar(t('profile_image_deleted'), {
         variant: "success",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -240,7 +242,7 @@ const Profile = () => {
       });
     } catch (error) {
       console.error("Error deleting image:", error);
-      enqueueSnackbar("Failed to delete image. Please try again.", {
+      enqueueSnackbar(t('profile_failed_delete_image'), {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -265,7 +267,7 @@ const Profile = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading profile...</p>
+          <p className="mt-4 text-gray-600">{t('profile_loading')}</p>
         </div>
       </div>
     );
@@ -275,7 +277,7 @@ const Profile = () => {
     <div className="min-h-screen flex">
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-semibold">Profile</h1>
+          <h1 className="text-2xl font-semibold">{t('profile_title')}</h1>
         </div>
 
         <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
@@ -313,18 +315,17 @@ const Profile = () => {
 
               <div className="mt-3 flex flex-col items-center gap-2">
                 <button
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
-                    isUploadingImage
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${isUploadingImage
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-[#00B878] text-white hover:bg-emerald-600 border border-[#00B878] hover:border-emerald-600"
-                  }`}
+                    }`}
                   onClick={!isUploadingImage ? triggerFileInput : undefined}
                   disabled={isUploadingImage}
                 >
                   {isUploadingImage ? (
                     <>
                       <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
-                      <span>Uploading...</span>
+                      <span>{t('profile_uploading')}</span>
                     </>
                   ) : (
                     <>
@@ -339,7 +340,7 @@ const Profile = () => {
                       >
                         <path d="M12 2L12 22M2 12L22 12" />
                       </svg>
-                      <span>Change Photo</span>
+                      <span>{t('profile_change_photo')}</span>
                     </>
                   )}
                 </button>
@@ -349,11 +350,10 @@ const Profile = () => {
                   "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
                   !imagePreview && (
                     <button
-                      className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
-                        isUploadingImage
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${isUploadingImage
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-200 hover:border-red-300"
-                      }`}
+                        }`}
                       onClick={
                         !isUploadingImage ? handleDeleteImage : undefined
                       }
@@ -362,7 +362,7 @@ const Profile = () => {
                       {isUploadingImage ? (
                         <>
                           <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
-                          <span>Removing...</span>
+                          <span>{t('profile_removing')}</span>
                         </>
                       ) : (
                         <>
@@ -377,7 +377,7 @@ const Profile = () => {
                           >
                             <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14ZM10 11v6M14 11v6" />
                           </svg>
-                          <span>Remove Photo</span>
+                          <span>{t('profile_remove_photo')}</span>
                         </>
                       )}
                     </button>
@@ -392,19 +392,18 @@ const Profile = () => {
               </h2>
               <p className="text-gray-500 mb-4">@{userData?.username}</p>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                {formData.bio || "No bio available"}
+                {formData.bio || t('profile_no_bio')}
               </p>
 
               <div className="flex items-center gap-6 text-gray-500 text-sm mb-6">
                 <div className="flex items-center gap-1">
                   <span>📍</span>
-                  <span>{formData.location || "Location not set"}</span>
+                  <span>{formData.location || t('profile_no_location')}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span>📅</span>
                   <span>
-                    Joined{" "}
-                    {new Date(userData?.createdAt).toLocaleDateString("en-US", {
+                    {t('profile_joined')} {new Date(userData?.createdAt).toLocaleDateString("en-US", {
                       month: "long",
                       year: "numeric",
                     })}
@@ -417,11 +416,11 @@ const Profile = () => {
                   <span className="text-2xl font-bold text-gray-900">
                     {userData?.connections?.length || 0}
                   </span>
-                  <p className="text-gray-500 text-sm">Connections</p>
+                  <p className="text-gray-500 text-sm">{t('profile_connections')}</p>
                 </div>
                 <div>
                   <span className="text-2xl font-bold text-gray-900">23</span>
-                  <p className="text-gray-500 text-sm">Active Chats</p>
+                  <p className="text-gray-500 text-sm">{t('profile_active_chats')}</p>
                 </div>
               </div>
             </div>

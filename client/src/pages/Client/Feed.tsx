@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import endpoints from "@/services/api";
-import controller from "@/services/commonRequest";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import endpoints from '@/services/api';
+import controller from '@/services/commonRequest';
+import { useNavigate } from 'react-router-dom';
+import { enqueueSnackbar } from 'notistack';
 import type { UserData } from "@/types/profileType";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
 import type { UserState } from "@/features/userSlice";
 import { addConnection } from "@/features/userSlice";
-import { useNavigate } from "react-router-dom";
-import { enqueueSnackbar } from "notistack";
 import {
   Search,
   Filter,
@@ -26,6 +27,13 @@ interface Tab {
   icon: React.ReactNode;
 }
 
+const hobbiesList = [
+  'Music', 'Sports', 'Travel', 'Reading', 'Gaming', 'Art', 'Cooking', 'Fitness', 'Movies', 'Tech', 'Photography', 'Writing', 'Fashion', 'Nature', 'DIY'
+];
+const countriesList = [
+  'Azerbaijan', 'Turkey', 'Russia', 'USA', 'UK', 'Germany', 'France', 'Italy', 'Spain', 'China', 'Japan', 'India', 'Brazil', 'Canada', 'Australia'
+];
+
 const Feed = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -36,6 +44,8 @@ const Feed = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
 
   const { t } = useTranslation();
 
@@ -72,26 +82,100 @@ const Feed = () => {
     fetchUsers();
   }, [navigate]);
 
-  const filteredUsers = users
-    .filter(
-      (userData) =>
-        userData.profile?.firstName
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        userData.profile?.lastName
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        userData.profile?.location
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase())
-    )
-    .filter((userData) => userData.id !== user.id);
+  const filteredUsers = users.filter(userData => {
+    const matchesSearch =
+      userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesHobbies =
+      selectedHobbies.length === 0 ||
+      (userData.hobbies && userData.hobbies.some(hobby => selectedHobbies.includes(hobby)));
+
+    const matchesCountry =
+      selectedCountries.length === 0 ||
+      (userData.profile?.location && selectedCountries.includes(userData.profile.location));
+
+    return matchesSearch && matchesHobbies && matchesCountry;
+  });
 
   // Handle connection request logic
+  // const handleConnect = async (targetUserId: string) => {
+  //   try {
+  //     const isAlreadyConnected = user.connections.includes(targetUserId);
+
+  // if (isAlreadyConnected) {
+  //   enqueueSnackbar("Already connected with this user", {
+  //     variant: "info",
+  //     autoHideDuration: 2000,
+  //     anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //   });
+  //   return;
+  // }
+
+  //     // Use the new connection API that handles public/private profiles
+  //     const response = await controller.post(`${endpoints.users}/me/${user.id}/connections`, {
+  //       connectionId: targetUserId,
+  //     });
+
+  //     console.log("Connection response:", response);
+
+  //     if (response.data.type === 'connected') {
+  //       // Public profile - immediate connection
+  //       enqueueSnackbar("Connected successfully!", {
+  //         variant: "success",
+  //         autoHideDuration: 2000,
+  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //       });
+
+  //       // Update Redux state to reflect the new connection
+  //       dispatch(addConnection(targetUserId));
+  //     } else if (response.data.type === 'request_sent') {
+  //       // Private profile - request sent
+  //       enqueueSnackbar("Connection request sent! Waiting for approval.", {
+  //         variant: "info",
+  //         autoHideDuration: 3000,
+  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //       });
+  //     } else {
+  //       // Default success message
+  //       enqueueSnackbar(response.data.message || "Connection request processed!", {
+  //         variant: "success",
+  //         autoHideDuration: 2000,
+  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //       });
+  //     }
+  // } catch (error: any) {
+  //   console.error("Error sending connection request:", error);
+
+  //   let errorMessage = "Failed to send connection request";
+
+  //   if (error.response?.data?.message) {
+  //     errorMessage = error.response.data.message;
+  //   } else if (error.response?.status === 404) {
+  //     errorMessage = "User not found";
+  //   } else if (error.response?.status === 401) {
+  //     errorMessage = "Unauthorized: Please log in again";
+  //     localStorage.removeItem("token");
+  //     navigate("/auth/login");
+  //   }
+
+  //   enqueueSnackbar(errorMessage, {
+  //     variant: "error",
+  //     autoHideDuration: 2000,
+  //     anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //   });
+  // }
+  // };
   const handleConnect = async (targetUserId: string) => {
     try {
-      const isAlreadyConnected = user.connections.includes(targetUserId);
-
+      // Check if already connected
+      const userConnections = Array.isArray(user.connections)
+        ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
+        : [];
+      
+      const isAlreadyConnected = userConnections.includes(targetUserId);
+      
       if (isAlreadyConnected) {
         enqueueSnackbar("Already connected with this user", {
           variant: "info",
@@ -101,44 +185,79 @@ const Feed = () => {
         return;
       }
 
-      // Use the new connection API that handles public/private profiles
-      const response = await controller.post(`${endpoints.users}/me/${user.id}/connections`, {
-        connectionId: targetUserId,
-      });
+      const targetUserResponse = await controller.getOne(endpoints.users, targetUserId);
+      const targetUser = targetUserResponse.data;
 
-      console.log("Connection response:", response);
-
-      // Handle different response types
-      if (response.data.type === 'connected') {
-        // Public profile - immediate connection
-        enqueueSnackbar("Connected successfully!", {
-          variant: "success",
+      if (!targetUser) {
+        enqueueSnackbar("User not found", {
+          variant: "error",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
+        return;
+      }
+
+      // Check if request already pending
+      const targetUserConnectionRequests = Array.isArray(targetUser.connectionsRequests)
+        ? targetUser.connectionsRequests.map((req: any) => typeof req === 'string' ? req : (req as UserData).id)
+        : [];
         
-        // Update Redux state to reflect the new connection
-        dispatch(addConnection(targetUserId));
-      } else if (response.data.type === 'request_sent') {
-        // Private profile - request sent
+      const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
+      
+      if (isRequestPending) {
+        enqueueSnackbar("Connection request is already pending", {
+          variant: "info",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
+        return;
+      }
+
+      if (targetUser.profileVisibility === "private") {
+        // For private profile, add to connectionsRequests
+        const updatedConnectionsRequests = [...targetUserConnectionRequests, user.id];
+        
+        await controller.update(`${endpoints.users}/update`, targetUserId, {
+          connectionsRequests: updatedConnectionsRequests,
+        });
+
         enqueueSnackbar("Connection request sent! Waiting for approval.", {
           variant: "info",
           autoHideDuration: 3000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
       } else {
-        // Default success message
-        enqueueSnackbar(response.data.message || "Connection request processed!", {
+        // For public profile, connect both users immediately
+        const targetUserConnections = Array.isArray(targetUser.connections)
+          ? targetUser.connections.map((conn: any) => typeof conn === 'string' ? conn : (conn as UserData).id)
+          : [];
+
+        // Update target user's connections
+        await controller.update(`${endpoints.users}/update`, targetUserId, {
+          connections: [...targetUserConnections, user.id],
+        });
+
+        // Update current user's connections (check user.id exists)
+        if (user.id) {
+          await controller.update(`${endpoints.users}/update`, user.id, {
+            connections: [...userConnections, targetUserId],
+          });
+        }
+
+        enqueueSnackbar("Connected successfully!", {
           variant: "success",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
+
+        // Update Redux state to reflect the new connection
+        dispatch(addConnection(targetUserId));
       }
     } catch (error: any) {
       console.error("Error sending connection request:", error);
-      
+
       let errorMessage = "Failed to send connection request";
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.status === 404) {
@@ -155,7 +274,7 @@ const Feed = () => {
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
       });
     }
-  };
+  }
 
   const handleMessage = (userId: string) => {
     console.log("Messaging user:", userId);
@@ -173,7 +292,81 @@ const Feed = () => {
   }
 
   return (
-    <div className="w-full flex">
+    <div className="w-full flex relative">
+      {/* Filter Sidebar */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.aside
+            initial={{ x: 400, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 400, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl z-40 flex flex-col p-8 border-l border-gray-200"
+            style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
+          >
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-xl font-bold text-[#00B878]">{t('feed_filters_title')}</h2>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+                aria-label="Close sidebar"
+              >
+                <svg width="24" height="24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-700 mb-2">{t('feed_filter_hobbies')}</h3>
+              <div className="flex flex-wrap gap-2">
+                {hobbiesList.map(hobby => (
+                  <button
+                    key={hobby}
+                    onClick={() => setSelectedHobbies(selectedHobbies.includes(hobby)
+                      ? selectedHobbies.filter(h => h !== hobby)
+                      : [...selectedHobbies, hobby])}
+                    className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${selectedHobbies.includes(hobby)
+                      ? 'bg-[#00B878] text-white border-[#00B878]'
+                      : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-[#e6f7f1]'} `}
+                  >
+                    {hobby}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-700 mb-2">{t('feed_filter_countries')}</h3>
+              <div className="flex flex-wrap gap-2">
+                {countriesList.map(country => (
+                  <button
+                    key={country}
+                    onClick={() => setSelectedCountries(selectedCountries.includes(country)
+                      ? selectedCountries.filter(c => c !== country)
+                      : [...selectedCountries, country])}
+                    className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${selectedCountries.includes(country)
+                      ? 'bg-[#00B878] text-white border-[#00B878]'
+                      : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-[#e6f7f1]'} `}
+                  >
+                    {country}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mt-auto flex gap-2">
+              <button
+                onClick={() => { setSelectedHobbies([]); setSelectedCountries([]); }}
+                className="flex-1 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition"
+              >
+                {t('feed_filter_clear')}
+              </button>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="flex-1 py-3 rounded-lg bg-[#00B878] text-white font-medium hover:bg-[#00a76d] transition"
+              >
+                {t('feed_filter_apply')}
+              </button>
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
@@ -230,7 +423,7 @@ const Feed = () => {
               />
             </div>
             <button
-              onClick={() => setShowFilters(!showFilters)}
+              onClick={() => setShowFilters(true)}
               className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow-sm"
             >
               <Filter className="w-4 h-4" />
@@ -244,18 +437,18 @@ const Feed = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredUsers.map((userData) => {
               // Handle connections as either string[] or UserData[]
-              const userConnections = Array.isArray(user.connections) 
+              const userConnections = Array.isArray(user.connections)
                 ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
                 : [];
-              
+
               const isAlreadyConnected = userConnections.includes(userData.id);
-              
+
               // Check if current user has sent a request to this target user
               // This means the target user's connectionsRequests should contain current user's ID
               const targetUserConnectionRequests = Array.isArray(userData.connectionsRequests)
                 ? userData.connectionsRequests.map(req => typeof req === 'string' ? req : (req as UserData).id)
                 : [];
-                
+
               const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
 
               // Handle click for connected button

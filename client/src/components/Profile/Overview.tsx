@@ -12,7 +12,17 @@ interface OverviewProps {
 
 const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
   const connectionRequests = userData?.connectionsRequests || [];
+  if (connectionRequests.length > 0) {
+    console.log("First connection request:", connectionRequests[0]);
+    console.log(
+      "First request keys:",
+      Object.keys(connectionRequests[0] || {})
+    );
+  }
+  console.log("formData:", formData);
+  console.log("=== END DEBUG ===");
 
+  // Handle accepting a connection request
   const handleAcceptRequest = async (requestUser: any) => {
     try {
       const currentUserId = userData?.id || (userData as any)?._id;

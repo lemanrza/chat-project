@@ -3,6 +3,7 @@ import controller from "@/services/commonRequest";
 import { enqueueSnackbar } from "notistack";
 import Swal from "sweetalert2";
 import { getUserIdFromToken } from "@/utils/auth";
+import { t } from "i18next";
 
 const DangerZone = () => {
   const handleDeleteAccount = async () => {
@@ -132,7 +133,7 @@ const DangerZone = () => {
             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
           />
         </svg>
-        Danger Zone
+        {t("danger_zone", "Danger Zone")}
       </h3>
 
       <div className="space-y-4">
@@ -155,9 +156,11 @@ const DangerZone = () => {
               </svg>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900">Sign Out</h4>
+              <h4 className="font-medium text-gray-900">
+                {t("sign_out", "Sign Out")}
+              </h4>
               <p className="text-sm text-gray-500">
-                Sign out from your current session
+                {t("sign_out_description")}
               </p>
             </div>
           </div>
@@ -165,7 +168,7 @@ const DangerZone = () => {
             onClick={handleLogout}
             className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium cursor-pointer"
           >
-            Sign Out
+            {t("sign_out", "Sign Out")}
           </button>
         </div>
 
@@ -187,30 +190,37 @@ const DangerZone = () => {
             </svg>
           </div>
           <div className="flex-1">
-            <h4 className="font-medium text-red-900 mb-2">Delete Account</h4>
+            <h4 className="font-medium text-red-900 mb-2">
+              {t("delete_account", "Delete Account")}
+            </h4>
             <p className="text-sm text-red-700 mb-4">
-              Permanently remove your account and all associated data. This
-              action cannot be undone.
+              {t("delete_account_confirmation")}
             </p>
             <div className="space-y-2 mb-4">
               <div className="flex items-center space-x-2 text-xs text-red-600">
                 <span>•</span>
-                <span>All chat history will be permanently deleted</span>
+                <span>
+                  {t("delete_account_chat_history")}
+                </span>
               </div>
               <div className="flex items-center space-x-2 text-xs text-red-600">
                 <span>•</span>
-                <span>Profile and personal information will be removed</span>
+                <span>
+                  {t("delete_account_profile_info")}
+                </span>
               </div>
               <div className="flex items-center space-x-2 text-xs text-red-600">
                 <span>•</span>
-                <span>Account recovery will not be possible</span>
+                <span>
+                  {t("delete_account_recovery")}
+                </span>
               </div>
             </div>
             <button
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium cursor-pointer"
               onClick={handleDeleteAccount}
             >
-              Delete My Account
+              {t("delete_account", "Delete My Account")}
             </button>
           </div>
         </div>
