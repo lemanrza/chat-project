@@ -1,4 +1,10 @@
 import { Heart, MessageCircle, Settings, Shield, Users } from "lucide-react";
+<<<<<<< HEAD
+import { useTranslation } from "react-i18next";
+
+const Overview = () => {
+  const { t } = useTranslation();
+=======
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { enqueueSnackbar } from "notistack";
@@ -154,6 +160,7 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
     }
   };
 
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
   return (
     <>
       {/* Stats Cards */}
@@ -168,7 +175,7 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
             </div>
             <div>
               <div className="text-2xl font-bold text-gray-900">154</div>
-              <div className="text-gray-500 text-sm">Total Messages</div>
+              <div className="text-gray-500 text-sm">{t('overview_total_messages', 'Total Messages')}</div>
             </div>
           </div>
         </div>
@@ -179,10 +186,15 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
               <Users className="text-blue-600" size={24} />
             </div>
             <div>
+<<<<<<< HEAD
+              <div className="text-2xl font-bold text-gray-900">47</div>
+              <div className="text-gray-500 text-sm">{t('overview_connections', 'Connections')}</div>
+=======
               <div className="text-2xl font-bold text-gray-900">
                 {formData.connections.length}
               </div>
               <div className="text-gray-500 text-sm">Connections</div>
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
             </div>
           </div>
         </div>
@@ -194,7 +206,7 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
             </div>
             <div>
               <div className="text-2xl font-bold text-gray-900">12</div>
-              <div className="text-gray-500 text-sm">Favorites</div>
+              <div className="text-gray-500 text-sm">{t('overview_favorites', 'Favorites')}</div>
             </div>
           </div>
         </div>
@@ -202,9 +214,13 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
       {/* Quick Actions */}
       <div className="col-span-9">
+<<<<<<< HEAD
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('quick_actions', 'Quick Actions')}</h3>
+=======
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Quick Actions
         </h3>
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div
@@ -213,34 +229,57 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
             >
               <MessageCircle size={24} style={{ color: "#00B878" }} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">New Chat</div>
+            <div className="font-medium text-gray-900 mb-1">{t('new_chat', 'New Chat')}</div>
           </div>
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Users className="text-blue-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">Find Friends</div>
+            <div className="font-medium text-gray-900 mb-1">{t('find_friends', 'Find Friends')}</div>
           </div>
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Settings className="text-purple-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">Preferences</div>
+            <div className="font-medium text-gray-900 mb-1">{t('preferences', 'Preferences')}</div>
           </div>
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Shield className="text-orange-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">Privacy</div>
+            <div className="font-medium text-gray-900 mb-1">{t('privacy', 'Privacy')}</div>
           </div>
         </div>
       </div>
 
       {/* Connection Requests */}
       <div className="mt-6">
+<<<<<<< HEAD
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('connection_requests', 'Connection Requests')}</h3>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          {/* Sample Connection Request */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              {/* Profile Picture */}
+              <div className="w-10 h-10 rounded-full bg-gray-200"></div>
+              <div>
+                <div className="font-medium text-gray-900">John Doe</div>
+                <div className="text-sm text-gray-500">{t('overview_sent_connection_request', 'Sent you a connection request')}</div>
+              </div>
+            </div>
+            <div className="space-x-2">
+              <button className="bg-[#00B878] text-white px-4 py-2 rounded-lg hover:bg-[#00a76d] focus:outline-none transition duration-200">
+                {t('accept', 'Accept')}
+              </button>
+              <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 focus:outline-none transition duration-200">
+                {t('reject', 'Reject')}
+              </button>
+            </div>
+          </div>
+=======
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Connection Requests
         </h3>
@@ -331,6 +370,7 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
               );
             })
           )}
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
         </div>
       </div>
     </>
