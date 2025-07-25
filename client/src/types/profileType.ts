@@ -1,5 +1,5 @@
 export interface UserData {
-  id: string
+  id: string;
   profile: {
     firstName: string;
     lastName: string;
@@ -10,8 +10,8 @@ export interface UserData {
   };
   email: string;
   username: string;
-  connections: string[] | UserData[]; // Can be either IDs or populated user objects
-  connectionsRequests: string[] | UserData[]; // Can be either IDs or populated user objects
+  connections: string[] | UserData[];
+  connectionsRequests: string[] | UserData[];
   hobbies: string[];
   createdAt: string;
   provider: string;

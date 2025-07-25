@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
   Coffee,
   Plane,
@@ -99,7 +98,6 @@ const PersonalInformations = ({
   handleInputChange,
   userData,
 }: PersonalInformationsProps) => {
-  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
   const [locations, setLocations] = useState<LocationData[]>([]);
@@ -221,7 +219,7 @@ const PersonalInformations = ({
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
       <h3 className="text-xl font-semibold text-gray-900 mb-6">
-        {t("account.personalInfoTitle")}
+        Personal Information
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -284,7 +282,7 @@ const PersonalInformations = ({
               handleInputChange("location", e.target.value);
               handleLocationSearch(e);
             }}
-            placeholder={t("account.locationPlaceholder")}
+            placeholder="Search and select your location"
           />
           {isSearching && (
             <div className="text-sm text-gray-500">
@@ -354,7 +352,7 @@ const PersonalInformations = ({
                     <span className="mr-2">
                       <IconComponent size={16} className="inline" />
                     </span>
-                    {t(`account.hobby.${interest.name}`, interest.name)}
+                    {interest.name}
                   </label>
                 </div>
               );
@@ -399,7 +397,7 @@ const PersonalInformations = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              {t("account.saving", "Saving...")}
+              Saving...
             </span>
           ) : (
             <>
@@ -416,7 +414,7 @@ const PersonalInformations = ({
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              {t("account.saveChanges", "Save Changes")}
+              Save Changes
             </>
           )}
         </button>

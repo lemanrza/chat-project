@@ -13,6 +13,7 @@ interface OverviewProps {
 
 const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
   const { t } = useTranslation();
+
   const connectionRequests = userData?.connectionsRequests || [];
 
   const handleAcceptRequest = async (requestUser: any) => {
@@ -77,6 +78,10 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
         const reqId = req?.id || req?._id || req;
         return reqId !== requestUserId;
       });
+      const updatedRequestIds = updatedRequests.map(
+        (req: any) => req?.id || req?._id || req
+      );
+
       setFormData((prev) => ({
         ...prev,
         connectionsRequests: updatedRequests.map((req: any) => req?.id || req?._id || req),
@@ -112,7 +117,7 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
             </div>
             <div>
               <div className="text-2xl font-bold text-gray-900">154</div>
-              <div className="text-gray-500 text-sm">{t('overview_total_messages', 'Total Messages')}</div>
+              <div className="text-gray-500 text-sm">Total Messages</div>
             </div>
           </div>
         </div>
@@ -136,7 +141,7 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
             </div>
             <div>
               <div className="text-2xl font-bold text-gray-900">12</div>
-              <div className="text-gray-500 text-sm">{t('overview_favorites', 'Favorites')}</div>
+              <div className="text-gray-500 text-sm">Favorites</div>
             </div>
           </div>
         </div>
@@ -153,28 +158,28 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
             >
               <MessageCircle size={24} style={{ color: "#00B878" }} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">{t('new_chat', 'New Chat')}</div>
+            <div className="font-medium text-gray-900 mb-1">New Chat</div>
           </div>
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Users className="text-blue-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">{t('find_friends', 'Find Friends')}</div>
+            <div className="font-medium text-gray-900 mb-1">Find Friends</div>
           </div>
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Settings className="text-purple-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">{t('preferences', 'Preferences')}</div>
+            <div className="font-medium text-gray-900 mb-1">Preferences</div>
           </div>
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Shield className="text-orange-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">{t('privacy', 'Privacy')}</div>
+            <div className="font-medium text-gray-900 mb-1">Privacy</div>
           </div>
         </div>
       </div>
