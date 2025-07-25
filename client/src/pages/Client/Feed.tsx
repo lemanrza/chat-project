@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Users, MessageCircle, MapPin, UserPlus } from 'lucide-react';
+import { Search, Filter, Users, MessageCircle, MapPin, UserPlus, Clock, Check } from 'lucide-react';
 import endpoints from '@/services/api';
 import controller from '@/services/commonRequest';
 import type { UserData } from '@/types/profileType';
@@ -44,55 +44,74 @@ const Feed = () => {
       }
     };
     fetchUsers();
-  }, [ navigate]);
+  }, [navigate]);
 
   const filteredUsers = users.filter(userData =>
     userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).filter(userData => userData.id !== user.id);
 
   // Handle connection request logic
-  const handleConnect = async (userId: string) => {
+  const handleConnect = async (targetUserId: string) => {
     try {
-      const isAlreadyConnected = user.connections.includes(userId);
-      const isRequestPending = user.connectionsRequests.includes(userId);
+      const isAlreadyConnected = user.connections.includes(targetUserId);
+
+      // 🔍 Doğru endpoint və cavab strukturuna əsasən istifadəçini alırıq
+      const targetUserResponse = await controller.getOne(endpoints.users, targetUserId);
+      const targetUser = targetUserResponse.data; // <-- Əsas düzəliş buradadır
+
+      console.log("Target user:", targetUser);
+
+      const isRequestPending = targetUser.connectionsRequests?.includes(user.id) || false;
 
       if (isAlreadyConnected) {
-        console.log("Already connected with this user");
+        enqueueSnackbar("Already connected with this user", {
+          variant: "info",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
         return;
       }
 
       if (isRequestPending) {
-        console.log("Connection request is already pending");
+        enqueueSnackbar("Connection request is already pending", {
+          variant: "info",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
         return;
       }
 
-      // Send connection request (set it in connectionsRequests)
-      await controller.update(`${endpoints.users}/${user.id}`, "", {
-        connectionsRequests: [...user.connectionsRequests, userId],
+      await controller.update(`${endpoints.users}/update/${targetUserId}`, "", {
+        connectionsRequests: [...(targetUser.connectionsRequests || []), user.id],
       });
 
       enqueueSnackbar("Connection request sent!", {
         variant: "success",
         autoHideDuration: 2000,
-        anchorOrigin: {
-          vertical: "bottom",
-          horizontal: "right",
-        },
+        anchorOrigin: { vertical: "bottom", horizontal: "right" },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending connection request:", error);
-      enqueueSnackbar("Failed to send connection request", {
+      let errorMessage = "Failed to send connection request";
+
+      if (error.response?.status === 404) {
+        errorMessage = "User not found or invalid endpoint";
+      } else if (error.response?.status === 401) {
+        errorMessage = "Unauthorized: Please log in again";
+        localStorage.removeItem("token");
+        navigate("/auth/login");
+      }
+
+      enqueueSnackbar(errorMessage, {
         variant: "error",
         autoHideDuration: 2000,
-        anchorOrigin: {
-          vertical: "bottom",
-          horizontal: "right",
-        },
+        anchorOrigin: { vertical: "bottom", horizontal: "right" },
       });
     }
   };
+
 
   const handleMessage = (userId: string) => {
     console.log('Messaging user:', userId);
@@ -251,14 +270,14 @@ const Feed = () => {
                         disabled
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-green-600 cursor-not-allowed"
                       >
-                        Connected
+                        <Check /> Connected
                       </button>
                     ) : isRequestPending ? (
                       <button
                         disabled
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-gray-400 cursor-not-allowed"
                       >
-                        Pending
+                        <Clock /> Pending
                       </button>
                     ) : (
                       <button
