@@ -11,33 +11,12 @@ interface OverviewProps {
 }
 
 const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
-  // Since userData.connectionsRequests are now populated user objects, we can use them directly
   const connectionRequests = userData?.connectionsRequests || [];
 
-  // Debug logs to see what we're actually getting
-  console.log("=== OVERVIEW DEBUG ===");
-  console.log("userData:", userData);
-  console.log("userData.id:", userData?.id);
-  console.log("userData._id:", (userData as any)?._id);
-  console.log("connectionRequests:", connectionRequests);
-  console.log("connectionRequests length:", connectionRequests.length);
-  if (connectionRequests.length > 0) {
-    console.log("First connection request:", connectionRequests[0]);
-    console.log(
-      "First request keys:",
-      Object.keys(connectionRequests[0] || {})
-    );
-  }
-  console.log("formData:", formData);
-  console.log("=== END DEBUG ===");
-
-  // Handle accepting a connection request
   const handleAcceptRequest = async (requestUser: any) => {
     try {
-      // Check for user ID in different possible locations
       const currentUserId = userData?.id || (userData as any)?._id;
       if (!currentUserId) {
-        console.error("No user ID found in userData:", userData);
         enqueueSnackbar("User ID not found", {
           variant: "error",
           autoHideDuration: 2000,
@@ -46,29 +25,20 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
         return;
       }
 
-      console.log("Accepting connection request from:", requestUser);
-      console.log("Current user ID:", currentUserId);
-
-      // Get the request user ID from different possible locations
       const requestUserId = requestUser?.id || requestUser?._id || requestUser;
 
-      // Use the new accept endpoint
-      const response = await controller.post(
+      await controller.post(
         `${endpoints.users}/me/${currentUserId}/connections/accept`,
         {
           requesterId: requestUserId,
         }
       );
 
-      console.log("Accept response:", response);
-
-      // Remove the request from connectionsRequests and add to connections
       const updatedRequests = connectionRequests.filter((req: any) => {
         const reqId = req?.id || req?._id || req;
         return reqId !== requestUserId;
       });
 
-      // Update formData locally
       setFormData((prev) => ({
         ...prev,
         connections: [...prev.connections, requestUserId],
@@ -96,10 +66,8 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
     }
   };
 
-  // Handle rejecting a connection request
   const handleRejectRequest = async (requestUser: any) => {
     try {
-      // Check for user ID in different possible locations
       const currentUserId = userData?.id || (userData as any)?._id;
       if (!currentUserId) {
         console.error("No user ID found in userData:", userData);
@@ -111,22 +79,15 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
         return;
       }
 
-      console.log("Rejecting connection request from:", requestUser);
-
-      // Get the request user ID from different possible locations
       const requestUserId = requestUser?.id || requestUser?._id || requestUser;
 
-      // Use the new reject endpoint
-      const response = await controller.post(
+      await controller.post(
         `${endpoints.users}/me/${currentUserId}/connections/reject`,
         {
           requesterId: requestUserId,
         }
       );
 
-      console.log("Reject response:", response);
-
-      // Remove the request from connectionsRequests
       const updatedRequests = connectionRequests.filter((req: any) => {
         const reqId = req?.id || req?._id || req;
         return reqId !== requestUserId;
@@ -136,7 +97,6 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
         (req: any) => req?.id || req?._id || req
       );
 
-      // Update formData locally
       setFormData((prev) => ({
         ...prev,
         connectionsRequests: updatedRequestIds,
