@@ -82,17 +82,18 @@ const DangerZone = () => {
         console.error("Error deleting account:", error);
 
         await Swal.fire({
-          title: "Deletion Failed",
-          text: "Failed to delete account. Please try again.",
+          title: t("deletion_failed", "Deletion Failed"),
+          text: t("delete_account_failed", "Failed to delete account. Please try again."),
           icon: "error",
           confirmButtonColor: "#dc2626",
-          confirmButtonText: "Try Again",
+          confirmButtonText: t("try_again", "Try Again"),
           customClass: {
             popup: "!rounded-xl",
             title: "!text-xl !font-semibold !text-gray-900",
             confirmButton: "!px-6 !py-2.5 !rounded-lg !font-medium",
           },
         });
+
       }
     }
   };
