@@ -68,18 +68,20 @@ const Feed = () => {
     fetchUsers();
   }, [navigate]);
 
-  const filteredUsers = users.filter(
-    (userData) =>
-      userData.profile?.firstName
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      userData.profile?.lastName
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      userData.profile?.location
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = users
+    .filter(
+      (userData) =>
+        userData.profile?.firstName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        userData.profile?.lastName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        userData.profile?.location
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase())
+    )
+    .filter((userData) => userData.id !== user.id);
 
   // Handle connection request logic
   const handleConnect = async (userId: string) => {

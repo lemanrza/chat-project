@@ -786,7 +786,6 @@ export const changePassword = async (
   }
 };
 
-// Add connection between users
 export const addUserConnection = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -824,7 +823,6 @@ export const addUserConnection = async (
   }
 };
 
-// Remove connection between users
 export const removeUserConnection = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -850,7 +848,6 @@ export const removeUserConnection = async (
   }
 };
 
-// Get available users to connect with
 export const getAvailableUsersToConnect = async (
   req: AuthenticatedRequest,
   res: Response,
