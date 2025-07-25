@@ -99,6 +99,7 @@ const PersonalInformations = ({
   handleInputChange,
   userData,
 }: PersonalInformationsProps) => {
+  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
   const [locations, setLocations] = useState<LocationData[]>([]);
@@ -337,7 +338,10 @@ const PersonalInformations = ({
               const isDisabled = selectedHobbies.length >= 5 && !isChecked;
 
               return (
-                <div key={interest.name} className="flex items-center space-x-2">
+                <div
+                  key={interest.name}
+                  className="flex items-center space-x-2"
+                >
                   <input
                     type="checkbox"
                     id={interest.name}

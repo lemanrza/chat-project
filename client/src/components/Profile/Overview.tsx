@@ -20,7 +20,7 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
     try {
       const currentUserId = userData?.id || (userData as any)?._id;
       if (!currentUserId) {
-        enqueueSnackbar(t('user_id_not_found', 'User ID not found'), {
+        enqueueSnackbar(t("user_id_not_found", "User ID not found"), {
           variant: "error",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
@@ -39,16 +39,22 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
       setFormData((prev) => ({
         ...prev,
         connections: [...prev.connections, requestUserId],
-        connectionsRequests: updatedRequests.map((req: any) => req?.id || req?._id || req),
+        connectionsRequests: updatedRequests.map(
+          (req: any) => req?.id || req?._id || req
+        ),
       }));
-      enqueueSnackbar(t('connection_request_accepted', 'Connection request accepted!'), {
-        variant: "success",
-        autoHideDuration: 2000,
-        anchorOrigin: { vertical: "bottom", horizontal: "right" },
-      });
+      enqueueSnackbar(
+        t("connection_request_accepted", "Connection request accepted!"),
+        {
+          variant: "success",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        }
+      );
     } catch (error: any) {
       enqueueSnackbar(
-        error.response?.data?.message || t('failed_accept_connection', 'Failed to accept connection request'),
+        error.response?.data?.message ||
+          t("failed_accept_connection", "Failed to accept connection request"),
         {
           variant: "error",
           autoHideDuration: 2000,
@@ -62,7 +68,7 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
     try {
       const currentUserId = userData?.id || (userData as any)?._id;
       if (!currentUserId) {
-        enqueueSnackbar(t('user_id_not_found', 'User ID not found'), {
+        enqueueSnackbar(t("user_id_not_found", "User ID not found"), {
           variant: "error",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
@@ -81,16 +87,22 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
       setFormData((prev) => ({
         ...prev,
-        connectionsRequests: updatedRequests.map((req: any) => req?.id || req?._id || req),
+        connectionsRequests: updatedRequests.map(
+          (req: any) => req?.id || req?._id || req
+        ),
       }));
-      enqueueSnackbar(t('connection_request_rejected', 'Connection request rejected'), {
-        variant: "info",
-        autoHideDuration: 2000,
-        anchorOrigin: { vertical: "bottom", horizontal: "right" },
-      });
+      enqueueSnackbar(
+        t("connection_request_rejected", "Connection request rejected"),
+        {
+          variant: "info",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        }
+      );
     } catch (error: any) {
       enqueueSnackbar(
-        error.response?.data?.message || t('failed_reject_connection', 'Failed to reject connection request'),
+        error.response?.data?.message ||
+          t("failed_reject_connection", "Failed to reject connection request"),
         {
           variant: "error",
           autoHideDuration: 2000,
@@ -125,8 +137,12 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
               <Users className="text-blue-600" size={24} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">{formData.connections.length}</div>
-              <div className="text-gray-500 text-sm">{t('overview_connections', 'Connections')}</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {formData.connections.length}
+              </div>
+              <div className="text-gray-500 text-sm">
+                {t("overview_connections", "Connections")}
+              </div>
             </div>
           </div>
         </div>
@@ -146,7 +162,9 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
       {/* Quick Actions */}
       <div className="col-span-9">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('quick_actions', 'Quick Actions')}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          {t("quick_actions", "Quick Actions")}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div
@@ -183,11 +201,18 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
       {/* Connection Requests */}
       <div className="mt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('connection_requests', 'Connection Requests')}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          {t("connection_requests", "Connection Requests")}
+        </h3>
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           {connectionRequests.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-gray-600">{t('no_pending_connection_requests', 'No pending connection requests')}</p>
+              <p className="text-gray-600">
+                {t(
+                  "no_pending_connection_requests",
+                  "No pending connection requests"
+                )}
+              </p>
             </div>
           ) : (
             connectionRequests.map((request: any, index: number) => {
@@ -200,7 +225,8 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
               if (request && typeof request === "object") {
                 isUserObject = true;
-                firstName = request.firstName || request.profile?.firstName || "Unknown";
+                firstName =
+                  request.firstName || request.profile?.firstName || "Unknown";
                 lastName = request.lastName || request.profile?.lastName || "";
                 avatar = request.avatar || request.profile?.avatar || avatar;
               }
@@ -225,7 +251,10 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
                           : `User ID: ${requestId}`}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {t('overview_sent_connection_request', 'Sent you a connection request')}
+                        {t(
+                          "overview_sent_connection_request",
+                          "Sent you a connection request"
+                        )}
                       </div>
                     </div>
                   </div>
@@ -234,13 +263,13 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
                       onClick={() => handleAcceptRequest(request)}
                       className="bg-[#00B878] text-white px-4 py-2 rounded-lg hover:bg-[#00a76d] focus:outline-none transition duration-200"
                     >
-                      {t('accept', 'Accept')}
+                      {t("accept", "Accept")}
                     </button>
                     <button
                       onClick={() => handleRejectRequest(request)}
                       className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 focus:outline-none transition duration-200"
                     >
-                      {t('reject', 'Reject')}
+                      {t("reject", "Reject")}
                     </button>
                   </div>
                 </div>
