@@ -64,40 +64,24 @@ const Sidebar = () => {
     );
   };
   const handleLogout = async () => {
-    try {
-      const userId = getUserIdFromToken();
-
-      if (userId) {
-        await controller.update(`${endpoints.users}/me`, userId, {
-          isOnline: false,
-        });
-      }
-
-      localStorage.removeItem("token");
-
-      enqueueSnackbar("Logged out successfully", {
-        variant: "success",
-        autoHideDuration: 2000,
-        anchorOrigin: {
-          vertical: "bottom",
-          horizontal: "right",
-        },
-      });
-
-      window.location.href = "/auth/login";
-    } catch (error) {
-      console.error("Logout failed:", error);
-      enqueueSnackbar("Something went wrong during logout.", {
-        variant: "error",
-        autoHideDuration: 2000,
-        anchorOrigin: {
-          vertical: "bottom",
-          horizontal: "right",
-        },
+    const userId = getUserIdFromToken();
+    if (userId) {
+      await controller.update(`${endpoints.users}/me`, userId, {
+        isOnline: false,
       });
     }
-  };
 
+    localStorage.removeItem("token");
+    enqueueSnackbar("Logged out successfully", {
+      variant: "success",
+      autoHideDuration: 2000,
+      anchorOrigin: {
+        vertical: "bottom",
+        horizontal: "right",
+      },
+    });
+    window.location.href = "/auth/login";
+  };
 
   return (
     <div
