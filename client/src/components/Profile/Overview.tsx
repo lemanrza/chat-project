@@ -1,4 +1,5 @@
 import { Heart, MessageCircle, Settings, Shield, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { enqueueSnackbar } from "notistack";
@@ -11,62 +12,43 @@ interface OverviewProps {
 }
 
 const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
-  const connectionRequests = userData?.connectionsRequests || [];
-  if (connectionRequests.length > 0) {
-    console.log("First connection request:", connectionRequests[0]);
-    console.log(
-      "First request keys:",
-      Object.keys(connectionRequests[0] || {})
-    );
-  }
-  console.log("formData:", formData);
-  console.log("=== END DEBUG ===");
+  const { t } = useTranslation();
 
-  // Handle accepting a connection request
+  const connectionRequests = userData?.connectionsRequests || [];
+
   const handleAcceptRequest = async (requestUser: any) => {
     try {
       const currentUserId = userData?.id || (userData as any)?._id;
       if (!currentUserId) {
-        enqueueSnackbar("User ID not found", {
+        enqueueSnackbar(t('user_id_not_found', 'User ID not found'), {
           variant: "error",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
         return;
       }
-
       const requestUserId = requestUser?.id || requestUser?._id || requestUser;
-
       await controller.post(
         `${endpoints.users}/me/${currentUserId}/connections/accept`,
-        {
-          requesterId: requestUserId,
-        }
+        { requesterId: requestUserId }
       );
-
       const updatedRequests = connectionRequests.filter((req: any) => {
         const reqId = req?.id || req?._id || req;
         return reqId !== requestUserId;
       });
-
       setFormData((prev) => ({
         ...prev,
         connections: [...prev.connections, requestUserId],
-        connectionsRequests: updatedRequests.map(
-          (req: any) => req?.id || req?._id || req
-        ),
+        connectionsRequests: updatedRequests.map((req: any) => req?.id || req?._id || req),
       }));
-
-      enqueueSnackbar("Connection request accepted!", {
+      enqueueSnackbar(t('connection_request_accepted', 'Connection request accepted!'), {
         variant: "success",
         autoHideDuration: 2000,
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
       });
     } catch (error: any) {
-      console.error("Error accepting connection request:", error);
-      console.error("Error details:", error.response?.data);
       enqueueSnackbar(
-        error.response?.data?.message || "Failed to accept connection request",
+        error.response?.data?.message || t('failed_accept_connection', 'Failed to accept connection request'),
         {
           variant: "error",
           autoHideDuration: 2000,
@@ -80,48 +62,38 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
     try {
       const currentUserId = userData?.id || (userData as any)?._id;
       if (!currentUserId) {
-        console.error("No user ID found in userData:", userData);
-        enqueueSnackbar("User ID not found", {
+        enqueueSnackbar(t('user_id_not_found', 'User ID not found'), {
           variant: "error",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
         return;
       }
-
       const requestUserId = requestUser?.id || requestUser?._id || requestUser;
-
       await controller.post(
         `${endpoints.users}/me/${currentUserId}/connections/reject`,
-        {
-          requesterId: requestUserId,
-        }
+        { requesterId: requestUserId }
       );
-
       const updatedRequests = connectionRequests.filter((req: any) => {
         const reqId = req?.id || req?._id || req;
         return reqId !== requestUserId;
       });
-
       const updatedRequestIds = updatedRequests.map(
         (req: any) => req?.id || req?._id || req
       );
 
       setFormData((prev) => ({
         ...prev,
-        connectionsRequests: updatedRequestIds,
+        connectionsRequests: updatedRequests.map((req: any) => req?.id || req?._id || req),
       }));
-
-      enqueueSnackbar("Connection request rejected", {
+      enqueueSnackbar(t('connection_request_rejected', 'Connection request rejected'), {
         variant: "info",
         autoHideDuration: 2000,
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
       });
     } catch (error: any) {
-      console.error("Error rejecting connection request:", error);
-      console.error("Error details:", error.response?.data);
       enqueueSnackbar(
-        error.response?.data?.message || "Failed to reject connection request",
+        error.response?.data?.message || t('failed_reject_connection', 'Failed to reject connection request'),
         {
           variant: "error",
           autoHideDuration: 2000,
@@ -156,10 +128,8 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
               <Users className="text-blue-600" size={24} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">
-                {formData.connections.length}
-              </div>
-              <div className="text-gray-500 text-sm">Connections</div>
+              <div className="text-2xl font-bold text-gray-900">{formData.connections.length}</div>
+              <div className="text-gray-500 text-sm">{t('overview_connections', 'Connections')}</div>
             </div>
           </div>
         </div>
@@ -179,9 +149,7 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
       {/* Quick Actions */}
       <div className="col-span-9">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Quick Actions
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('quick_actions', 'Quick Actions')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div
@@ -218,24 +186,14 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
       {/* Connection Requests */}
       <div className="mt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Connection Requests
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('connection_requests', 'Connection Requests')}</h3>
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           {connectionRequests.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-gray-600">No pending connection requests</p>
+              <p className="text-gray-600">{t('no_pending_connection_requests', 'No pending connection requests')}</p>
             </div>
           ) : (
             connectionRequests.map((request: any, index: number) => {
-              console.log(
-                "Processing connection request:",
-                request,
-                "Type:",
-                typeof request
-              );
-
-              // Handle different data structures
               const requestId = request?.id || request?._id || request;
               let isUserObject = false;
               let firstName = "Unknown";
@@ -245,20 +203,10 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
               if (request && typeof request === "object") {
                 isUserObject = true;
-                // Try different property paths for name
-                firstName =
-                  request.firstName || request.profile?.firstName || "Unknown";
+                firstName = request.firstName || request.profile?.firstName || "Unknown";
                 lastName = request.lastName || request.profile?.lastName || "";
                 avatar = request.avatar || request.profile?.avatar || avatar;
               }
-
-              console.log("Rendering request:", {
-                request,
-                isUserObject,
-                requestId,
-                firstName,
-                lastName,
-              });
 
               return (
                 <div
@@ -280,28 +228,22 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
                           : `User ID: ${requestId}`}
                       </div>
                       <div className="text-sm text-gray-500">
-                        Sent you a connection request
+                        {t('overview_sent_connection_request', 'Sent you a connection request')}
                       </div>
                     </div>
                   </div>
                   <div className="space-x-2">
                     <button
-                      onClick={() => {
-                        console.log("Accept button clicked for:", request);
-                        handleAcceptRequest(request);
-                      }}
+                      onClick={() => handleAcceptRequest(request)}
                       className="bg-[#00B878] text-white px-4 py-2 rounded-lg hover:bg-[#00a76d] focus:outline-none transition duration-200"
                     >
-                      Accept
+                      {t('accept', 'Accept')}
                     </button>
                     <button
-                      onClick={() => {
-                        console.log("Reject button clicked for:", request);
-                        handleRejectRequest(request);
-                      }}
+                      onClick={() => handleRejectRequest(request)}
                       className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 focus:outline-none transition duration-200"
                     >
-                      Reject
+                      {t('reject', 'Reject')}
                     </button>
                   </div>
                 </div>

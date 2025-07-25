@@ -21,6 +21,7 @@ export interface UserData {
 }
 
 export interface FormData {
+  messagePrivacy: string;
   firstName: string;
   lastName: string;
   email: string;
