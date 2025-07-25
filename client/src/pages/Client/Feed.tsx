@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Users, MessageCircle, MapPin, UserPlus } from 'lucide-react';
 import endpoints from '@/services/api';
@@ -16,6 +17,13 @@ interface Tab {
   icon: React.ReactNode;
 }
 
+const hobbiesList = [
+  'Music', 'Sports', 'Travel', 'Reading', 'Gaming', 'Art', 'Cooking', 'Fitness', 'Movies', 'Tech', 'Photography', 'Writing', 'Fashion', 'Nature', 'DIY'
+];
+const countriesList = [
+  'Azerbaijan', 'Turkey', 'Russia', 'USA', 'UK', 'Germany', 'France', 'Italy', 'Spain', 'China', 'Japan', 'India', 'Brazil', 'Canada', 'Australia'
+];
+
 const Feed = () => {
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user) as UserState;
@@ -25,9 +33,11 @@ const Feed = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
 
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const tabs: Tab[] = [
     { id: 'discover', label: t('feed_tab_discover'), icon: <Search className="w-4 h-4" /> },
     { id: 'trending', label: t('feed_tab_trending'), icon: <div className="w-4 h-4 flex items-center">📈</div> },
@@ -54,11 +64,22 @@ const Feed = () => {
     fetchUsers();
   }, [user.isAuthenticated, user.token, navigate]);
 
-  const filteredUsers = users.filter(userData =>
-    userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = users.filter(userData => {
+    const matchesSearch =
+      userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesHobbies =
+      selectedHobbies.length === 0 ||
+      (userData.hobbies && userData.hobbies.some(hobby => selectedHobbies.includes(hobby)));
+
+    const matchesCountry =
+      selectedCountries.length === 0 ||
+      (userData.profile?.location && selectedCountries.includes(userData.profile.location));
+
+    return matchesSearch && matchesHobbies && matchesCountry;
+  });
 
   // Handle connection request logic
   const handleConnect = async (userId: string) => {
@@ -118,7 +139,81 @@ const Feed = () => {
   }
 
   return (
-    <div className="w-full flex">
+    <div className="w-full flex relative">
+      {/* Filter Sidebar */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.aside
+            initial={{ x: 400, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 400, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl z-40 flex flex-col p-8 border-l border-gray-200"
+            style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
+          >
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-xl font-bold text-[#00B878]">{t('feed_filters_title')}</h2>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+                aria-label="Close sidebar"
+              >
+                <svg width="24" height="24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-700 mb-2">{t('feed_filter_hobbies')}</h3>
+              <div className="flex flex-wrap gap-2">
+                {hobbiesList.map(hobby => (
+                  <button
+                    key={hobby}
+                    onClick={() => setSelectedHobbies(selectedHobbies.includes(hobby)
+                      ? selectedHobbies.filter(h => h !== hobby)
+                      : [...selectedHobbies, hobby])}
+                    className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${selectedHobbies.includes(hobby)
+                      ? 'bg-[#00B878] text-white border-[#00B878]'
+                      : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-[#e6f7f1]'} `}
+                  >
+                    {hobby}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-700 mb-2">{t('feed_filter_countries')}</h3>
+              <div className="flex flex-wrap gap-2">
+                {countriesList.map(country => (
+                  <button
+                    key={country}
+                    onClick={() => setSelectedCountries(selectedCountries.includes(country)
+                      ? selectedCountries.filter(c => c !== country)
+                      : [...selectedCountries, country])}
+                    className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${selectedCountries.includes(country)
+                      ? 'bg-[#00B878] text-white border-[#00B878]'
+                      : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-[#e6f7f1]'} `}
+                  >
+                    {country}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mt-auto flex gap-2">
+              <button
+                onClick={() => { setSelectedHobbies([]); setSelectedCountries([]); }}
+                className="flex-1 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition"
+              >
+                {t('feed_filter_clear')}
+              </button>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="flex-1 py-3 rounded-lg bg-[#00B878] text-white font-medium hover:bg-[#00a76d] transition"
+              >
+                {t('feed_filter_apply')}
+              </button>
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
@@ -173,7 +268,7 @@ const Feed = () => {
               />
             </div>
             <button
-              onClick={() => setShowFilters(!showFilters)}
+              onClick={() => setShowFilters(true)}
               className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow-sm"
             >
               <Filter className="w-4 h-4" />

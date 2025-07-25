@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Coffee, Plane, Monitor, Laptop, Dog, Cat, Music, BookOpen,
   Dumbbell, ChefHat, Palette, Camera, Gamepad2, Mountain, Waves,
@@ -68,6 +69,7 @@ const PersonalInformations = ({
   handleInputChange,
   userData,
 }: PersonalInformationsProps) => {
+  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]); // Track selected hobbies
   const [locations, setLocations] = useState<LocationData[]>([]);
@@ -168,7 +170,7 @@ const PersonalInformations = ({
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
       <h3 className="text-xl font-semibold text-gray-900 mb-6">
-        Personal Information
+        {t("account.personalInfoTitle")}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Existing fields for First Name, Last Name, Email, Username, etc. */}
@@ -176,7 +178,7 @@ const PersonalInformations = ({
 
         {/* Location Search */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t("account.locationLabel")}</label>
           <input
             type="text"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
@@ -185,9 +187,9 @@ const PersonalInformations = ({
               handleInputChange("location", e.target.value);
               handleLocationSearch(e);
             }}
-            placeholder="Search and select your location"
+            placeholder={t("account.locationPlaceholder")}
           />
-          {isSearching && <div className="text-sm text-gray-500">Searching...</div>}
+          {isSearching && <div className="text-sm text-gray-500">{t("account.searching", "Searching...")}</div>}
           {locations.length > 0 && (
             <ul className="bg-white shadow-md border border-gray-300 mt-2 rounded-lg max-h-60 overflow-auto">
               {locations.map((location) => (
@@ -209,7 +211,7 @@ const PersonalInformations = ({
 
         {/* Hobbies Section */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Hobbies</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">{t("account.hobbiesLabel")}</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {interests.map((interest) => {
               const IconComponent = interest.icon;
@@ -227,7 +229,7 @@ const PersonalInformations = ({
                     <span className="mr-2">
                       <IconComponent size={16} className="inline" />
                     </span>
-                    {interest.name}
+                    {t(`account.hobby.${interest.name}`, interest.name)}
                   </label>
                 </div>
               );
@@ -268,7 +270,7 @@ const PersonalInformations = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Saving...
+              {t("account.saving", "Saving...")}
             </span>
           ) : (
             <>
@@ -285,7 +287,7 @@ const PersonalInformations = ({
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              Save Changes
+              {t("account.saveChanges", "Save Changes")}
             </>
           )}
         </button>
