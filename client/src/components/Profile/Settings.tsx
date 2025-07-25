@@ -45,64 +45,51 @@ const Settings = () => {
     <div className="space-y-8">
       {/* Language & Region */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t("settings_language_region", "Language & Region")}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-black mb-4">
+          {t("settings_language_region", "Language & Region")}
+        </h3>
         <div className="grid grid-cols-4 gap-4">
-          <div
-            className={`rounded-lg p-4 cursor-pointer ${getLanguageClass('en')}`}
-            onClick={() => handleLanguageChange('en')}  // Change to English
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">{t('settings_language_us', 'US')}</span>
-              <span className="text-sm text-gray-600">{t('settings_language_en', 'English')}</span>
+          {["en", "az", "ru", "tr"].map((lang) => (
+            <div
+              key={lang}
+              className={`rounded-lg p-4 cursor-pointer bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 transition ${getLanguageClass(lang)}`}
+              onClick={() => handleLanguageChange(lang)}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  {t(`settings_language_${lang}`, lang.toUpperCase())}
+                </span>
+                <span className="text-sm text-gray-600 dark:text-neutral-300">
+                  {t(`settings_language_${lang}_full`)}
+                </span>
+              </div>
             </div>
-          </div>
-          <div
-            className={`rounded-lg p-4 cursor-pointer ${getLanguageClass('az')}`}
-            onClick={() => handleLanguageChange('az')}  // Change to Azerbaijani
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">{t('settings_language_az', 'AZ')}</span>
-              <span className="text-sm text-gray-600">{t('settings_language_az_full', 'Azərbaycan')}</span>
-            </div>
-          </div>
-          <div
-            className={`rounded-lg p-4 cursor-pointer ${getLanguageClass('ru')}`}
-            onClick={() => handleLanguageChange('ru')}  // Change to Russian
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">{t('settings_language_ru', 'RU')}</span>
-              <span className="text-sm text-gray-600">{t('settings_language_ru_full', 'Русский')}</span>
-            </div>
-          </div>
-          <div
-            className={`rounded-lg p-4 cursor-pointer ${getLanguageClass('tr')}`}
-            onClick={() => handleLanguageChange('tr')}  // Change to Turkish
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-900">{t('settings_language_tr', 'TR')}</span>
-              <span className="text-sm text-gray-600">{t('settings_language_tr_full', 'Türkçe')}</span>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
       {/* Appearance */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('settings_appearance', 'Appearance')}</h3>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-black mb-4">
+          {t("settings_appearance", "Appearance")}
+        </h3>
+        <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-neutral-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                {/* Switch between Sun/Moon icons based on theme */}
+              <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-700 rounded-xl flex items-center justify-center">
                 {isDarkMode ? (
-                  <Moon className="text-gray-600" size={20} />
+                  <Moon className="text-gray-600 dark:text-neutral-300" size={20} />
                 ) : (
-                  <Sun className="text-gray-600" size={20} />
+                  <Sun className="text-gray-600 dark:text-neutral-300" size={20} />
                 )}
               </div>
               <div>
-                <div className="font-medium text-gray-900">{t('settings_dark_mode', 'Dark Mode')}</div>
-                <div className="text-sm text-gray-500">{t('settings_dark_mode_description', 'Switch between light and dark themes')}</div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {t("settings_dark_mode", "Dark Mode")}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-neutral-400">
+                  {t("settings_dark_mode_description", "Switch between light and dark themes")}
+                </div>
               </div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -110,9 +97,9 @@ const Settings = () => {
                 type="checkbox"
                 className="sr-only peer"
                 checked={isDarkMode}
-                onChange={handleThemeToggle} // Handle theme toggle on checkbox change
+                onChange={handleThemeToggle}
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B878]"></div>
+              <div className="w-11 h-6 bg-gray-200 dark:bg-neutral-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-neutral-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B878]"></div>
             </label>
           </div>
         </div>
@@ -120,68 +107,58 @@ const Settings = () => {
 
       {/* Notifications */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('settings_notifications', 'Notifications')}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-black mb-4">
+          {t("settings_notifications", "Notifications")}
+        </h3>
         <div className="space-y-4">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                  <Bell className="text-gray-600" size={20} />
+          {[
+            {
+              title: "settings_message_notifications",
+              desc: "settings_message_notifications_desc",
+            },
+            {
+              title: "settings_connection_requests",
+              desc: "settings_connection_requests_desc",
+            },
+            {
+              title: "settings_app_updates",
+              desc: "settings_app_updates_desc",
+              defaultChecked: true,
+            },
+          ].map((item, idx) => (
+            <div
+              key={idx}
+              className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-neutral-700"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-700 rounded-xl flex items-center justify-center">
+                    <Bell className="text-gray-600 dark:text-neutral-300" size={20} />
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      {t(item.title)}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-neutral-400">
+                      {t(item.desc)}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-medium text-gray-900">{t('settings_message_notifications', 'Message Notifications')}</div>
-                  <div className="text-sm text-gray-500">{t('settings_message_notifications_desc', 'Get notified when you receive new messages')}</div>
-                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    defaultChecked={item.defaultChecked}
+                  />
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-neutral-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-neutral-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                </label>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-              </label>
             </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                  <Bell className="text-gray-600" size={20} />
-                </div>
-                <div>
-                  <div className="font-medium text-gray-900">{t('settings_connection_requests', 'Connection Requests')}</div>
-                  <div className="text-sm text-gray-500">{t('settings_connection_requests_desc', 'Get notified when someone wants to connect')}</div>
-                </div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-              </label>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                  <Bell className="text-gray-600" size={20} />
-                </div>
-                <div>
-                  <div className="font-medium text-gray-900">{t('settings_app_updates', 'App Updates')}</div>
-                  <div className="text-sm text-gray-500">{t('settings_app_updates_desc', 'Get notified about new features and updates')}</div>
-                </div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  defaultChecked
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-              </label>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
+
   );
 };
 

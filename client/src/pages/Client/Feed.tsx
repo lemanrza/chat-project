@@ -93,7 +93,7 @@ const Feed = () => {
 
   const currentUserId = reduxUser?.id;
   const filteredUsers = users
-    .filter(user => user.id !== currentUserId) 
+    .filter(user => user.id !== currentUserId)
     .filter(userData => {
       const matchesSearch =
         userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -238,7 +238,7 @@ const Feed = () => {
       <div className="w-full flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
-          <p className="text-gray-600">{t("feed_loading")}</p>
+          <p className="text-gray-600 dark:text-gray-300">{t("feed_loading")}</p>
         </div>
       </div>
     );
@@ -249,7 +249,7 @@ const Feed = () => {
       <div className="w-full flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
-          <p className="text-gray-600">{t("feed_loading")}</p>
+          <p className="text-gray-600 dark:text-gray-300">{t("feed_loading")}</p>
         </div>
       </div>
     );
@@ -257,7 +257,6 @@ const Feed = () => {
 
   return (
     <div className="w-full flex relative">
-      {/* Filter Sidebar */}
       <AnimatePresence>
         {showFilters && (
           <motion.aside
@@ -265,21 +264,24 @@ const Feed = () => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 400, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl z-40 flex flex-col p-8 border-l border-gray-200"
+            className="fixed top-0 right-0 h-full w-full max-w-sm bg-white dark:bg-neutral-800 shadow-2xl z-40 flex flex-col p-8 border-l border-gray-200 dark:border-neutral-700"
             style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
           >
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-bold text-[#00B878]">{t('feed_filters_title')}</h2>
+              <h2 className="text-xl font-bold text-[#00B878] dark:text-[#00E89E]">{t('feed_filters_title')}</h2>
               <button
                 onClick={() => setShowFilters(false)}
-                className="p-2 rounded-full hover:bg-gray-100 transition"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700 transition"
                 aria-label="Close sidebar"
               >
-                <svg width="24" height="24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                <svg width="24" height="24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
+
             <div className="mb-6">
-              <h3 className="font-semibold text-gray-700 mb-2">{t('feed_filter_hobbies')}</h3>
+              <h3 className="font-semibold text-gray-700 dark:text-white mb-2">{t('feed_filter_hobbies')}</h3>
               <div className="flex flex-wrap gap-2">
                 {hobbiesList.map(hobby => (
                   <button
@@ -289,15 +291,16 @@ const Feed = () => {
                       : [...selectedHobbies, hobby])}
                     className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${selectedHobbies.includes(hobby)
                       ? 'bg-[#00B878] text-white border-[#00B878]'
-                      : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-[#e6f7f1]'} `}
+                      : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-neutral-700 dark:text-white dark:border-neutral-600 hover:bg-[#e6f7f1] hover:dark:bg-neutral-600'} `}
                   >
                     {hobby}
                   </button>
                 ))}
               </div>
             </div>
+
             <div className="mb-6">
-              <h3 className="font-semibold text-gray-700 mb-2">{t('feed_filter_countries')}</h3>
+              <h3 className="font-semibold text-gray-700 dark:text-white mb-2">{t('feed_filter_countries')}</h3>
               <div className="flex flex-wrap gap-2">
                 {countriesList.map(country => (
                   <button
@@ -307,17 +310,18 @@ const Feed = () => {
                       : [...selectedCountries, country])}
                     className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${selectedCountries.includes(country)
                       ? 'bg-[#00B878] text-white border-[#00B878]'
-                      : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-[#e6f7f1]'} `}
+                      : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-neutral-700 dark:text-white dark:border-neutral-600 hover:bg-[#e6f7f1] hover:dark:bg-neutral-600'} `}
                   >
                     {country}
                   </button>
                 ))}
               </div>
             </div>
+
             <div className="mt-auto flex gap-2">
               <button
                 onClick={() => { setSelectedHobbies([]); setSelectedCountries([]); }}
-                className="flex-1 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition"
+                className="flex-1 py-3 rounded-lg bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-white font-medium hover:bg-gray-200 hover:dark:bg-neutral-600 transition"
               >
                 {t('feed_filter_clear')}
               </button>
@@ -331,16 +335,15 @@ const Feed = () => {
           </motion.aside>
         )}
       </AnimatePresence>
-      {/* Main Content */}
+
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
         <div className="px-8 py-8 rounded-t-2xl shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <div>
-              <h1 className="text-3xl font-bold" style={{ color: "#374151" }}>
+              <h1 className="text-3xl font-bold text-gray-800">
                 {t("feed_discover_title")}
               </h1>
-              <p className="mt-2 text-base" style={{ color: "#6B7280" }}>
+              <p className="mt-2 text-base text-gray-500 dark:text-gray-300">
                 {t("feed_discover_subtitle")}
               </p>
             </div>
@@ -353,20 +356,16 @@ const Feed = () => {
             </button>
           </div>
 
-          {/* Tabs */}
           <div className="flex items-center gap-4 sm:gap-8 mb-6">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
-                  ${activeTab === tab.id
-                    ? "shadow-md scale-105 text-[#00B878] "
-                    : "bg-transparent text-gray-700 hover:bg-gray-100"
+                ${activeTab === tab.id
+                    ? "shadow-md scale-105 text-[#00B878]"
+                    : "bg-transparent text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700"
                   }`}
-                style={
-                  activeTab === tab.id ? { backgroundColor: "transparent" } : {}
-                }
               >
                 {tab.icon}
                 {tab.label}
@@ -374,7 +373,6 @@ const Feed = () => {
             ))}
           </div>
 
-          {/* Search and Filters */}
           <div className="flex items-center gap-4 mt-2">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -383,12 +381,12 @@ const Feed = () => {
                 placeholder={t("feed_search_placeholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-lg text-base border border-gray-200 bg-white text-gray-700 focus:ring-2 focus:ring-green-400 focus:border-transparent focus:outline-none shadow-sm"
+                className="w-full pl-12 pr-4 py-3 rounded-lg text-base border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-700 dark:text-white focus:ring-2 focus:ring-green-400 focus:border-transparent focus:outline-none shadow-sm"
               />
             </div>
             <button
               onClick={() => setShowFilters(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow-sm"
+              className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 transition-all shadow-sm"
             >
               <Filter className="w-4 h-4" />
               {t("feed_filters")}
@@ -396,7 +394,6 @@ const Feed = () => {
           </div>
         </div>
 
-        {/* User Grid */}
         <div className="flex-1 overflow-auto p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredUsers.map((userData) => {
@@ -406,18 +403,14 @@ const Feed = () => {
               if (user.connections && Array.isArray(user.connections) && user.connections.length > 0) {
                 userConnections = user.connections.filter(connection => connection != null).map(connection => typeof connection === 'string' ? connection : connection.id);
               }
-              console.log("Filtered user connections:", userConnections);
 
               const isAlreadyConnected = userConnections.includes(userData.id);
-
-              // Handle connection requests from userData
               const targetUserConnectionRequests = Array.isArray(userData.connectionsRequests)
                 ? userData.connectionsRequests.map((req) => (typeof req === 'string' ? req : (req as UserData).id))
                 : [];
 
               const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
 
-              // Handle click for connected button
               const handleConnectedClick = () => {
                 enqueueSnackbar("You are already connected with this user", {
                   variant: "info",
@@ -426,7 +419,6 @@ const Feed = () => {
                 });
               };
 
-              // Handle click for pending button
               const handlePendingClick = () => {
                 enqueueSnackbar("Connection request is pending approval", {
                   variant: "info",
@@ -435,69 +427,56 @@ const Feed = () => {
                 });
               };
 
-              // Determine if the user is "public" or "private"
-              const isPublic = userData.profileVisibility === 'public'; // Assuming the visibility property exists
+              const isPublic = userData.profileVisibility === 'public';
 
               return (
                 <div
                   key={userData.id}
-                  className="rounded-2xl p-6 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200 group relative"
+                  className="rounded-2xl p-6 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 shadow-sm hover:shadow-lg transition-shadow duration-200 group relative"
                 >
-                  {/* User Avatar and Status */}
                   <div className="flex items-start mb-4">
                     <div className="relative">
-                      <div
-                        className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl group-hover:scale-105 transition-transform duration-200"
-                        style={{ backgroundColor: "#00B878" }}
-                      >
+                      <div className="w-16 h-16 rounded-full overflow-hidden">
                         <img
-                          className="rounded-full"
+                          className="rounded-full object-cover w-full h-full"
                           src={userData.profile?.avatar}
                           alt={userData.profile?.firstName}
                         />
                       </div>
                       {userData.isOnline && (
-                        <div
-                          className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full"
-                          style={{ backgroundColor: "#00B878" }}
-                        ></div>
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white dark:border-neutral-800 rounded-full" style={{ backgroundColor: "#00B878" }}></div>
                       )}
                     </div>
                   </div>
 
-                  {/* User Info */}
                   <div className="mb-6">
-                    <h3 className="font-bold text-lg mb-1" style={{ color: "#374151" }}>
+                    <h3 className="font-bold text-lg text-gray-800 dark:text-white mb-1">
                       {userData.profile?.firstName} {userData.profile?.lastName}
                     </h3>
-                    <p className="text-sm mb-3" style={{ color: "#6B7280" }}>
+                    <p className="text-sm text-gray-500 dark:text-gray-300 mb-3">
                       {userData.username}
                     </p>
 
-                    {/* Location and Connections */}
                     <div className="space-y-1 mb-4">
-                      <div className="flex items-center text-sm" style={{ color: "#6B7280" }}>
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-300">
                         <MapPin className="w-4 h-4 mr-2" />
                         <span>{userData.profile?.location}</span>
                       </div>
-                      <div className="flex items-center text-sm" style={{ color: "#6B7280" }}>
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-300">
                         <Users className="w-4 h-4 mr-2" />
                         <span>{t("feed_connections", { count: userData.connections.length })}</span>
                       </div>
                     </div>
 
-                    {/* Bio */}
-                    <p className="text-sm mb-4 leading-relaxed" style={{ color: "#6B7280" }}>
+                    <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 leading-relaxed">
                       {userData.profile?.bio}
                     </p>
 
-                    {/* Interests */}
                     <div className="flex flex-wrap gap-2 mb-6">
                       {userData.hobbies?.map((interest, index) => (
                         <span
                           key={index}
-                          className="px-3 py-1 text-sm rounded-full font-medium"
-                          style={{ backgroundColor: "#F3F4F6", color: "#374151" }}
+                          className="px-3 py-1 text-sm rounded-full font-medium bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-white"
                         >
                           {interest}
                         </span>
@@ -505,14 +484,12 @@ const Feed = () => {
                     </div>
                   </div>
 
-                  {/* Public/Private Badge */}
                   <div className="absolute top-5 right-3 px-5 py-2 text-sm font-medium text-white rounded-full"
                     style={{ backgroundColor: isPublic ? '#a8d08d' : '#2c6e49' }}
                   >
                     {isPublic ? 'Public' : 'Private'}
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="flex gap-3">
                     {isAlreadyConnected ? (
                       <button
@@ -533,13 +510,13 @@ const Feed = () => {
                         onClick={() => userData.id && handleConnect(userData.id)}
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-[#00B878] hover:bg-[#00a76d] cursor-pointer"
                       >
-                        <UserPlus className="w-4 h-4" style={{ color: "#fff" }} />
+                        <UserPlus className="w-4 h-4" />
                         {t("feed_connect")}
                       </button>
                     )}
                     <button
                       onClick={() => userData.id && handleMessage(userData.id)}
-                      className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow"
+                      className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 transition-all shadow"
                     >
                       <MessageCircle className="w-4 h-4" />
                       {t("feed_message")}
@@ -548,29 +525,22 @@ const Feed = () => {
                 </div>
               );
             })}
-
           </div>
 
-          {/* Empty State */}
           {filteredUsers.length === 0 && (
             <div className="text-center py-12">
-              <Users
-                className="w-16 h-16 mx-auto mb-4"
-                style={{ color: "#6B7280" }}
-              />
-              <h3
-                className="text-lg font-medium mb-2"
-                style={{ color: "#374151" }}
-              >
+              <Users className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+              <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-2">
                 {t("feed_no_users")}
               </h3>
-              <p style={{ color: "#6B7280" }}>{t("feed_no_users_sub")}</p>
+              <p className="text-gray-500 dark:text-gray-300">{t("feed_no_users_sub")}</p>
             </div>
           )}
         </div>
       </div>
     </div>
   );
+
 };
 
 export default Feed;
