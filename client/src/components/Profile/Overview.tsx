@@ -2,7 +2,8 @@ import { Heart, MessageCircle, Settings, Shield, Users } from "lucide-react";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { enqueueSnackbar } from "notistack";
-import type { UserData, FormData } from "@/types/profileType";
+import type { UserData, FormData, ConnectionRequest } from "@/types/profileType";
+import { useEffect, useState } from "react";
 
 interface OverviewProps {
   formData: FormData;
@@ -13,14 +14,6 @@ interface OverviewProps {
 const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
   // Since userData.connectionsRequests are now populated user objects, we can use them directly
   const connectionRequests = userData?.connectionsRequests || [];
-
-  // Debug logs to see what we're actually getting
-  console.log("=== OVERVIEW DEBUG ===");
-  console.log("userData:", userData);
-  console.log("userData.id:", userData?.id);
-  console.log("userData._id:", (userData as any)?._id);
-  console.log("connectionRequests:", connectionRequests);
-  console.log("connectionRequests length:", connectionRequests.length);
   if (connectionRequests.length > 0) {
     console.log("First connection request:", connectionRequests[0]);
     console.log(
