@@ -1,28 +1,6 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
-import { Search, Filter, Users, MessageCircle, MapPin, UserPlus } from 'lucide-react';
-import endpoints from '@/services/api';
-import controller from '@/services/commonRequest';
-import type { UserData } from '@/types/profileType';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/store/store';
-import type { UserState } from '@/features/userSlice';
-import { useNavigate } from 'react-router-dom';
-import { enqueueSnackbar } from 'notistack';
-=======
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import endpoints from "@/services/api";
-import controller from "@/services/commonRequest";
-import type { UserData } from "@/types/profileType";
-import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "@/store/store";
-import type { UserState } from "@/features/userSlice";
-import { addConnection } from "@/features/userSlice";
-import { useNavigate } from "react-router-dom";
-import { enqueueSnackbar } from "notistack";
 import {
   Search,
   Filter,
@@ -33,7 +11,14 @@ import {
   Clock,
   Check,
 } from "lucide-react";
->>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
+import endpoints from "@/services/api";
+import controller from "@/services/commonRequest";
+import type { UserData } from "@/types/profileType";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState } from "@/store/store";
+import { addConnection, type UserState } from "@/features/userSlice";
+import { useNavigate } from "react-router-dom";
+import { enqueueSnackbar } from "notistack";
 
 interface Tab {
   id: string;
@@ -42,16 +27,20 @@ interface Tab {
 }
 
 const hobbiesList = [
-  'Music', 'Sports', 'Travel', 'Reading', 'Gaming', 'Art', 'Cooking', 'Fitness', 'Movies', 'Tech', 'Photography', 'Writing', 'Fashion', 'Nature', 'DIY'
+  "Music", "Sports", "Travel", "Reading", "Gaming", "Art", "Cooking",
+  "Fitness", "Movies", "Tech", "Photography", "Writing", "Fashion", "Nature", "DIY",
 ];
+
 const countriesList = [
-  'Azerbaijan', 'Turkey', 'Russia', 'USA', 'UK', 'Germany', 'France', 'Italy', 'Spain', 'China', 'Japan', 'India', 'Brazil', 'Canada', 'Australia'
+  "Azerbaijan", "Turkey", "Russia", "USA", "UK", "Germany", "France",
+  "Italy", "Spain", "China", "Japan", "India", "Brazil", "Canada", "Australia",
 ];
 
 const Feed = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as UserState;
+  const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState("discover");
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,12 +50,6 @@ const Feed = () => {
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
 
-  const { t } = useTranslation();
-
-<<<<<<< HEAD
-  const { t } = useTranslation();
-=======
->>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
   const tabs: Tab[] = [
     {
       id: "discover",
@@ -100,8 +83,7 @@ const Feed = () => {
     fetchUsers();
   }, [navigate]);
 
-<<<<<<< HEAD
-  const filteredUsers = users.filter(userData => {
+  const filteredUsers = users.filter((userData) => {
     const matchesSearch =
       userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -109,32 +91,15 @@ const Feed = () => {
 
     const matchesHobbies =
       selectedHobbies.length === 0 ||
-      (userData.hobbies && userData.hobbies.some(hobby => selectedHobbies.includes(hobby)));
+      (userData.hobbies && userData.hobbies.some((hobby) => selectedHobbies.includes(hobby)));
 
     const matchesCountry =
       selectedCountries.length === 0 ||
       (userData.profile?.location && selectedCountries.includes(userData.profile.location));
 
-    return matchesSearch && matchesHobbies && matchesCountry;
+    return matchesSearch && matchesHobbies && matchesCountry && userData.id !== user.id;
   });
-=======
-  const filteredUsers = users
-    .filter(
-      (userData) =>
-        userData.profile?.firstName
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        userData.profile?.lastName
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        userData.profile?.location
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase())
-    )
-    .filter((userData) => userData.id !== user.id);
->>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
 
-  // Handle connection request logic
   const handleConnect = async (targetUserId: string) => {
     try {
       const isAlreadyConnected = user.connections.includes(targetUserId);
@@ -148,33 +113,25 @@ const Feed = () => {
         return;
       }
 
-      // Use the new connection API that handles public/private profiles
-      const response = await controller.post(`${endpoints.users}/me/${user.id}/connections`, {
-        connectionId: targetUserId,
-      });
+      const response = await controller.post(
+        `${endpoints.users}/me/${user.id}/connections`,
+        { connectionId: targetUserId }
+      );
 
-      console.log("Connection response:", response);
-
-      // Handle different response types
-      if (response.data.type === 'connected') {
-        // Public profile - immediate connection
+      if (response.data.type === "connected") {
         enqueueSnackbar("Connected successfully!", {
           variant: "success",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
-        
-        // Update Redux state to reflect the new connection
         dispatch(addConnection(targetUserId));
-      } else if (response.data.type === 'request_sent') {
-        // Private profile - request sent
+      } else if (response.data.type === "request_sent") {
         enqueueSnackbar("Connection request sent! Waiting for approval.", {
           variant: "info",
           autoHideDuration: 3000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
       } else {
-        // Default success message
         enqueueSnackbar(response.data.message || "Connection request processed!", {
           variant: "success",
           autoHideDuration: 2000,
@@ -183,9 +140,8 @@ const Feed = () => {
       }
     } catch (error: any) {
       console.error("Error sending connection request:", error);
-      
       let errorMessage = "Failed to send connection request";
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.status === 404) {
@@ -206,17 +162,6 @@ const Feed = () => {
 
   const handleMessage = (userId: string) => {
     console.log("Messaging user:", userId);
-  };
-
-  if (loading) {
-    return (
-      <div className="w-full flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
-          <p className="text-gray-600">{t("feed_loading")}</p>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -365,18 +310,18 @@ const Feed = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredUsers.map((userData) => {
               // Handle connections as either string[] or UserData[]
-              const userConnections = Array.isArray(user.connections) 
+              const userConnections = Array.isArray(user.connections)
                 ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
                 : [];
-              
+
               const isAlreadyConnected = userConnections.includes(userData.id);
-              
+
               // Check if current user has sent a request to this target user
               // This means the target user's connectionsRequests should contain current user's ID
               const targetUserConnectionRequests = Array.isArray(userData.connectionsRequests)
                 ? userData.connectionsRequests.map(req => typeof req === 'string' ? req : (req as UserData).id)
                 : [];
-                
+
               const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
 
               // Handle click for connected button

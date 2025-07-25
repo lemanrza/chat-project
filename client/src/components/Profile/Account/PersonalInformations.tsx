@@ -54,6 +54,7 @@ interface PersonalInformationsProps {
   handleInputChange: (field: string, value: string) => void;
   userData: UserData | null;
 }
+
 const interests = [
   { name: "Coffee", icon: Coffee },
   { name: "Travel", icon: Plane },
@@ -107,7 +108,7 @@ const PersonalInformations = ({
 
   useEffect(() => {
     if (userData?.hobbies) {
-      setSelectedHobbies(userData.hobbies); // Load hobbies from the user data if available
+      setSelectedHobbies(userData.hobbies);
     }
   }, [userData]);
 
@@ -207,17 +208,14 @@ const PersonalInformations = ({
 
   const handleHobbyChange = (hobby: string) => {
     if (selectedHobbies.includes(hobby)) {
-      // Deselect hobby
       setSelectedHobbies((prev) => prev.filter((h) => h !== hobby));
     } else {
       if (selectedHobbies.length < 5) {
-        // Select hobby if under max 5
         setSelectedHobbies((prev) => [...prev, hobby]);
       }
     }
   };
 
-  // Check if hobbies are less than 3, then show validation message
   const isMinHobbiesSelected = selectedHobbies.length >= 3;
 
   return (
@@ -275,13 +273,9 @@ const PersonalInformations = ({
           />
         </div>
         <div className="md:col-span-2">
-<<<<<<< HEAD
-          <label className="block text-sm font-medium text-gray-700 mb-2">{t("account.locationLabel")}</label>
-=======
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Location
+            {t("account.locationLabel", "Location")}
           </label>
->>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
           <input
             type="text"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
@@ -292,39 +286,33 @@ const PersonalInformations = ({
             }}
             placeholder={t("account.locationPlaceholder")}
           />
-<<<<<<< HEAD
-          {isSearching && <div className="text-sm text-gray-500">{t("account.searching", "Searching...")}</div>}
-=======
           {isSearching && (
-            <div className="text-sm text-gray-500">Searching...</div>
+            <div className="text-sm text-gray-500">
+              {t("account.searching", "Searching...")}
+            </div>
           )}
->>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
           {locations.length > 0 && (
             <ul className="bg-white shadow-md border border-gray-300 mt-2 rounded-lg max-h-60 overflow-auto">
               {locations.map((location) => (
                 <li
-                  key={location.id} // Use the id to key each element in the list
+                  key={location.id}
                   className="px-4 py-2 cursor-pointer hover:bg-[#00B878] hover:text-white"
                   onClick={() => {
                     handleInputChange(
                       "location",
                       `${location.city}, ${location.country}`
-                    ); // You can change this to location.country if you want to display the country
-                    setLocationSearch(`${location.city}, ${location.country}`); // Set the search input to the selected city
-                    setLocations([]); // Clear the list after selection
+                    );
+                    setLocationSearch(`${location.city}, ${location.country}`);
+                    setLocations([]);
                   }}
                 >
-                  {location.city}, {location.country}{" "}
-                  {/* Here we are displaying city and country */}
+                  {location.city}, {location.country}
                 </li>
               ))}
             </ul>
           )}
         </div>
         <div className="md:col-span-2">
-<<<<<<< HEAD
-          <label className="block text-sm font-medium text-gray-700 mb-2">{t("account.hobbiesLabel")}</label>
-=======
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Bio
           </label>
@@ -341,9 +329,8 @@ const PersonalInformations = ({
         </div>
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Hobbies
+            {t("account.hobbiesLabel", "Hobbies")}
           </label>
->>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {interests.map((interest) => {
               const IconComponent = interest.icon;
@@ -351,15 +338,12 @@ const PersonalInformations = ({
               const isDisabled = selectedHobbies.length >= 5 && !isChecked;
 
               return (
-                <div
-                  key={interest.name}
-                  className="flex items-center space-x-2"
-                >
+                <div key={interest.name} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     id={interest.name}
                     checked={isChecked}
-                    disabled={isDisabled} // Disable the checkbox if there are already 5 selected hobbies
+                    disabled={isDisabled}
                     onChange={() => handleHobbyChange(interest.name)}
                     className="h-5 w-5 rounded border-gray-300 text-[#00B878] focus:ring-[#00B878] focus:ring-2 accent-[#00B878]"
                   />
@@ -384,16 +368,14 @@ const PersonalInformations = ({
         </div>
       </div>
 
-      {/* Save Button */}
       <div className="mt-6 flex justify-end">
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-            isSaving
+          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
               ? "bg-gray-400 cursor-not-allowed text-white"
               : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
-          }`}
+            }`}
         >
           {isSaving ? (
             <span className="flex items-center">
