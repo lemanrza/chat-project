@@ -1,6 +1,5 @@
 import cors from "cors";
 import express from "express";
-import rateLimit from "express-rate-limit";
 import userRouter from "./routes/userRoute.js";
 import chatRouter from "./routes/chatRoute.js";
 import messageRouter from "./routes/messageRoute.js";
@@ -12,13 +11,13 @@ import "./config/passport.js";
 import "./config/passportLogin.js";
 const app = express();
 // Rate limiter middleware
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 100,
-});
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   limit: 100,
+// });
 // Global middlewares
 app.use(express.json());
-app.use(limiter);
+// app.use(limiter);
 app.use(cors());
 //routes
 app.use(passport.initialize());

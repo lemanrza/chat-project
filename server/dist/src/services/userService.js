@@ -6,11 +6,80 @@ import config from "../config/config.js";
 const CLIENT_URL = config.CLIENT_URL;
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 10 * 60 * 1000;
-export const getAll = async () => await UserModel.find().select("-password").populate({
+export const getAll = async () => await UserModel.find()
+    .select("-password")
+    .populate({
     path: "connections",
+    select: "-password",
+})
+    .populate({
+    path: "connectionsRequests",
     select: "-password",
 });
 export const getOne = async (id) => await UserModel.findById(id).select("-password");
+export const getOneWithConnections = async (id) => await UserModel.findById(id).select("-password").populate({
+    path: "connections",
+    select: "-password",
+});
+export const addConnection = async (userId, connectionId) => {
+    try {
+        await UserModel.findByIdAndUpdate(userId, {
+            $addToSet: { connections: connectionId },
+        });
+        await UserModel.findByIdAndUpdate(connectionId, {
+            $addToSet: { connections: userId },
+        });
+        return {
+            success: true,
+            message: "Connection added successfully",
+        };
+    }
+    catch (error) {
+        return {
+            success: false,
+            message: error.message || "Failed to add connection",
+        };
+    }
+};
+export const removeConnection = async (userId, connectionId) => {
+    try {
+        await UserModel.findByIdAndUpdate(userId, {
+            $pull: { connections: connectionId },
+        });
+        await UserModel.findByIdAndUpdate(connectionId, {
+            $pull: { connections: userId },
+        });
+        return {
+            success: true,
+            message: "Connection removed successfully",
+        };
+    }
+    catch (error) {
+        return {
+            success: false,
+            message: error.message || "Failed to remove connection",
+        };
+    }
+};
+export const getAvailableUsers = async (userId) => {
+    try {
+        const currentUser = await UserModel.findById(userId).select("connections");
+        const excludeIds = [userId, ...(currentUser?.connections || [])];
+        const availableUsers = await UserModel.find({
+            _id: { $nin: excludeIds },
+        }).select("-password");
+        return {
+            success: true,
+            data: availableUsers,
+        };
+    }
+    catch (error) {
+        return {
+            success: false,
+            message: error.message || "Failed to get available users",
+        };
+    }
+};
 export const getOneWithPassword = async (id) => await UserModel.findById(id);
 export const getByEmail = async (email) => await UserModel.find({ email: email }).select("-password");
 export const deleteUser = async (id) => {

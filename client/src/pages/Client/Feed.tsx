@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +11,29 @@ import type { RootState } from '@/store/store';
 import type { UserState } from '@/features/userSlice';
 import { useNavigate } from 'react-router-dom';
 import { enqueueSnackbar } from 'notistack';
+=======
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import endpoints from "@/services/api";
+import controller from "@/services/commonRequest";
+import type { UserData } from "@/types/profileType";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState } from "@/store/store";
+import type { UserState } from "@/features/userSlice";
+import { addConnection } from "@/features/userSlice";
+import { useNavigate } from "react-router-dom";
+import { enqueueSnackbar } from "notistack";
+import {
+  Search,
+  Filter,
+  Users,
+  MessageCircle,
+  MapPin,
+  UserPlus,
+  Clock,
+  Check,
+} from "lucide-react";
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
 
 interface Tab {
   id: string;
@@ -26,44 +50,57 @@ const countriesList = [
 
 const Feed = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as UserState;
 
-  const [activeTab, setActiveTab] = useState('discover');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState("discover");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
 
-
   const { t } = useTranslation();
+
+<<<<<<< HEAD
+  const { t } = useTranslation();
+=======
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
   const tabs: Tab[] = [
-    { id: 'discover', label: t('feed_tab_discover'), icon: <Search className="w-4 h-4" /> },
-    { id: 'trending', label: t('feed_tab_trending'), icon: <div className="w-4 h-4 flex items-center">📈</div> },
-    { id: 'nearby', label: t('feed_tab_nearby'), icon: <MapPin className="w-4 h-4" /> },
+    {
+      id: "discover",
+      label: t("feed_tab_discover"),
+      icon: <Search className="w-4 h-4" />,
+    },
+    {
+      id: "trending",
+      label: t("feed_tab_trending"),
+      icon: <div className="w-4 h-4 flex items-center">📈</div>,
+    },
+    {
+      id: "nearby",
+      label: t("feed_tab_nearby"),
+      icon: <MapPin className="w-4 h-4" />,
+    },
   ];
 
   useEffect(() => {
     const fetchUsers = async () => {
-      if (!user.token) {
-        console.log("User not authenticated, redirecting to login");
-        navigate('/auth/login');
-        return;
-      }
       try {
         setLoading(true);
         const response = await controller.getAll(endpoints.users);
         setUsers(response.data);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error("Error fetching users:", error);
       } finally {
         setLoading(false);
       }
     };
     fetchUsers();
-  }, [user.isAuthenticated, user.token, navigate]);
+  }, [navigate]);
 
+<<<<<<< HEAD
   const filteredUsers = users.filter(userData => {
     const matchesSearch =
       userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -80,51 +117,95 @@ const Feed = () => {
 
     return matchesSearch && matchesHobbies && matchesCountry;
   });
+=======
+  const filteredUsers = users
+    .filter(
+      (userData) =>
+        userData.profile?.firstName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        userData.profile?.lastName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        userData.profile?.location
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase())
+    )
+    .filter((userData) => userData.id !== user.id);
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
 
   // Handle connection request logic
-  const handleConnect = async (userId: string) => {
+  const handleConnect = async (targetUserId: string) => {
     try {
-      const isAlreadyConnected = user.connections.includes(userId);
-      const isRequestPending = user.connectionsRequests.includes(userId);
+      const isAlreadyConnected = user.connections.includes(targetUserId);
 
       if (isAlreadyConnected) {
-        console.log("Already connected with this user");
+        enqueueSnackbar("Already connected with this user", {
+          variant: "info",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
         return;
       }
 
-      if (isRequestPending) {
-        console.log("Connection request is already pending");
-        return;
+      // Use the new connection API that handles public/private profiles
+      const response = await controller.post(`${endpoints.users}/me/${user.id}/connections`, {
+        connectionId: targetUserId,
+      });
+
+      console.log("Connection response:", response);
+
+      // Handle different response types
+      if (response.data.type === 'connected') {
+        // Public profile - immediate connection
+        enqueueSnackbar("Connected successfully!", {
+          variant: "success",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
+        
+        // Update Redux state to reflect the new connection
+        dispatch(addConnection(targetUserId));
+      } else if (response.data.type === 'request_sent') {
+        // Private profile - request sent
+        enqueueSnackbar("Connection request sent! Waiting for approval.", {
+          variant: "info",
+          autoHideDuration: 3000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
+      } else {
+        // Default success message
+        enqueueSnackbar(response.data.message || "Connection request processed!", {
+          variant: "success",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
       }
-
-      // Send connection request (set it in connectionsRequests)
-      await controller.update(`${endpoints.users}/${user.id}`, "", {
-        connectionsRequests: [...user.connectionsRequests, userId],
-      });
-
-      enqueueSnackbar("Connection request sent!", {
-        variant: "success",
-        autoHideDuration: 2000,
-        anchorOrigin: {
-          vertical: "bottom",
-          horizontal: "right",
-        },
-      });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending connection request:", error);
-      enqueueSnackbar("Failed to send connection request", {
+      
+      let errorMessage = "Failed to send connection request";
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 404) {
+        errorMessage = "User not found";
+      } else if (error.response?.status === 401) {
+        errorMessage = "Unauthorized: Please log in again";
+        localStorage.removeItem("token");
+        navigate("/auth/login");
+      }
+
+      enqueueSnackbar(errorMessage, {
         variant: "error",
         autoHideDuration: 2000,
-        anchorOrigin: {
-          vertical: "bottom",
-          horizontal: "right",
-        },
+        anchorOrigin: { vertical: "bottom", horizontal: "right" },
       });
     }
   };
 
   const handleMessage = (userId: string) => {
-    console.log('Messaging user:', userId);
+    console.log("Messaging user:", userId);
   };
 
   if (loading) {
@@ -132,7 +213,7 @@ const Feed = () => {
       <div className="w-full flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('feed_loading')}</p>
+          <p className="text-gray-600">{t("feed_loading")}</p>
         </div>
       </div>
     );
@@ -220,19 +301,19 @@ const Feed = () => {
         <div className="px-8 py-8 rounded-t-2xl shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <div>
-              <h1 className="text-3xl font-bold" style={{ color: '#374151' }}>
-                {t('feed_discover_title')}
+              <h1 className="text-3xl font-bold" style={{ color: "#374151" }}>
+                {t("feed_discover_title")}
               </h1>
-              <p className="mt-2 text-base" style={{ color: '#6B7280' }}>
-                {t('feed_discover_subtitle')}
+              <p className="mt-2 text-base" style={{ color: "#6B7280" }}>
+                {t("feed_discover_subtitle")}
               </p>
             </div>
             <button
-              style={{ backgroundColor: '#00B878' }}
+              style={{ backgroundColor: "#00B878" }}
               className="hover:brightness-110 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all font-medium text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-[#00B878] focus:ring-offset-2"
             >
-              <Users className="w-4 h-4" style={{ color: '#fff' }} />
-              {t('feed_create_group')}
+              <Users className="w-4 h-4" style={{ color: "#fff" }} />
+              {t("feed_create_group")}
             </button>
           </div>
 
@@ -244,10 +325,12 @@ const Feed = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
                   ${activeTab === tab.id
-                    ? 'shadow-md scale-105 text-[#00B878]'
-                    : 'bg-transparent text-gray-700 hover:bg-gray-100'
+                    ? "shadow-md scale-105 text-[#00B878]"
+                    : "bg-transparent text-gray-700 hover:bg-gray-100"
                   }`}
-                style={activeTab === tab.id ? { backgroundColor: '#00B878' } : {}}
+                style={
+                  activeTab === tab.id ? { backgroundColor: "#00B878" } : {}
+                }
               >
                 {tab.icon}
                 {tab.label}
@@ -261,7 +344,7 @@ const Feed = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder={t('feed_search_placeholder')}
+                placeholder={t("feed_search_placeholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-lg text-base border border-gray-200 bg-white text-gray-700 focus:ring-2 focus:ring-green-400 focus:border-transparent focus:outline-none shadow-sm"
@@ -272,7 +355,7 @@ const Feed = () => {
               className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow-sm"
             >
               <Filter className="w-4 h-4" />
-              {t('feed_filters')}
+              {t("feed_filters")}
             </button>
           </div>
         </div>
@@ -280,13 +363,43 @@ const Feed = () => {
         {/* User Grid */}
         <div className="flex-1 overflow-auto p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredUsers.map((user) => {
-              const isAlreadyConnected = user.connections.includes(user.id);
-              const isRequestPending = user.connectionsRequests?.includes(user.id);
+            {filteredUsers.map((userData) => {
+              // Handle connections as either string[] or UserData[]
+              const userConnections = Array.isArray(user.connections) 
+                ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
+                : [];
+              
+              const isAlreadyConnected = userConnections.includes(userData.id);
+              
+              // Check if current user has sent a request to this target user
+              // This means the target user's connectionsRequests should contain current user's ID
+              const targetUserConnectionRequests = Array.isArray(userData.connectionsRequests)
+                ? userData.connectionsRequests.map(req => typeof req === 'string' ? req : (req as UserData).id)
+                : [];
+                
+              const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
+
+              // Handle click for connected button
+              const handleConnectedClick = () => {
+                enqueueSnackbar("You are already connected with this user", {
+                  variant: "info",
+                  autoHideDuration: 2000,
+                  anchorOrigin: { vertical: "bottom", horizontal: "right" },
+                });
+              };
+
+              // Handle click for pending button
+              const handlePendingClick = () => {
+                enqueueSnackbar("Connection request is pending approval", {
+                  variant: "info",
+                  autoHideDuration: 2000,
+                  anchorOrigin: { vertical: "bottom", horizontal: "right" },
+                });
+              };
 
               return (
                 <div
-                  key={user.id}
+                  key={userData.id}
                   className="rounded-2xl p-6 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200 group"
                 >
                   {/* User Avatar and Status */}
@@ -294,51 +407,74 @@ const Feed = () => {
                     <div className="relative">
                       <div
                         className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl group-hover:scale-105 transition-transform duration-200"
-                        style={{ backgroundColor: '#00B878' }}
+                        style={{ backgroundColor: "#00B878" }}
                       >
-                        <img className="rounded-full" src={user.profile?.avatar} alt={user.profile?.firstName} />
+                        <img
+                          className="rounded-full"
+                          src={userData.profile?.avatar}
+                          alt={userData.profile?.firstName}
+                        />
                       </div>
-                      {user.isOnline && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full" style={{ backgroundColor: '#00B878' }}></div>
+                      {userData.isOnline && (
+                        <div
+                          className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full"
+                          style={{ backgroundColor: "#00B878" }}
+                        ></div>
                       )}
                     </div>
                   </div>
 
                   {/* User Info */}
                   <div className="mb-6">
-                    <h3 className="font-bold text-lg mb-1" style={{ color: '#374151' }}>
-                      {user.profile?.firstName} {user.profile?.lastName}
+                    <h3
+                      className="font-bold text-lg mb-1"
+                      style={{ color: "#374151" }}
+                    >
+                      {userData.profile?.firstName} {userData.profile?.lastName}
                     </h3>
-                    <p className="text-sm mb-3" style={{ color: '#6B7280' }}>
-                      {user.username}
+                    <p className="text-sm mb-3" style={{ color: "#6B7280" }}>
+                      {userData.username}
                     </p>
 
                     {/* Location and Connections */}
                     <div className="space-y-1 mb-4">
-                      <div className="flex items-center text-sm" style={{ color: '#6B7280' }}>
+                      <div
+                        className="flex items-center text-sm"
+                        style={{ color: "#6B7280" }}
+                      >
                         <MapPin className="w-4 h-4 mr-2" />
-                        <span>{user.profile?.location}</span>
+                        <span>{userData.profile?.location}</span>
                       </div>
-                      <div className="flex items-center text-sm" style={{ color: '#6B7280' }}>
+                      <div
+                        className="flex items-center text-sm"
+                        style={{ color: "#6B7280" }}
+                      >
                         <Users className="w-4 h-4 mr-2" />
-                        <span>{t('feed_connections', { count: user.connections.length })}</span>
+                        <span>
+                          {t("feed_connections", {
+                            count: userData.connections.length,
+                          })}
+                        </span>
                       </div>
                     </div>
 
                     {/* Bio */}
-                    <p className="text-sm mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
-                      {user.profile?.bio}
+                    <p
+                      className="text-sm mb-4 leading-relaxed"
+                      style={{ color: "#6B7280" }}
+                    >
+                      {userData.profile?.bio}
                     </p>
 
                     {/* Interests */}
                     <div className="flex flex-wrap gap-2 mb-6">
-                      {user.hobbies?.map((interest, index) => (
+                      {userData.hobbies?.map((interest, index) => (
                         <span
                           key={index}
                           className="px-3 py-1 text-sm rounded-full font-medium"
                           style={{
-                            backgroundColor: '#F3F4F6',
-                            color: '#374151'
+                            backgroundColor: "#F3F4F6",
+                            color: "#374151",
                           }}
                         >
                           {interest}
@@ -351,33 +487,36 @@ const Feed = () => {
                   <div className="flex gap-3">
                     {isAlreadyConnected ? (
                       <button
-                        disabled
-                        className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-green-600 cursor-not-allowed"
+                        onClick={handleConnectedClick}
+                        className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-green-600 hover:bg-green-700 transition-colors cursor-pointer"
                       >
-                        {t('feed_connected')}
+                        <Check /> {t("feed_connected")}
                       </button>
                     ) : isRequestPending ? (
                       <button
-                        disabled
-                        className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-gray-400 cursor-not-allowed"
+                        onClick={handlePendingClick}
+                        className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors cursor-pointer"
                       >
-                        {t('feed_pending')}
+                        <Clock /> {t("feed_pending")}
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleConnect(user.id)}
+                        onClick={() => userData.id && handleConnect(userData.id)}
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-[#00B878] hover:bg-[#00a76d] cursor-pointer"
                       >
-                        <UserPlus className="w-4 h-4" style={{ color: '#fff' }} />
-                        {t('feed_connect')}
+                        <UserPlus
+                          className="w-4 h-4"
+                          style={{ color: "#fff" }}
+                        />
+                        {t("feed_connect")}
                       </button>
                     )}
                     <button
-                      onClick={() => handleMessage(user.id)}
+                      onClick={() => userData.id && handleMessage(userData.id)}
                       className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow"
                     >
                       <MessageCircle className="w-4 h-4" />
-                      {t('feed_message')}
+                      {t("feed_message")}
                     </button>
                   </div>
                 </div>
@@ -388,13 +527,17 @@ const Feed = () => {
           {/* Empty State */}
           {filteredUsers.length === 0 && (
             <div className="text-center py-12">
-              <Users className="w-16 h-16 mx-auto mb-4" style={{ color: '#6B7280' }} />
-              <h3 className="text-lg font-medium mb-2" style={{ color: '#374151' }}>
-                {t('feed_no_users')}
+              <Users
+                className="w-16 h-16 mx-auto mb-4"
+                style={{ color: "#6B7280" }}
+              />
+              <h3
+                className="text-lg font-medium mb-2"
+                style={{ color: "#374151" }}
+              >
+                {t("feed_no_users")}
               </h3>
-              <p style={{ color: '#6B7280' }}>
-                {t('feed_no_users_sub')}
-              </p>
+              <p style={{ color: "#6B7280" }}>{t("feed_no_users_sub")}</p>
             </div>
           )}
         </div>

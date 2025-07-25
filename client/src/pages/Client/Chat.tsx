@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -11,36 +12,91 @@ import {
   Plus,
   Users,
 } from "lucide-react";
+=======
+import { useEffect, useState, useRef } from "react";
+import { Send, MessageSquare } from "lucide-react";
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
 import socket from "@/socket/socket";
-import controller from "@/services/commonRequest";
-import endpoints from "@/services/api";
 import { getUserIdFromToken } from "@/utils/auth";
-import { enqueueSnackbar } from "notistack";
-import type { ChatType, Connection, Message } from "@/types/chatType";
+
+interface Message {
+  _id: string;
+  text: string;
+  sender: {
+    _id: string;
+    name: string;
+    profilePicture?: string;
+  };
+  createdAt: string;
+}
+
+interface ChatType {
+  _id: string;
+  members: {
+    user: {
+      _id: string;
+      username: string;
+      email: string;
+      profile: {
+        firstName: string;
+        lastName: string;
+        avatar?: string;
+      };
+    };
+    role: string;
+    joinedAt: string;
+    isActive: boolean;
+  }[];
+  type: "direct" | "group" | "channel";
+  name?: string;
+  description?: string;
+  avatar?: string;
+  lastMessage?: Message;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Connection {
+  _id: string;
+  name: string;
+  profilePicture?: string;
+}
 
 const Chat = () => {
+<<<<<<< HEAD
   const { t } = useTranslation();
   const [selectedChat, setSelectedChat] = useState<string>("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+=======
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
   const [chats, setChats] = useState<ChatType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string>("");
-  const [typing, setTyping] = useState<{ [key: string]: boolean }>({});
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [showConnectionsModal, setShowConnectionsModal] = useState(false);
+  const [selectedChat, setSelectedChat] = useState<any | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string>("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    initializeUser();
-    setupSocketListeners();
+    scrollToBottom();
+  }, [messages]);
 
-    return () => {
-      cleanupSocketListeners();
-    };
+  useEffect(() => {
+    const userId = getUserIdFromToken();
+    if (userId) {
+      setCurrentUserId(userId);
+      fetchUserData(userId);
+    }
   }, []);
 
-  const initializeUser = async () => {
+  const fetchUserData = async (userId: string) => {
     try {
+<<<<<<< HEAD
       const userId = getUserIdFromToken();
       if (userId) {
         setCurrentUserId(userId);
@@ -98,12 +154,18 @@ const Chat = () => {
     try {
       const response = await controller.post(
         `${endpoints.chats}?userId=${currentUserId}`,
+=======
+      const userResponse = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/${userId}`,
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
         {
-          type: "direct",
-          members: [connectionId],
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
 
+<<<<<<< HEAD
       if (response.success && response.data) {
         // Refresh chat list to show the new chat
         await loadUserChats(currentUserId);
@@ -265,147 +327,197 @@ const Chat = () => {
               firstName: "You",
               lastName: "",
             },
+=======
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        setConnections(userData.data.connections || []);
+      } else {
+        console.error(
+          `Failed to fetch user data: ${userResponse.status} ${userResponse.statusText}`
+        );
+      }
+
+      const chatsResponse = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/api/chats?userId=${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
           },
-          chat: selectedChat,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          isMe: true,
-        };
+        }
+      );
 
-        setMessages((prev) => [...prev, newMessage]);
-
-        setChats((prevChats) =>
-          prevChats.map((chat) =>
-            chat._id === selectedChat
-              ? {
-                  ...chat,
-                  lastMessage: {
-                    content: messageContent,
-                    createdAt: newMessage.createdAt,
-                    sender: currentUserId,
-                  },
-                }
-              : chat
-          )
+      if (chatsResponse.ok) {
+        const chatsData = await chatsResponse.json();
+        setChats(chatsData.data || chatsData);
+      } else {
+        console.error(
+          `Failed to fetch chats: ${chatsResponse.status} ${chatsResponse.statusText}`
         );
       }
     } catch (error) {
+<<<<<<< HEAD
       console.error("Error sending message:", error);
       enqueueSnackbar(t('chat_failed_to_send'), {
         variant: "error",
         autoHideDuration: 3000,
       });
       setMessage(messageContent); // Restore message if failed
+=======
+      console.error("Error fetching user data:", error);
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
     }
   };
 
-  // Handle typing indicators for socket emission
-  const emitTyping = () => {
-    if (selectedChat) {
-      socket.emit("message:typing", {
-        chatId: selectedChat,
-      });
-    }
-  };
+  // Socket.IO event listeners
+  useEffect(() => {
+    if (!currentUserId) return;
 
-  const emitStopTyping = () => {
-    if (selectedChat) {
-      socket.emit("message:stopTyping", {
-        chatId: selectedChat,
-      });
-    }
-  };
+    socket.emit("join", currentUserId);
 
-  const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMessage(e.target.value);
+    const handleNewMessage = (message: Message) => {
+      setMessages((prev) => [...prev, message]);
 
-    if (e.target.value.trim()) {
-      emitTyping();
-      setTimeout(() => {
-        emitStopTyping();
-      }, 2000);
-    } else {
-      emitStopTyping();
-    }
-  };
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat._id === selectedChat?._id
+            ? { ...chat, lastMessage: message }
+            : chat
+        )
+      );
+    };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
+    socket.on("newMessage", handleNewMessage);
 
-  const getSelectedChatInfo = () => {
-    const chat = chats.find((c) => c._id === selectedChat);
-    if (!chat) return null;
+    return () => {
+      socket.off("newMessage", handleNewMessage);
+    };
+  }, [currentUserId, selectedChat?._id]);
 
-    if (chat.isGroup) {
-      return {
-        name: chat.name || "Group Chat",
-        avatar: "GC",
-        status: `${chat.members.length} members`,
-        isOnline: false,
-      };
-    } else {
-      const otherMember = chat.members.find((m) => m._id !== currentUserId);
-      if (otherMember) {
-        return {
-          name: `${otherMember.profile.firstName} ${otherMember.profile.lastName}`,
-          avatar:
-            otherMember.profile.avatar ||
-            `${otherMember.profile.firstName[0]}${otherMember.profile.lastName[0]}`,
-          status: "Online",
-          isOnline: true,
-        };
+  const fetchMessages = async (chatId: string) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/api/message/chat/${chatId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data);
       }
+    } catch (error) {
+      console.error("Error fetching messages:", error);
     }
-    return null;
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedChat || !currentUserId) return;
+
+    const messageData = {
+      text: newMessage,
+      chatId: selectedChat._id,
+      senderId: currentUserId,
+    };
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/api/message`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(messageData),
+        }
+      );
+
+      if (response.ok) {
+        const message = await response.json();
+        socket.emit("sendMessage", message);
+        setNewMessage("");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };
+
+  const handleChatSelect = (chat: ChatType) => {
+    setSelectedChat(chat);
+    fetchMessages(chat._id);
+  };
+
+  const createChatWithConnection = async (connection: Connection) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/api/chats`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            type: "direct",
+            members: [connection._id],
+          }),
+        }
+      );
+
+      console.log("Response status:", response.status);
+
+      if (response.ok) {
+        const newChat = await response.json();
+        console.log("New chat created:", newChat);
+        setChats((prev) => [...prev, newChat.data || newChat]);
+        handleChatSelect(newChat.data || newChat);
+      } else {
+        const errorText = await response.text();
+        console.error("Server error response:", errorText);
+        console.error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Network error creating chat:", error);
+    }
+  };
+
+  const getOtherParticipant = (chat: any) => {
+    return chat.members.find((member: any) => member.user._id !== currentUserId)
+      ?.user;
   };
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const formatChatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (minutes < 1) return "now";
-    if (minutes < 60) return `${minutes}m`;
-    if (hours < 24) return `${hours}h`;
-    if (days < 7) return `${days}d`;
-    return date.toLocaleDateString();
-  };
-
-  const isTyping = Object.values(typing).some(Boolean);
-  const selectedChatInfo = getSelectedChatInfo();
-
-  if (loading) {
+  if (!currentUserId) {
     return (
+<<<<<<< HEAD
       <div className="h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00B878] mx-auto mb-4"></div>
           <p className="text-gray-600">{t('chat_loading')}</p>
         </div>
+=======
+      <div className="flex items-center justify-center h-full">
+        Please log in to access chat.
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
-      {/* Chat List */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-sm h-full">
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className="w-1/3 bg-white border-r border-gray-200 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
+<<<<<<< HEAD
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-900">{t('chat_messages')}</h2>
             <button
@@ -462,35 +574,43 @@ const Chat = () => {
                     chat.members.filter((m) => m._id !== currentUserId)[0]
                       ?.profile.lastName[0] || "U";
 
+=======
+          <h2 className="text-xl font-semibold text-gray-800">Chats</h2>
+        </div>
+
+        {/* Chat List */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-2">
+            {/* Existing Chats */}
+            {chats.map((chat) => {
+              const otherParticipant = getOtherParticipant(chat);
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
               return (
                 <div
                   key={chat._id}
-                  onClick={() => setSelectedChat(chat._id)}
-                  className={`p-4 border-b border-gray-100 cursor-pointer transition-all duration-150 hover:bg-[#E6FAF3] ${
-                    isSelected
-                      ? "bg-[#E6FAF3] border-l-4 border-l-[#00B878] shadow"
-                      : ""
+                  className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
+                    selectedChat?._id === chat._id
+                      ? "bg-blue-100 border-l-4 border-blue-500"
+                      : "hover:bg-gray-100"
                   }`}
-                  style={{ minHeight: 80 }}
+                  onClick={() => handleChatSelect(chat)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div
-                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow"
-                        style={{
-                          backgroundColor: chat.isGroup ? "#a78bfa" : "#00B878",
-                        }}
-                      >
-                        {avatarText}
-                      </div>
-                      {!chat.isGroup && (
-                        <div
-                          className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full"
-                          style={{ backgroundColor: "#00B878" }}
-                        ></div>
+                    <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                      {otherParticipant?.profilePicture ? (
+                        <img
+                          src={otherParticipant.profilePicture}
+                          alt={otherParticipant.name}
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-gray-600 font-medium">
+                          {otherParticipant?.name?.charAt(0).toUpperCase()}
+                        </span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
+<<<<<<< HEAD
                       <div className="flex items-center justify-between">
                         <h3 className="font-medium text-gray-900 truncate">
                           {chatName}
@@ -517,22 +637,90 @@ const Chat = () => {
                       {chat.isGroup && (
                         <p className="text-xs text-gray-500">
                           {t('chat_members_count', { count: chat.members.length })}
+=======
+                      <h3 className="font-medium text-gray-900 truncate">
+                        {otherParticipant?.name}
+                      </h3>
+                      {chat.lastMessage && (
+                        <p className="text-sm text-gray-500 truncate">
+                          {chat.lastMessage.text}
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
                         </p>
                       )}
+                    </div>
+                    {chat.lastMessage && (
+                      <span className="text-xs text-gray-400">
+                        {formatTime(chat.lastMessage.createdAt)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Available Connections */}
+            {connections.map((connection) => {
+              const hasExistingChat = chats.some((chat) =>
+                chat.members.some(
+                  (member) => member.user._id === connection._id
+                )
+              );
+
+              if (hasExistingChat) return null;
+
+              return (
+                <div
+                  key={`connection-${connection._id}`}
+                  className="p-3 rounded-lg cursor-pointer transition-colors mb-2 hover:bg-gray-100 border-l-4 border-green-400"
+                  onClick={() => createChatWithConnection(connection)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                      {connection.profilePicture ? (
+                        <img
+                          src={connection.profilePicture}
+                          alt={connection.name}
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-gray-600 font-medium">
+                          {connection.name?.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 truncate">
+                        {connection.name}
+                      </h3>
+                      <p className="text-sm text-green-600">
+                        Click to start chat
+                      </p>
                     </div>
                   </div>
                 </div>
               );
-            })
-          )}
+            })}
+
+            {/* Empty State */}
+            {chats.length === 0 && connections.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No connections yet</p>
+                <p className="text-sm">
+                  Add some connections to start chatting
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col bg-[#F8FAFB] h-full">
-        {selectedChat && selectedChatInfo ? (
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {selectedChat ? (
           <>
             {/* Chat Header */}
+<<<<<<< HEAD
             <div className="bg-white border-b border-gray-200 p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -566,22 +754,39 @@ const Chat = () => {
                       {isTyping && ` • ${t('chat_typing')}`}
                     </p>
                   </div>
+=======
+            {console.log("Selected chat:", getOtherParticipant(selectedChat))}
+            <div className="p-4 bg-white border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                  {getOtherParticipant(selectedChat)?.profile.avatar ? (
+                    <img
+                      src={getOtherParticipant(selectedChat)?.profile.avatar}
+                      alt={
+                        getOtherParticipant(selectedChat)?.profile.displayName
+                      }
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-gray-600 font-medium">
+                      {getOtherParticipant(selectedChat)
+                        ?.name?.charAt(0)
+                        .toUpperCase()}
+                    </span>
+                  )}
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
                 </div>
-                <div className="flex items-center gap-2">
-                  <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-                    <Phone size={20} />
-                  </button>
-                  <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-                    <Video size={20} />
-                  </button>
-                  <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-                    <MoreHorizontal size={20} />
-                  </button>
+                <div>
+                  <h3 className="font-medium text-gray-900">
+                    {getOtherParticipant(selectedChat)?.name}
+                  </h3>
+                  <p className="text-sm text-gray-500">Active now</p>
                 </div>
               </div>
             </div>
 
             {/* Messages */}
+<<<<<<< HEAD
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 min-h-0">
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
@@ -597,66 +802,44 @@ const Chat = () => {
                       msg.isMe ? "justify-end" : "justify-start"
                     }`}
                   >
+=======
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-4">
+                {messages.map((message) => {
+                  const isOwn = message.sender._id === currentUserId;
+                  return (
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
                     <div
-                      className={`flex items-start gap-2 max-w-xs lg:max-w-md ${
-                        msg.isMe ? "flex-row-reverse" : ""
+                      key={message._id}
+                      className={`flex ${
+                        isOwn ? "justify-end" : "justify-start"
                       }`}
                     >
-                      {!msg.isMe && (
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow"
-                          style={{ backgroundColor: "#00B878" }}
-                        >
-                          {msg.sender.profile.firstName[0]}
-                          {msg.sender.profile.lastName[0]}
-                        </div>
-                      )}
                       <div
-                        className="px-4 py-2 rounded-2xl shadow"
-                        style={
-                          msg.isMe
-                            ? {
-                                backgroundColor: "#00B878",
-                                color: "#fff",
-                                borderTopRightRadius: 8,
-                                borderBottomRightRadius: 24,
-                                borderTopLeftRadius: 24,
-                                borderBottomLeftRadius: 8,
-                              }
-                            : {
-                                backgroundColor: "#F3F4F6",
-                                color: "#222",
-                                borderTopLeftRadius: 8,
-                                borderBottomLeftRadius: 24,
-                                borderTopRightRadius: 24,
-                                borderBottomRightRadius: 8,
-                              }
-                        }
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                          isOwn
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-200 text-gray-900"
+                        }`}
                       >
-                        <p>{msg.content}</p>
+                        <p>{message.text}</p>
                         <p
-                          className="text-xs mt-1"
-                          style={
-                            msg.isMe
-                              ? { color: "#E6FAF3" }
-                              : { color: "#6B7280" }
-                          }
+                          className={`text-xs mt-1 ${
+                            isOwn ? "text-blue-100" : "text-gray-500"
+                          }`}
                         >
-                          {formatTime(msg.createdAt)}
+                          {formatTime(message.createdAt)}
                         </p>
                       </div>
-                      {msg.isMe && (
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow">
-                          ME
-                        </div>
-                      )}
                     </div>
-                  </div>
-                ))
-              )}
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
             </div>
 
             {/* Message Input */}
+<<<<<<< HEAD
             <div className="bg-white border-t border-gray-200 p-4 shadow-sm">
               <div className="flex items-center gap-2">
                 <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
@@ -675,10 +858,21 @@ const Chat = () => {
                     <Smile size={16} />
                   </button>
                 </div>
+=======
+            <div className="p-4 bg-white border-t border-gray-200">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Type a message..."
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                />
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
                 <button
-                  className="p-2 text-white rounded-lg transition-colors shadow"
-                  style={{ backgroundColor: "#00B878" }}
                   onClick={sendMessage}
+<<<<<<< HEAD
                   disabled={!message.trim()}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.backgroundColor = "#00a76d")
@@ -687,15 +881,20 @@ const Chat = () => {
                     (e.currentTarget.style.backgroundColor = "#00B878")
                   }
                   title={t('chat_send_message')}
+=======
+                  disabled={!newMessage.trim()}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
                 >
-                  <Send size={20} />
+                  <Send className="h-4 w-4" />
                 </button>
               </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center bg-gray-50">
             <div className="text-center">
+<<<<<<< HEAD
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Send size={32} className="text-gray-400" />
               </div>
@@ -704,11 +903,20 @@ const Chat = () => {
               </h3>
               <p className="text-gray-500">
                 {t('chat_choose_sidebar')}
+=======
+              <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-xl font-medium text-gray-900 mb-2">
+                Welcome to Chat
+              </h3>
+              <p className="text-gray-500">
+                Select a chat or connection to start messaging
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
               </p>
             </div>
           </div>
         )}
       </div>
+<<<<<<< HEAD
 
       {/* Connections Modal */}
       {showConnectionsModal && (
@@ -806,6 +1014,8 @@ const Chat = () => {
           </div>
         </div>
       )}
+=======
+>>>>>>> 50fd8beca30dec3d2907d24344bf8e3dab4d58ec
     </div>
   );
 };

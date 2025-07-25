@@ -40,7 +40,13 @@ export const createNewChat = async (req, res, next) => {
 };
 export const getCurrentUserChats = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.query.userId;
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "userId query parameter is required",
+            });
+        }
         const response = await getUserChats(userId);
         if (!response.success) {
             return res.status(400).json(response);
@@ -53,12 +59,18 @@ export const getCurrentUserChats = async (req, res, next) => {
 };
 export const getChatDetails = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.query.userId;
         const { chatId } = req.params;
         if (!chatId) {
             return res.status(400).json({
                 success: false,
                 message: "Chat ID is required",
+            });
+        }
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "userId query parameter is required",
             });
         }
         const response = await getChatById(chatId, userId);
@@ -175,8 +187,14 @@ export const deleteChatById = async (req, res, next) => {
 };
 export const searchUserChats = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.query.userId;
         const { q: query } = req.query;
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "userId query parameter is required",
+            });
+        }
         if (!query || typeof query !== "string") {
             return res.status(400).json({
                 success: false,

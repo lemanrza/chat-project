@@ -160,7 +160,7 @@ export const sendVerificationEmail = async (toEmail, userFullName, verificationL
             &copy; ${new Date().getFullYear()} ChatWave. All rights reserved.
         </div>
     </div>
-</div>`
+</div>`,
         });
     }
     catch (error) {
