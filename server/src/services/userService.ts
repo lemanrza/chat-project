@@ -467,7 +467,7 @@ export const forgotPassword = async (email: string) => {
       "30m"
     );
     const resetPasswordLink = `${CLIENT_URL}/auth/reset-password/${token}`;
-    sendForgotPasswordEmail(email, resetPasswordLink);
+    sendForgotPasswordEmail(email, user.profile.displayName, resetPasswordLink);
   }
 };
 

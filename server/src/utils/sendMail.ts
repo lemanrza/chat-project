@@ -192,45 +192,52 @@ export const sendVerificationEmail = async (
 
 export const sendForgotPasswordEmail = async (
   toEmail: string,
-  resetPasswordLink: string
-) => {
+  userFullName: string,
+  resetLink: string
+): Promise<void> => {
   try {
     await transporter.sendMail({
-      from: `"ChatWave" <${process.env.GMAIL_USER}> `,
+      from: `"ChatWave" <${process.env.GMAIL_USER}>`,
       to: toEmail,
-      subject: "Reset Your ChatWave Account Password",
-      html: ` < div style = "font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 40px;" >
-    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" >
-    <div style="background-color: #1e90ff; padding: 20px; color: white; text-align: center;" >
-    <h2 style="margin: 0;" > Reset Your Password </h2>
-    </div>
-    < div style = "padding: 30px; color: #333;" >
-    <p style="font-size: 16px;" > Hi there, </p>
-    < p style = "font-size: 16px;" >
-    We received a request to reset the password for your < strong > Bazaar </strong> account.
-      </p>
-      < p style = "font-size: 16px;" >
-      Click the button below to reset your password.This link is valid for the next 30 minutes:
-        </p>
-          < div style = "text-align: center; margin: 30px 0;" >
-            <a href="${resetPasswordLink}" target = "_blank"
-    style = "background-color: #ff4d4f; color: #ffffff; padding: 14px 24px; text-decoration: none; border-radius: 6px; font-size: 16px;" >
-      Reset Password
-        </a>
-        </div>
-        < p style = "font-size: 14px; color: #666;" >
-          If you didn’t request a password reset, you can safely ignore this email.
-              < br />
-            For further assistance, please contact our support team.
-            </p>
+      subject: "Reset Your Password",
+      html: `
+        <div style="font-family: Arial, sans-serif; background-color: #f8fafb; padding: 40px;">
+          <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            
+            <!-- Header Section -->
+            <div style="background-color: #00B878; padding: 20px; color: white; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+              <h2 style="margin: 0; font-size: 24px;">Password Reset Request, ${userFullName}!</h2>
+            </div>
+            
+            <!-- Body Section -->
+            <div style="padding: 30px; color: #333;">
+              <p style="font-size: 16px; line-height: 1.6;">We received a request to reset your password. No worries, just click the button below to create a new one.</p>
+              <p style="font-size: 16px; line-height: 1.6;">To reset your password, click the button below:</p>
+
+              <!-- Button Section -->
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetLink}" target="_blank"
+                   style="background-color: #00B878; color: #ffffff; padding: 14px 24px; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; display: inline-block;">
+                   Reset Password
+                </a>
               </div>
-              < div style = "background-color: #f4f4f4; padding: 20px; text-align: center; font-size: 12px; color: #999;" >
-            & copy; ${new Date().getFullYear()} Bazaar.All rights reserved.
+
+              <p style="font-size: 14px; color: #666; text-align: center; line-height: 1.6;">
+                If you didn’t request a password reset, please ignore this email.
+              </p>
+            </div>
+            
+            <!-- Footer Section -->
+            <div style="background-color: #f8fafb; padding: 20px; text-align: center; font-size: 12px; color: #999; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+              &copy; ${new Date().getFullYear()} ChatWave. All rights reserved.
+            </div>
           </div>
-      </div>
-      </div>`,
+        </div>`
     });
   } catch (error) {
-    console.error("Error sending forgot password email:", error);
+    console.error("Error sending email:", error);
   }
 };
+
+
+
