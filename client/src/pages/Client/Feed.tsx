@@ -1,6 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useTranslation } from "react-i18next";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import endpoints from '@/services/api';
+import controller from '@/services/commonRequest';
+import { useNavigate } from 'react-router-dom';
+import { enqueueSnackbar } from 'notistack';
+import type { UserData } from "@/types/profileType";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState } from "@/store/store";
+import type { UserState } from "@/features/userSlice";
+import { addConnection } from "@/features/userSlice";
 import {
   Search,
   Filter,
@@ -11,14 +20,6 @@ import {
   Clock,
   Check,
 } from "lucide-react";
-import endpoints from "@/services/api";
-import controller from "@/services/commonRequest";
-import type { UserData } from "@/types/profileType";
-import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "@/store/store";
-import { addConnection, type UserState } from "@/features/userSlice";
-import { useNavigate } from "react-router-dom";
-import { enqueueSnackbar } from "notistack";
 
 interface Tab {
   id: string;
@@ -27,20 +28,16 @@ interface Tab {
 }
 
 const hobbiesList = [
-  "Music", "Sports", "Travel", "Reading", "Gaming", "Art", "Cooking",
-  "Fitness", "Movies", "Tech", "Photography", "Writing", "Fashion", "Nature", "DIY",
+  'Music', 'Sports', 'Travel', 'Reading', 'Gaming', 'Art', 'Cooking', 'Fitness', 'Movies', 'Tech', 'Photography', 'Writing', 'Fashion', 'Nature', 'DIY'
 ];
-
 const countriesList = [
-  "Azerbaijan", "Turkey", "Russia", "USA", "UK", "Germany", "France",
-  "Italy", "Spain", "China", "Japan", "India", "Brazil", "Canada", "Australia",
+  'Azerbaijan', 'Turkey', 'Russia', 'USA', 'UK', 'Germany', 'France', 'Italy', 'Spain', 'China', 'Japan', 'India', 'Brazil', 'Canada', 'Australia'
 ];
 
 const Feed = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as UserState;
-  const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState("discover");
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,6 +46,8 @@ const Feed = () => {
   const [loading, setLoading] = useState(true);
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+
+  const { t } = useTranslation();
 
   const tabs: Tab[] = [
     {
@@ -83,7 +82,7 @@ const Feed = () => {
     fetchUsers();
   }, [navigate]);
 
-  const filteredUsers = users.filter((userData) => {
+  const filteredUsers = users.filter(userData => {
     const matchesSearch =
       userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -91,19 +90,92 @@ const Feed = () => {
 
     const matchesHobbies =
       selectedHobbies.length === 0 ||
-      (userData.hobbies && userData.hobbies.some((hobby) => selectedHobbies.includes(hobby)));
+      (userData.hobbies && userData.hobbies.some(hobby => selectedHobbies.includes(hobby)));
 
     const matchesCountry =
       selectedCountries.length === 0 ||
       (userData.profile?.location && selectedCountries.includes(userData.profile.location));
 
-    return matchesSearch && matchesHobbies && matchesCountry && userData.id !== user.id;
+    return matchesSearch && matchesHobbies && matchesCountry;
   });
 
+  // Handle connection request logic
+  // const handleConnect = async (targetUserId: string) => {
+  //   try {
+  //     const isAlreadyConnected = user.connections.includes(targetUserId);
+
+  // if (isAlreadyConnected) {
+  //   enqueueSnackbar("Already connected with this user", {
+  //     variant: "info",
+  //     autoHideDuration: 2000,
+  //     anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //   });
+  //   return;
+  // }
+
+  //     // Use the new connection API that handles public/private profiles
+  //     const response = await controller.post(`${endpoints.users}/me/${user.id}/connections`, {
+  //       connectionId: targetUserId,
+  //     });
+
+  //     console.log("Connection response:", response);
+
+  //     if (response.data.type === 'connected') {
+  //       // Public profile - immediate connection
+  //       enqueueSnackbar("Connected successfully!", {
+  //         variant: "success",
+  //         autoHideDuration: 2000,
+  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //       });
+
+  //       // Update Redux state to reflect the new connection
+  //       dispatch(addConnection(targetUserId));
+  //     } else if (response.data.type === 'request_sent') {
+  //       // Private profile - request sent
+  //       enqueueSnackbar("Connection request sent! Waiting for approval.", {
+  //         variant: "info",
+  //         autoHideDuration: 3000,
+  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //       });
+  //     } else {
+  //       // Default success message
+  //       enqueueSnackbar(response.data.message || "Connection request processed!", {
+  //         variant: "success",
+  //         autoHideDuration: 2000,
+  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //       });
+  //     }
+  // } catch (error: any) {
+  //   console.error("Error sending connection request:", error);
+
+  //   let errorMessage = "Failed to send connection request";
+
+  //   if (error.response?.data?.message) {
+  //     errorMessage = error.response.data.message;
+  //   } else if (error.response?.status === 404) {
+  //     errorMessage = "User not found";
+  //   } else if (error.response?.status === 401) {
+  //     errorMessage = "Unauthorized: Please log in again";
+  //     localStorage.removeItem("token");
+  //     navigate("/auth/login");
+  //   }
+
+  //   enqueueSnackbar(errorMessage, {
+  //     variant: "error",
+  //     autoHideDuration: 2000,
+  //     anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  //   });
+  // }
+  // };
   const handleConnect = async (targetUserId: string) => {
     try {
-      const isAlreadyConnected = user.connections.includes(targetUserId);
-
+      // Check if already connected
+      const userConnections = Array.isArray(user.connections)
+        ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
+        : [];
+      
+      const isAlreadyConnected = userConnections.includes(targetUserId);
+      
       if (isAlreadyConnected) {
         enqueueSnackbar("Already connected with this user", {
           variant: "info",
@@ -113,33 +185,77 @@ const Feed = () => {
         return;
       }
 
-      const response = await controller.post(
-        `${endpoints.users}/me/${user.id}/connections`,
-        { connectionId: targetUserId }
-      );
+      const targetUserResponse = await controller.getOne(endpoints.users, targetUserId);
+      const targetUser = targetUserResponse.data;
 
-      if (response.data.type === "connected") {
-        enqueueSnackbar("Connected successfully!", {
-          variant: "success",
+      if (!targetUser) {
+        enqueueSnackbar("User not found", {
+          variant: "error",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
-        dispatch(addConnection(targetUserId));
-      } else if (response.data.type === "request_sent") {
+        return;
+      }
+
+      // Check if request already pending
+      const targetUserConnectionRequests = Array.isArray(targetUser.connectionsRequests)
+        ? targetUser.connectionsRequests.map((req: any) => typeof req === 'string' ? req : (req as UserData).id)
+        : [];
+        
+      const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
+      
+      if (isRequestPending) {
+        enqueueSnackbar("Connection request is already pending", {
+          variant: "info",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
+        return;
+      }
+
+      if (targetUser.profileVisibility === "private") {
+        // For private profile, add to connectionsRequests
+        const updatedConnectionsRequests = [...targetUserConnectionRequests, user.id];
+        
+        await controller.update(`${endpoints.users}/update`, targetUserId, {
+          connectionsRequests: updatedConnectionsRequests,
+        });
+
         enqueueSnackbar("Connection request sent! Waiting for approval.", {
           variant: "info",
           autoHideDuration: 3000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
       } else {
-        enqueueSnackbar(response.data.message || "Connection request processed!", {
+        // For public profile, connect both users immediately
+        const targetUserConnections = Array.isArray(targetUser.connections)
+          ? targetUser.connections.map((conn: any) => typeof conn === 'string' ? conn : (conn as UserData).id)
+          : [];
+
+        // Update target user's connections
+        await controller.update(`${endpoints.users}/update`, targetUserId, {
+          connections: [...targetUserConnections, user.id],
+        });
+
+        // Update current user's connections (check user.id exists)
+        if (user.id) {
+          await controller.update(`${endpoints.users}/update`, user.id, {
+            connections: [...userConnections, targetUserId],
+          });
+        }
+
+        enqueueSnackbar("Connected successfully!", {
           variant: "success",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
+
+        // Update Redux state to reflect the new connection
+        dispatch(addConnection(targetUserId));
       }
     } catch (error: any) {
       console.error("Error sending connection request:", error);
+
       let errorMessage = "Failed to send connection request";
 
       if (error.response?.data?.message) {
@@ -158,10 +274,21 @@ const Feed = () => {
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
       });
     }
-  };
+  }
 
   const handleMessage = (userId: string) => {
     console.log("Messaging user:", userId);
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
+          <p className="text-gray-600">{t("feed_loading")}</p>
+        </div>
+      </div>
+    );
   }
 
   return (

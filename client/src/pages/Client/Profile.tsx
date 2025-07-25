@@ -4,8 +4,8 @@ import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { enqueueSnackbar } from "notistack";
 import Account from "@/components/Profile/Account/Account";
-import Privacy from "@/components/Profile/Privacy";
 import Overview from "@/components/Profile/Overview";
+import Privacy from "@/components/Profile/Privacy";
 import Navigation from "@/components/Profile/Navigation";
 import Settings from "@/components/Profile/Settings";
 import { getUserIdFromToken, isTokenExpired } from "@/utils/auth";
@@ -19,6 +19,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [formData, setFormData] = useState<FormData>({
+    messagePrivacy: "public",
     firstName: "",
     lastName: "",
     email: "",
@@ -52,6 +53,7 @@ const Profile = () => {
         setUserData(response.data);
 
         setFormData({
+          messagePrivacy: response.data.messagePrivacy || "public",
           firstName: response.data.profile?.firstName || "",
           lastName: response.data.profile?.lastName || "",
           email: response.data.email || "",

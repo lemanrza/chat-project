@@ -337,7 +337,10 @@ const PersonalInformations = ({
               const isDisabled = selectedHobbies.length >= 5 && !isChecked;
 
               return (
-                <div key={interest.name} className="flex items-center space-x-2">
+                <div
+                  key={interest.name}
+                  className="flex items-center space-x-2"
+                >
                   <input
                     type="checkbox"
                     id={interest.name}

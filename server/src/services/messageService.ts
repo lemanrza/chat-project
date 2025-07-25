@@ -24,7 +24,6 @@ export interface UpdateMessageData {
 // Create a new message
 export const createMessage = async (data: CreateMessageData) => {
   try {
-    // Verify chat exists and user is a member
     const chat = await ChatModel.findOne({
       _id: new Types.ObjectId(data.chatId),
       "members.user": new Types.ObjectId(data.senderId),
@@ -35,7 +34,6 @@ export const createMessage = async (data: CreateMessageData) => {
       throw new Error("Chat not found or access denied");
     }
 
-    // Create message
     const message = new MessageModel({
       chat: new Types.ObjectId(data.chatId),
       sender: new Types.ObjectId(data.senderId),
@@ -54,7 +52,6 @@ export const createMessage = async (data: CreateMessageData) => {
 
     await message.save();
 
-    // Update chat's last message and message count
     await ChatModel.findByIdAndUpdate(data.chatId, {
       $set: {
         "lastMessage.message": message._id,
@@ -65,7 +62,6 @@ export const createMessage = async (data: CreateMessageData) => {
       $inc: { messageCount: 1 },
     });
 
-    // Populate the message
     const populatedMessage = await MessageModel.findById(message._id)
       .populate("sender", "username email profile")
       .populate("replyTo")
@@ -77,6 +73,7 @@ export const createMessage = async (data: CreateMessageData) => {
       message: "Message sent successfully",
     };
   } catch (error: any) {
+    console.log("❌ Error in createMessage service:", error);
     return {
       success: false,
       message: error.message || "Failed to send message",
@@ -92,7 +89,6 @@ export const getChatMessages = async (
   limit: number = 50
 ) => {
   try {
-    // Verify user is a member of the chat
     const chat = await ChatModel.findOne({
       _id: new Types.ObjectId(chatId),
       "members.user": new Types.ObjectId(userId),
@@ -128,7 +124,7 @@ export const getChatMessages = async (
     return {
       success: true,
       data: {
-        messages: messages.reverse(), // Reverse to show oldest first
+        messages: messages.reverse(),
         pagination: {
           currentPage: page,
           totalPages: Math.ceil(totalMessages / limit),
@@ -167,7 +163,6 @@ export const updateMessage = async (
       };
     }
 
-    // Store original content if first edit
     if (!message.edited?.isEdited) {
       await MessageModel.findByIdAndUpdate(messageId, {
         $set: {
@@ -176,7 +171,6 @@ export const updateMessage = async (
       });
     }
 
-    // Update message
     const updatedMessage = await MessageModel.findByIdAndUpdate(
       messageId,
       {
@@ -220,7 +214,6 @@ export const deleteMessage = async (messageId: string, userId: string) => {
       };
     }
 
-    // Soft delete
     const deletedMessage = await MessageModel.findByIdAndUpdate(
       messageId,
       {
@@ -258,7 +251,6 @@ export const markMessageAsRead = async (messageId: string, userId: string) => {
       };
     }
 
-    // Check if user already marked as read
     const alreadyRead = message.seenBy.some(
       (seen: any) => seen.user.toString() === userId
     );
@@ -270,7 +262,6 @@ export const markMessageAsRead = async (messageId: string, userId: string) => {
       };
     }
 
-    // Add user to seenBy array
     const updatedMessage = await MessageModel.findByIdAndUpdate(
       messageId,
       {
@@ -314,14 +305,12 @@ export const addReaction = async (
       };
     }
 
-    // Check if user already reacted with this emoji
     const existingReaction = message.reactions.find(
       (reaction: any) =>
         reaction.user.toString() === userId && reaction.emoji === emoji
     );
 
     if (existingReaction) {
-      // Remove existing reaction
       await MessageModel.findByIdAndUpdate(messageId, {
         $pull: {
           reactions: {
@@ -336,7 +325,6 @@ export const addReaction = async (
         message: "Reaction removed",
       };
     } else {
-      // Add new reaction
       const updatedMessage = await MessageModel.findByIdAndUpdate(
         messageId,
         {
@@ -374,7 +362,6 @@ export const searchMessages = async (
   limit: number = 20
 ) => {
   try {
-    // Verify user is a member of the chat
     const chat = await ChatModel.findOne({
       _id: new Types.ObjectId(chatId),
       "members.user": new Types.ObjectId(userId),
@@ -432,7 +419,6 @@ export const searchMessages = async (
 // Get unread message count for user
 export const getUnreadMessageCount = async (userId: string) => {
   try {
-    // Get all user's chats
     const userChats = await ChatModel.find({
       "members.user": new Types.ObjectId(userId),
       "members.isActive": true,
@@ -441,7 +427,6 @@ export const getUnreadMessageCount = async (userId: string) => {
 
     const chatIds = userChats.map((chat) => chat._id);
 
-    // Count unread messages
     const unreadCount = await MessageModel.countDocuments({
       chat: { $in: chatIds },
       sender: { $ne: new Types.ObjectId(userId) },
