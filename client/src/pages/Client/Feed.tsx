@@ -27,7 +27,7 @@ const Feed = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const tabs: Tab[] = [
     { id: 'discover', label: t('feed_tab_discover'), icon: <Search className="w-4 h-4" /> },
