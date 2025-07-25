@@ -20,6 +20,7 @@ import {
   updateUserController,
 } from "../controllers/userController.js";
 import userValidate from "../middlewares/userValidate.js";
+import { authenticateToken } from "../middlewares/authMiddleware.js";
 
 const userRouter = express.Router();
 
@@ -29,22 +30,24 @@ userRouter.post("/login", loginUser);
 userRouter.get("/unlock-account", unlockAccount);
 userRouter.get("/verify-email", verifyUserEmail);
 
-userRouter.get("/me/:userId", getCurrentUser);
-userRouter.put("/me/:userId", updateCurrentUser);
-userRouter.delete("/me/:userId", deleteCurrentUser);
-userRouter.post("/me/:userId/change-password", changePassword);
+userRouter.get("/me/:userId", authenticateToken, getCurrentUser);
+userRouter.put("/me/:userId", authenticateToken, updateCurrentUser);
+userRouter.delete("/me/:userId", authenticateToken, deleteCurrentUser);
+userRouter.post("/me/:userId/change-password", authenticateToken, changePassword);
 userRouter.post(
   "/me/:userId/upload-image",
+  authenticateToken,
   upload.single("avatar"),
   uploadProfileImage
 );
-userRouter.delete("/me/:userId/delete-image", deleteProfileImage);
+userRouter.delete("/me/:userId/delete-image", authenticateToken, deleteProfileImage);
 
 // Connection management routes
-userRouter.get("/me/:userId/available", getAvailableUsersToConnect);
-userRouter.post("/me/:userId/connections", addUserConnection);
+userRouter.get("/me/:userId/available", authenticateToken, getAvailableUsersToConnect);
+userRouter.post("/me/:userId/connections", authenticateToken, addUserConnection);
 userRouter.delete(
   "/me/:userId/connections/:connectionId",
+  authenticateToken,
   removeUserConnection
 );
 

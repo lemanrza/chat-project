@@ -69,16 +69,4 @@ const chatSchema = new mongoose.Schema({
         required: true,
     },
 }, { timestamps: true });
-// Indexes for performance
-chatSchema.index({ "members.user": 1, "members.isActive": 1 });
-chatSchema.index({ type: 1 });
-chatSchema.index({ "lastMessage.timestamp": -1 });
-chatSchema.index({ createdBy: 1 });
-chatSchema.index({ "archived.isArchived": 1 });
-// Compound index for user's active chats
-chatSchema.index({
-    "members.user": 1,
-    "members.isActive": 1,
-    "archived.isArchived": 1,
-});
 export default chatSchema;

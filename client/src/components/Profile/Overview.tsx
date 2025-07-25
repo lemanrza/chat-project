@@ -30,7 +30,7 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
       try {
         const requests = await Promise.all(
           formData.connectionsRequests.map(async (userId: string) => {
-            const response = await controller.getOne(`${endpoints.users}/${userId}`);
+            const response = await controller.getOne(`${endpoints.users}/me`, userId);
             const user = response.data;
             return {
               id: user.id,

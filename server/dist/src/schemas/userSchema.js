@@ -71,6 +71,6 @@ const userSchema = new mongoose.Schema({
             },
         ],
         default: [],
-    }
+    },
 }, { timestamps: true, versionKey: false });
 export default userSchema;
