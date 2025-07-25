@@ -26,7 +26,6 @@
   "discover": "Keşfet",
   "messages": "Mesajlar",
   "create_account": "Hesabını oluştur ve eşsiz platformumuza katıl.",
-  "chat_wave": "Sohbet Dalgası",
   "connect_instantly": "Anında Bağlantı",
   "real_time_messaging": "Arkadaşlarla anlık mesajlaşma",
   "secure_private": "Güvenli ve Özel",
@@ -296,5 +295,6 @@
   "feed_filter_reset_failed": "Filtreler sıfırlanamadı",
   "feed_filter_hobbies_placeholder": "Hobileri seçin",
   "feed_filter_countries_placeholder": "Ülkeleri seçin",
-  "feed_filter_hobbies_required": "Lütfen en az 3 hobi seçin"
+  "feed_filter_hobbies_required": "Lütfen en az 3 hobi seçin",
+  "settings_language_en_full": "İngilizce"
 }

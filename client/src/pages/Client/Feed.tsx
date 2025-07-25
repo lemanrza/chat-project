@@ -263,35 +263,43 @@ const Feed = () => {
             initial={{ x: 400, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 400, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed top-0 right-0 h-full w-full max-w-sm bg-white dark:bg-neutral-800 shadow-2xl z-40 flex flex-col p-8 border-l border-gray-200 dark:border-neutral-700"
-            style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
+            transition={{ type: 'spring', stiffness: 280, damping: 25 }}
+            className="fixed top-0 right-0 h-full w-full max-w-sm z-40 flex flex-col p-6 backdrop-blur-lg bg-white/80 dark:bg-neutral-900/70 border-l border-gray-200 dark:border-neutral-700 shadow-xl"
+            style={{ boxShadow: '0 12px 32px rgba(0,0,0,0.15)' }}
           >
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-bold text-[#00B878] dark:text-[#00E89E]">{t('feed_filters_title')}</h2>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold text-[#00B878] dark:text-[#00E89E]">Filters</h2>
               <button
                 onClick={() => setShowFilters(false)}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700 transition"
+                className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-neutral-800 transition"
                 aria-label="Close sidebar"
               >
-                <svg width="24" height="24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
 
+            {/* Hobbies Section */}
             <div className="mb-6">
-              <h3 className="font-semibold text-gray-700 dark:text-white mb-2">{t('feed_filter_hobbies')}</h3>
+              <h3 className="font-medium text-gray-800 dark:text-white mb-3 text-base">Hobbies</h3>
               <div className="flex flex-wrap gap-2">
                 {hobbiesList.map(hobby => (
                   <button
                     key={hobby}
-                    onClick={() => setSelectedHobbies(selectedHobbies.includes(hobby)
-                      ? selectedHobbies.filter(h => h !== hobby)
-                      : [...selectedHobbies, hobby])}
-                    className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${selectedHobbies.includes(hobby)
-                      ? 'bg-[#00B878] text-white border-[#00B878]'
-                      : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-neutral-700 dark:text-white dark:border-neutral-600 hover:bg-[#e6f7f1] hover:dark:bg-neutral-600'} `}
+                    onClick={() =>
+                      setSelectedHobbies(
+                        selectedHobbies.includes(hobby)
+                          ? selectedHobbies.filter(h => h !== hobby)
+                          : [...selectedHobbies, hobby]
+                      )
+                    }
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${selectedHobbies.includes(hobby)
+                        ? 'bg-[#00B878] text-white border-[#00B878]'
+                        : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700'
+                      }`}
                   >
                     {hobby}
                   </button>
@@ -299,18 +307,24 @@ const Feed = () => {
               </div>
             </div>
 
+            {/* Countries Section */}
             <div className="mb-6">
-              <h3 className="font-semibold text-gray-700 dark:text-white mb-2">{t('feed_filter_countries')}</h3>
+              <h3 className="font-medium text-gray-800 dark:text-white mb-3 text-base">Countries</h3>
               <div className="flex flex-wrap gap-2">
                 {countriesList.map(country => (
                   <button
                     key={country}
-                    onClick={() => setSelectedCountries(selectedCountries.includes(country)
-                      ? selectedCountries.filter(c => c !== country)
-                      : [...selectedCountries, country])}
-                    className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${selectedCountries.includes(country)
-                      ? 'bg-[#00B878] text-white border-[#00B878]'
-                      : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-neutral-700 dark:text-white dark:border-neutral-600 hover:bg-[#e6f7f1] hover:dark:bg-neutral-600'} `}
+                    onClick={() =>
+                      setSelectedCountries(
+                        selectedCountries.includes(country)
+                          ? selectedCountries.filter(c => c !== country)
+                          : [...selectedCountries, country]
+                      )
+                    }
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${selectedCountries.includes(country)
+                        ? 'bg-[#00B878] text-white border-[#00B878]'
+                        : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700'
+                      }`}
                   >
                     {country}
                   </button>
@@ -318,23 +332,28 @@ const Feed = () => {
               </div>
             </div>
 
-            <div className="mt-auto flex gap-2">
+            {/* Action Buttons */}
+            <div className="mt-auto flex gap-2 pt-4 border-t border-gray-200 dark:border-neutral-700">
               <button
-                onClick={() => { setSelectedHobbies([]); setSelectedCountries([]); }}
-                className="flex-1 py-3 rounded-lg bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-white font-medium hover:bg-gray-200 hover:dark:bg-neutral-600 transition"
+                onClick={() => {
+                  setSelectedHobbies([]);
+                  setSelectedCountries([]);
+                }}
+                className="flex-1 py-3 rounded-lg bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-white font-medium hover:bg-gray-200 dark:hover:bg-neutral-700 transition"
               >
-                {t('feed_filter_clear')}
+                Clear All
               </button>
               <button
                 onClick={() => setShowFilters(false)}
                 className="flex-1 py-3 rounded-lg bg-[#00B878] text-white font-medium hover:bg-[#00a76d] transition"
               >
-                {t('feed_filter_apply')}
+                Apply
               </button>
             </div>
           </motion.aside>
         )}
       </AnimatePresence>
+
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="px-8 py-8 rounded-t-2xl shadow-sm">
