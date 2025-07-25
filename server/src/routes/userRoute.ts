@@ -14,6 +14,7 @@ import {
   changePassword,
   deleteCurrentUser,
   verifyUserEmail,
+  updateUserController,
 } from "../controllers/userController.js";
 import userValidate from "../middlewares/userValidate.js";
 
@@ -37,6 +38,7 @@ userRouter.post(
 userRouter.delete("/me/:userId/delete-image", deleteProfileImage);
 
 userRouter.get("/:id", getUserById);
+userRouter.put("/update/:id", updateUserController);
 userRouter.delete("/:id", deleteUser);
 
 export default userRouter;
