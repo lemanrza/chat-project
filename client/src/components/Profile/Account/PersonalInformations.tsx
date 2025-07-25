@@ -1,11 +1,40 @@
 import { useEffect, useState } from "react";
 import {
-  Coffee, Plane, Monitor, Laptop, Dog, Cat, Music, BookOpen,
-  Dumbbell, ChefHat, Palette, Camera, Gamepad2, Mountain, Waves,
-  TreePine, Theater, Pizza, FolderRoot as Football, Sprout, Guitar,
-  Flame, ShoppingBasket as Basketball, Target, Home, Wine, Beer,
-  Umbrella, Snowflake, Car, Tent, Film, Globe, Piano
-} from 'lucide-react';
+  Coffee,
+  Plane,
+  Monitor,
+  Laptop,
+  Dog,
+  Cat,
+  Music,
+  BookOpen,
+  Dumbbell,
+  ChefHat,
+  Palette,
+  Camera,
+  Gamepad2,
+  Mountain,
+  Waves,
+  TreePine,
+  Theater,
+  Pizza,
+  FolderRoot as Football,
+  Sprout,
+  Guitar,
+  Flame,
+  ShoppingBasket as Basketball,
+  Target,
+  Home,
+  Wine,
+  Beer,
+  Umbrella,
+  Snowflake,
+  Car,
+  Tent,
+  Film,
+  Globe,
+  Piano,
+} from "lucide-react";
 import { enqueueSnackbar } from "notistack";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
@@ -25,42 +54,42 @@ interface PersonalInformationsProps {
   userData: UserData | null;
 }
 const interests = [
-  { name: 'Coffee', icon: Coffee },
-  { name: 'Travel', icon: Plane },
-  { name: 'Netflix', icon: Monitor },
-  { name: 'Coding', icon: Laptop },
-  { name: 'Dogs', icon: Dog },
-  { name: 'Cats', icon: Cat },
-  { name: 'Music', icon: Music },
-  { name: 'Reading', icon: BookOpen },
-  { name: 'Fitness', icon: Dumbbell },
-  { name: 'Cooking', icon: ChefHat },
-  { name: 'Art', icon: Palette },
-  { name: 'Photo', icon: Camera },
-  { name: 'Gaming', icon: Gamepad2 },
-  { name: 'Hiking', icon: Mountain },
-  { name: 'Swimming', icon: Waves },
-  { name: 'Yoga', icon: TreePine },
-  { name: 'Theater', icon: Theater },
-  { name: 'Food', icon: Pizza },
-  { name: 'Sports', icon: Football },
-  { name: 'Garden', icon: Sprout },
-  { name: 'Guitar', icon: Guitar },
-  { name: 'Dancing', icon: Flame },
-  { name: 'Basketball', icon: Basketball },
-  { name: 'Soccer', icon: Target },
-  { name: 'Darts', icon: Target },
-  { name: 'Games', icon: Home },
-  { name: 'Wine', icon: Wine },
-  { name: 'Beer', icon: Beer },
-  { name: 'Beach', icon: Umbrella },
-  { name: 'Winter', icon: Snowflake },
-  { name: 'Cars', icon: Car },
-  { name: 'Comedy', icon: Tent },
-  { name: 'Movies', icon: Film },
-  { name: 'Tech', icon: Globe },
-  { name: 'Nature', icon: Globe },
-  { name: 'Piano', icon: Piano }
+  { name: "Coffee", icon: Coffee },
+  { name: "Travel", icon: Plane },
+  { name: "Netflix", icon: Monitor },
+  { name: "Coding", icon: Laptop },
+  { name: "Dogs", icon: Dog },
+  { name: "Cats", icon: Cat },
+  { name: "Music", icon: Music },
+  { name: "Reading", icon: BookOpen },
+  { name: "Fitness", icon: Dumbbell },
+  { name: "Cooking", icon: ChefHat },
+  { name: "Art", icon: Palette },
+  { name: "Photo", icon: Camera },
+  { name: "Gaming", icon: Gamepad2 },
+  { name: "Hiking", icon: Mountain },
+  { name: "Swimming", icon: Waves },
+  { name: "Yoga", icon: TreePine },
+  { name: "Theater", icon: Theater },
+  { name: "Food", icon: Pizza },
+  { name: "Sports", icon: Football },
+  { name: "Garden", icon: Sprout },
+  { name: "Guitar", icon: Guitar },
+  { name: "Dancing", icon: Flame },
+  { name: "Basketball", icon: Basketball },
+  { name: "Soccer", icon: Target },
+  { name: "Darts", icon: Target },
+  { name: "Games", icon: Home },
+  { name: "Wine", icon: Wine },
+  { name: "Beer", icon: Beer },
+  { name: "Beach", icon: Umbrella },
+  { name: "Winter", icon: Snowflake },
+  { name: "Cars", icon: Car },
+  { name: "Comedy", icon: Tent },
+  { name: "Movies", icon: Film },
+  { name: "Tech", icon: Globe },
+  { name: "Nature", icon: Globe },
+  { name: "Piano", icon: Piano },
 ];
 
 const PersonalInformations = ({
@@ -80,8 +109,9 @@ const PersonalInformations = ({
     }
   }, [userData]);
 
-
-  const handleLocationSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLocationSearch = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const searchTerm = e.target.value;
     setLocationSearch(searchTerm);
 
@@ -97,7 +127,7 @@ const PersonalInformations = ({
         const locationData: LocationData[] = response.data.map((item: any) => ({
           id: item.id || Math.random().toString(),
           city: item.city || item.name || item.location,
-          country: item.country || 'Unknown'
+          country: item.country || "Unknown",
         }));
         setLocations(locationData);
       } catch (error) {
@@ -256,20 +286,26 @@ const PersonalInformations = ({
             }}
             placeholder="Search and select your location"
           />
-          {isSearching && <div className="text-sm text-gray-500">Searching...</div>}
+          {isSearching && (
+            <div className="text-sm text-gray-500">Searching...</div>
+          )}
           {locations.length > 0 && (
             <ul className="bg-white shadow-md border border-gray-300 mt-2 rounded-lg max-h-60 overflow-auto">
               {locations.map((location) => (
                 <li
-                  key={location.id}  // Use the id to key each element in the list
+                  key={location.id} // Use the id to key each element in the list
                   className="px-4 py-2 cursor-pointer hover:bg-[#00B878] hover:text-white"
                   onClick={() => {
-                    handleInputChange("location", `${location.city}, ${location.country}`); // You can change this to location.country if you want to display the country
+                    handleInputChange(
+                      "location",
+                      `${location.city}, ${location.country}`
+                    ); // You can change this to location.country if you want to display the country
                     setLocationSearch(`${location.city}, ${location.country}`); // Set the search input to the selected city
                     setLocations([]); // Clear the list after selection
                   }}
                 >
-                  {location.city}, {location.country} {/* Here we are displaying city and country */}
+                  {location.city}, {location.country}{" "}
+                  {/* Here we are displaying city and country */}
                 </li>
               ))}
             </ul>
@@ -291,7 +327,9 @@ const PersonalInformations = ({
           </p>
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Hobbies</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Hobbies
+          </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {interests.map((interest) => {
               const IconComponent = interest.icon;
@@ -299,7 +337,10 @@ const PersonalInformations = ({
               const isDisabled = selectedHobbies.length >= 5 && !isChecked;
 
               return (
-                <div key={interest.name} className="flex items-center space-x-2">
+                <div
+                  key={interest.name}
+                  className="flex items-center space-x-2"
+                >
                   <input
                     type="checkbox"
                     id={interest.name}
@@ -308,7 +349,10 @@ const PersonalInformations = ({
                     onChange={() => handleHobbyChange(interest.name)}
                     className="h-5 w-5 rounded border-gray-300 text-[#00B878] focus:ring-[#00B878] focus:ring-2 accent-[#00B878]"
                   />
-                  <label htmlFor={interest.name} className="text-sm text-gray-700 cursor-pointer">
+                  <label
+                    htmlFor={interest.name}
+                    className="text-sm text-gray-700 cursor-pointer"
+                  >
                     <span className="mr-2">
                       <IconComponent size={16} className="inline" />
                     </span>
@@ -319,7 +363,9 @@ const PersonalInformations = ({
             })}
           </div>
           {!isMinHobbiesSelected && (
-            <p className="text-sm text-red-500 mt-2">Please select at least 3 hobbies.</p>
+            <p className="text-sm text-red-500 mt-2">
+              Please select at least 3 hobbies.
+            </p>
           )}
         </div>
       </div>
@@ -329,10 +375,11 @@ const PersonalInformations = ({
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
-            ? "bg-gray-400 cursor-not-allowed text-white"
-            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
-            }`}
+          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+            isSaving
+              ? "bg-gray-400 cursor-not-allowed text-white"
+              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
+          }`}
         >
           {isSaving ? (
             <span className="flex items-center">

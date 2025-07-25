@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Users, MessageCircle, MapPin, UserPlus, Clock, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 import endpoints from '@/services/api';
 import controller from '@/services/commonRequest';
 import type { UserData } from '@/types/profileType';
@@ -25,10 +27,12 @@ const Feed = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const { t, i18n } = useTranslation();
+
   const tabs: Tab[] = [
-    { id: 'discover', label: 'Discover', icon: <Search className="w-4 h-4" /> },
-    { id: 'trending', label: 'Trending', icon: <div className="w-4 h-4 flex items-center">📈</div> },
-    { id: 'nearby', label: 'Nearby', icon: <MapPin className="w-4 h-4" /> },
+    { id: 'discover', label: t('feed_tab_discover'), icon: <Search className="w-4 h-4" /> },
+    { id: 'trending', label: t('feed_tab_trending'), icon: <div className="w-4 h-4 flex items-center">📈</div> },
+    { id: 'nearby', label: t('feed_tab_nearby'), icon: <MapPin className="w-4 h-4" /> },
   ];
 
   useEffect(() => {
@@ -122,7 +126,7 @@ const Feed = () => {
       <div className="w-full flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading users...</p>
+          <p className="text-gray-600">{t('feed_loading')}</p>
         </div>
       </div>
     );
@@ -137,10 +141,10 @@ const Feed = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <div>
               <h1 className="text-3xl font-bold" style={{ color: '#374151' }}>
-                Discover People
+                {t('feed_discover_title')}
               </h1>
               <p className="mt-2 text-base" style={{ color: '#6B7280' }}>
-                Find and connect with other users
+                {t('feed_discover_subtitle')}
               </p>
             </div>
             <button
@@ -148,7 +152,7 @@ const Feed = () => {
               className="hover:brightness-110 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all font-medium text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-[#00B878] focus:ring-offset-2"
             >
               <Users className="w-4 h-4" style={{ color: '#fff' }} />
-              Create Group
+              {t('feed_create_group')}
             </button>
           </div>
 
@@ -177,7 +181,7 @@ const Feed = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search for users..."
+                placeholder={t('feed_search_placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-lg text-base border border-gray-200 bg-white text-gray-700 focus:ring-2 focus:ring-green-400 focus:border-transparent focus:outline-none shadow-sm"
@@ -188,7 +192,7 @@ const Feed = () => {
               className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow-sm"
             >
               <Filter className="w-4 h-4" />
-              Filters
+              {t('feed_filters')}
             </button>
           </div>
         </div>
@@ -237,7 +241,7 @@ const Feed = () => {
                       </div>
                       <div className="flex items-center text-sm" style={{ color: '#6B7280' }}>
                         <Users className="w-4 h-4 mr-2" />
-                        <span>{user.connections.length} connections</span>
+                        <span>{t('feed_connections', { count: user.connections.length })}</span>
                       </div>
                     </div>
 
@@ -270,14 +274,15 @@ const Feed = () => {
                         disabled
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-green-600 cursor-not-allowed"
                       >
-                        <Check /> Connected
+                        <Check />  {t('feed_connected')}
+
                       </button>
                     ) : isRequestPending ? (
                       <button
                         disabled
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-gray-400 cursor-not-allowed"
                       >
-                        <Clock /> Pending
+                        <Clock />  {t('feed_pending')}
                       </button>
                     ) : (
                       <button
@@ -285,7 +290,7 @@ const Feed = () => {
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-[#00B878] hover:bg-[#00a76d] cursor-pointer"
                       >
                         <UserPlus className="w-4 h-4" style={{ color: '#fff' }} />
-                        Connect
+                        {t('feed_connect')}
                       </button>
                     )}
                     <button
@@ -293,7 +298,7 @@ const Feed = () => {
                       className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow"
                     >
                       <MessageCircle className="w-4 h-4" />
-                      Message
+                      {t('feed_message')}
                     </button>
                   </div>
                 </div>
@@ -306,10 +311,10 @@ const Feed = () => {
             <div className="text-center py-12">
               <Users className="w-16 h-16 mx-auto mb-4" style={{ color: '#6B7280' }} />
               <h3 className="text-lg font-medium mb-2" style={{ color: '#374151' }}>
-                No users found
+                {t('feed_no_users')}
               </h3>
               <p style={{ color: '#6B7280' }}>
-                Try adjusting your search criteria or check back later.
+                {t('feed_no_users_sub')}
               </p>
             </div>
           )}
