@@ -14,21 +14,20 @@ import "./config/passportLogin.js";
 const app = express();
 
 // Rate limiter middleware
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 100,
-});
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   limit: 100,
+// });
 
 // Global middlewares
 app.use(express.json());
-app.use(limiter);
+// app.use(limiter);
 app.use(cors());
 
 //routes
 app.use(passport.initialize());
 app.use("/auth", googleRouter);
 app.use("/auth", githubRouter);
-
 app.use("/auth", userRouter);
 app.use("/api/chats", chatRouter);
 app.use("/api/messages", messageRouter);

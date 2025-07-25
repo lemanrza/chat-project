@@ -26,8 +26,6 @@ import config from "../config/config.js";
 import multer from "multer";
 import path from "path";
 import {
-  AuthenticatedMulterRequest,
-  AuthenticatedRequest,
   MulterRequest,
 } from "../types/userType.js";
 
@@ -786,7 +784,6 @@ export const changePassword = async (
   }
 };
 
-// Add connection between users
 export const addUserConnection = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -824,7 +821,6 @@ export const addUserConnection = async (
   }
 };
 
-// Remove connection between users
 export const removeUserConnection = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -850,7 +846,6 @@ export const removeUserConnection = async (
   }
 };
 
-// Get available users to connect with
 export const getAvailableUsersToConnect = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -873,5 +868,31 @@ export const getAvailableUsersToConnect = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const updateUserController = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const payload = req.body;
+
+    const result = await updateUser(userId, payload);
+
+    if (!result.success) {
+      return res.status(404).json({
+        success: false,
+        message: result.message,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result.data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error",
+    });
   }
 };

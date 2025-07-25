@@ -1,24 +1,23 @@
 export interface UserData {
-  id: string;
-  username?: string;
-  email?: string;
-  provider?: "local" | "google" | "github";
-  emailVerified?: boolean;
-  hobbies?: string[];
-  connections: string[];
-  lastLogin?: string | null;
-  lastSeen?: string | null;
-  isOnline?: boolean;
-  profile?: {
-    firstName?: string;
-    lastName?: string;
-    location?: string;
-    bio?: string;
+  id: string
+  profile: {
+    firstName: string;
+    lastName: string;
+    bio: string;
+    avatar: string;
+    location: string;
     displayName?: string;
-    avatar?: string;
   };
-  connectionsRequests?: string[];
-  profileVisibility?: "public" | "private";
+  email: string;
+  username: string;
+  connections: string[];
+  connectionsRequests: string[];
+  hobbies: string[];
+  createdAt: string;
+  provider: string;
+  emailVerified: boolean;
+  isOnline: boolean;
+  profileVisibility: "public" | "private";
 }
 
 export interface FormData {
@@ -28,6 +27,15 @@ export interface FormData {
   location: string;
   bio: string;
   hobbies: string[];
+  connections: string[];
+  connectionsRequests: string[];
+  profileVisibility: "public" | "private";
+}
+export interface ConnectionRequest {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string;
 }
 
 export interface AccountProps {
