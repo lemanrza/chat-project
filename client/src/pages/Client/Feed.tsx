@@ -8,7 +8,6 @@ import { enqueueSnackbar } from 'notistack';
 import type { UserData } from "@/types/profileType";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
-import type { UserState } from "@/features/userSlice";
 import { addConnection } from "@/features/userSlice";
 import {
   Search,
@@ -37,18 +36,17 @@ const countriesList = [
 const Feed = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.user) as UserState;
-
   const [activeTab, setActiveTab] = useState("discover");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [users, setUsers] = useState<UserData[]>([]);
+  const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
 
   const { t } = useTranslation();
-
+  const reduxUser = useSelector((state: RootState) => state.user);
   const tabs: Tab[] = [
     {
       id: "discover",
@@ -68,6 +66,16 @@ const Feed = () => {
   ];
 
   useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (!reduxUser.id) return;
+        const response = await controller.getOne(endpoints.users, reduxUser.id)
+        setUser(response.data);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
     const fetchUsers = async () => {
       try {
         setLoading(true);
@@ -80,102 +88,47 @@ const Feed = () => {
       }
     };
     fetchUsers();
+    fetchUser();
   }, [navigate]);
 
-  const filteredUsers = users.filter(userData => {
-    const matchesSearch =
-      userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase());
+  const currentUserId = reduxUser?.id;
+  const filteredUsers = users
+    .filter(user => user.id !== currentUserId) 
+    .filter(userData => {
+      const matchesSearch =
+        userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesHobbies =
-      selectedHobbies.length === 0 ||
-      (userData.hobbies && userData.hobbies.some(hobby => selectedHobbies.includes(hobby)));
+      const matchesHobbies =
+        selectedHobbies.length === 0 ||
+        (userData.hobbies && userData.hobbies.some(hobby => selectedHobbies.includes(hobby)));
 
-    const matchesCountry =
-      selectedCountries.length === 0 ||
-      (userData.profile?.location && selectedCountries.includes(userData.profile.location));
+      const matchesCountry =
+        selectedCountries.length === 0 ||
+        (userData.profile?.location && selectedCountries.includes(userData.profile.location));
 
-    return matchesSearch && matchesHobbies && matchesCountry;
-  });
+      return matchesSearch && matchesHobbies && matchesCountry;
+    });
 
-  // Handle connection request logic
-  // const handleConnect = async (targetUserId: string) => {
-  //   try {
-  //     const isAlreadyConnected = user.connections.includes(targetUserId);
-
-  // if (isAlreadyConnected) {
-  //   enqueueSnackbar("Already connected with this user", {
-  //     variant: "info",
-  //     autoHideDuration: 2000,
-  //     anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //   });
-  //   return;
-  // }
-
-  //     // Use the new connection API that handles public/private profiles
-  //     const response = await controller.post(`${endpoints.users}/me/${user.id}/connections`, {
-  //       connectionId: targetUserId,
-  //     });
-
-  //     console.log("Connection response:", response);
-
-  //     if (response.data.type === 'connected') {
-  //       // Public profile - immediate connection
-  //       enqueueSnackbar("Connected successfully!", {
-  //         variant: "success",
-  //         autoHideDuration: 2000,
-  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //       });
-
-  //       // Update Redux state to reflect the new connection
-  //       dispatch(addConnection(targetUserId));
-  //     } else if (response.data.type === 'request_sent') {
-  //       // Private profile - request sent
-  //       enqueueSnackbar("Connection request sent! Waiting for approval.", {
-  //         variant: "info",
-  //         autoHideDuration: 3000,
-  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //       });
-  //     } else {
-  //       // Default success message
-  //       enqueueSnackbar(response.data.message || "Connection request processed!", {
-  //         variant: "success",
-  //         autoHideDuration: 2000,
-  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //       });
-  //     }
-  // } catch (error: any) {
-  //   console.error("Error sending connection request:", error);
-
-  //   let errorMessage = "Failed to send connection request";
-
-  //   if (error.response?.data?.message) {
-  //     errorMessage = error.response.data.message;
-  //   } else if (error.response?.status === 404) {
-  //     errorMessage = "User not found";
-  //   } else if (error.response?.status === 401) {
-  //     errorMessage = "Unauthorized: Please log in again";
-  //     localStorage.removeItem("token");
-  //     navigate("/auth/login");
-  //   }
-
-  //   enqueueSnackbar(errorMessage, {
-  //     variant: "error",
-  //     autoHideDuration: 2000,
-  //     anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //   });
-  // }
-  // };
   const handleConnect = async (targetUserId: string) => {
     try {
+      if (!user) {
+        enqueueSnackbar("User not loaded", {
+          variant: "error",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
+        return;
+      }
+
       // Check if already connected
-      const userConnections = Array.isArray(user.connections)
+      const userConnections = user.connections && Array.isArray(user.connections)
         ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
         : [];
-      
+
       const isAlreadyConnected = userConnections.includes(targetUserId);
-      
+
       if (isAlreadyConnected) {
         enqueueSnackbar("Already connected with this user", {
           variant: "info",
@@ -201,9 +154,9 @@ const Feed = () => {
       const targetUserConnectionRequests = Array.isArray(targetUser.connectionsRequests)
         ? targetUser.connectionsRequests.map((req: any) => typeof req === 'string' ? req : (req as UserData).id)
         : [];
-        
+
       const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
-      
+
       if (isRequestPending) {
         enqueueSnackbar("Connection request is already pending", {
           variant: "info",
@@ -216,7 +169,7 @@ const Feed = () => {
       if (targetUser.profileVisibility === "private") {
         // For private profile, add to connectionsRequests
         const updatedConnectionsRequests = [...targetUserConnectionRequests, user.id];
-        
+
         await controller.update(`${endpoints.users}/update`, targetUserId, {
           connectionsRequests: updatedConnectionsRequests,
         });
@@ -281,6 +234,17 @@ const Feed = () => {
   };
 
   if (loading) {
+    return (
+      <div className="w-full flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
+          <p className="text-gray-600">{t("feed_loading")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="w-full flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -397,11 +361,11 @@ const Feed = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
                   ${activeTab === tab.id
-                    ? "shadow-md scale-105 text-[#00B878]"
+                    ? "shadow-md scale-105 text-[#00B878] "
                     : "bg-transparent text-gray-700 hover:bg-gray-100"
                   }`}
                 style={
-                  activeTab === tab.id ? { backgroundColor: "#00B878" } : {}
+                  activeTab === tab.id ? { backgroundColor: "transparent" } : {}
                 }
               >
                 {tab.icon}
@@ -436,17 +400,19 @@ const Feed = () => {
         <div className="flex-1 overflow-auto p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredUsers.map((userData) => {
-              // Handle connections as either string[] or UserData[]
-              const userConnections = Array.isArray(user.connections)
-                ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
-                : [];
+              if (!user) return null;
+
+              let userConnections: any = [];
+              if (user.connections && Array.isArray(user.connections) && user.connections.length > 0) {
+                userConnections = user.connections.filter(connection => connection != null).map(connection => typeof connection === 'string' ? connection : connection.id);
+              }
+              console.log("Filtered user connections:", userConnections);
 
               const isAlreadyConnected = userConnections.includes(userData.id);
 
-              // Check if current user has sent a request to this target user
-              // This means the target user's connectionsRequests should contain current user's ID
+              // Handle connection requests from userData
               const targetUserConnectionRequests = Array.isArray(userData.connectionsRequests)
-                ? userData.connectionsRequests.map(req => typeof req === 'string' ? req : (req as UserData).id)
+                ? userData.connectionsRequests.map((req) => (typeof req === 'string' ? req : (req as UserData).id))
                 : [];
 
               const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
@@ -469,10 +435,13 @@ const Feed = () => {
                 });
               };
 
+              // Determine if the user is "public" or "private"
+              const isPublic = userData.profileVisibility === 'public'; // Assuming the visibility property exists
+
               return (
                 <div
                   key={userData.id}
-                  className="rounded-2xl p-6 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200 group"
+                  className="rounded-2xl p-6 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200 group relative"
                 >
                   {/* User Avatar and Status */}
                   <div className="flex items-start mb-4">
@@ -498,10 +467,7 @@ const Feed = () => {
 
                   {/* User Info */}
                   <div className="mb-6">
-                    <h3
-                      className="font-bold text-lg mb-1"
-                      style={{ color: "#374151" }}
-                    >
+                    <h3 className="font-bold text-lg mb-1" style={{ color: "#374151" }}>
                       {userData.profile?.firstName} {userData.profile?.lastName}
                     </h3>
                     <p className="text-sm mb-3" style={{ color: "#6B7280" }}>
@@ -510,31 +476,18 @@ const Feed = () => {
 
                     {/* Location and Connections */}
                     <div className="space-y-1 mb-4">
-                      <div
-                        className="flex items-center text-sm"
-                        style={{ color: "#6B7280" }}
-                      >
+                      <div className="flex items-center text-sm" style={{ color: "#6B7280" }}>
                         <MapPin className="w-4 h-4 mr-2" />
                         <span>{userData.profile?.location}</span>
                       </div>
-                      <div
-                        className="flex items-center text-sm"
-                        style={{ color: "#6B7280" }}
-                      >
+                      <div className="flex items-center text-sm" style={{ color: "#6B7280" }}>
                         <Users className="w-4 h-4 mr-2" />
-                        <span>
-                          {t("feed_connections", {
-                            count: userData.connections.length,
-                          })}
-                        </span>
+                        <span>{t("feed_connections", { count: userData.connections.length })}</span>
                       </div>
                     </div>
 
                     {/* Bio */}
-                    <p
-                      className="text-sm mb-4 leading-relaxed"
-                      style={{ color: "#6B7280" }}
-                    >
+                    <p className="text-sm mb-4 leading-relaxed" style={{ color: "#6B7280" }}>
                       {userData.profile?.bio}
                     </p>
 
@@ -544,15 +497,19 @@ const Feed = () => {
                         <span
                           key={index}
                           className="px-3 py-1 text-sm rounded-full font-medium"
-                          style={{
-                            backgroundColor: "#F3F4F6",
-                            color: "#374151",
-                          }}
+                          style={{ backgroundColor: "#F3F4F6", color: "#374151" }}
                         >
                           {interest}
                         </span>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Public/Private Badge */}
+                  <div className="absolute top-5 right-3 px-5 py-2 text-sm font-medium text-white rounded-full"
+                    style={{ backgroundColor: isPublic ? '#a8d08d' : '#2c6e49' }}
+                  >
+                    {isPublic ? 'Public' : 'Private'}
                   </div>
 
                   {/* Action Buttons */}
@@ -576,10 +533,7 @@ const Feed = () => {
                         onClick={() => userData.id && handleConnect(userData.id)}
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-[#00B878] hover:bg-[#00a76d] cursor-pointer"
                       >
-                        <UserPlus
-                          className="w-4 h-4"
-                          style={{ color: "#fff" }}
-                        />
+                        <UserPlus className="w-4 h-4" style={{ color: "#fff" }} />
                         {t("feed_connect")}
                       </button>
                     )}
@@ -594,6 +548,7 @@ const Feed = () => {
                 </div>
               );
             })}
+
           </div>
 
           {/* Empty State */}

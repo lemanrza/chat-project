@@ -18,6 +18,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [formData, setFormData] = useState<any>({
+    messagePrivacy: "public",
     firstName: "",
     lastName: "",
     email: "",
@@ -53,6 +54,7 @@ const Profile = () => {
         setUserData(response.data);
 
         setFormData({
+          messagePrivacy: response.data.messagePrivacy || "public",
           firstName: response.data.profile?.firstName || "",
           lastName: response.data.profile?.lastName || "",
           email: response.data.email || "",

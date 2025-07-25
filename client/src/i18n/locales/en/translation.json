@@ -279,5 +279,11 @@
   "changePassword.success": "Password changed successfully!",
   "changePassword.failed": "Failed to change password",
   "changePassword.updating": "Updating Password...",
-  "changePassword.update": "Update Password"
+  "changePassword.update": "Update Password",
+  "changePassword.cancel": "Cancel",
+  "account.minHobbiesError": "Please select at least 3 hobbies.",
+  "500_characters": "Maximum 500 characters for each field",
+  "deletion_failed": "Deletion failed",
+  "save_changes": "Save Changes",
+  "saving": "Saving..."
 }
