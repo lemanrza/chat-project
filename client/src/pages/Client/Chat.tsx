@@ -99,9 +99,7 @@ const Chat = () => {
         const userData = await userResponse.json();
         setConnections(userData.data.connections || []);
       } else {
-        console.error(
-          `Failed to fetch user data: ${userResponse.status} ${userResponse.statusText}`
-        );
+        setConnections([]);
       }
 
       const chatsResponse = await fetch(
@@ -117,41 +115,74 @@ const Chat = () => {
         const chatsData = await chatsResponse.json();
         setChats(chatsData.data || chatsData);
       } else {
-        console.error(
-          `Failed to fetch chats: ${chatsResponse.status} ${chatsResponse.statusText}`
-        );
+        setChats([]);
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      setConnections([]);
+      setChats([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Move this useEffect BEFORE any early returns
   useEffect(() => {
     if (!currentUserId) return;
 
-    socket.emit("join", currentUserId);
+    if (!socket.connected) {
+      socket.connect();
+    }
 
-    const handleNewMessage = (message: Message) => {
-      setMessages((prev) => [...prev, message]);
+    socket.emit("auth:join");
+
+    const handleNewMessage = (messageData: any) => {
+      const message: Message = {
+        _id: messageData.id || messageData._id,
+        content: messageData.content,
+        chat: messageData.chatId,
+        sender: {
+          _id: messageData.senderId,
+          name: messageData.senderName || "User",
+          profilePicture: "",
+        },
+        createdAt:
+          messageData.timestamp ||
+          messageData.createdAt ||
+          new Date().toISOString(),
+        attachments: [],
+        deleted: false,
+        edited: false,
+        reactions: [],
+        seenBy: [],
+      };
+
+      if (selectedChat && message.chat === selectedChat._id) {
+        setMessages((prev) => {
+          const exists = prev.some((msg) => msg._id === message._id);
+          if (exists) return prev;
+          return [...prev, message];
+        });
+      }
 
       setChats((prev) =>
         prev.map((chat) =>
-          chat._id === selectedChat?._id
-            ? { ...chat, lastMessage: message }
-            : chat
+          chat._id === message.chat ? { ...chat, lastMessage: message } : chat
         )
       );
     };
 
-    socket.on("newMessage", handleNewMessage);
+    socket.on("message:new", handleNewMessage);
 
     return () => {
-      socket.off("newMessage", handleNewMessage);
+      socket.off("message:new", handleNewMessage);
     };
   }, [currentUserId, selectedChat?._id]);
+
+  useEffect(() => {
+    if (chats.length > 0 && currentUserId) {
+      const chatIds = chats.map((chat) => chat._id);
+      socket.emit("join:chats", chatIds);
+    }
+  }, [chats, currentUserId]);
 
   if (isLoading) {
     return (
@@ -186,19 +217,19 @@ const Chat = () => {
         const data = await response.json();
         const messagesArray = data.data || data.messages || data || [];
         setMessages(Array.isArray(messagesArray) ? messagesArray : []);
+      } else {
+        setMessages([]);
       }
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      setMessages([]);
     }
   };
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedChat || !currentUserId) return;
 
-    const messageData = {
-      content: newMessage,
-      chatId: selectedChat._id,
-    };
+    const messageContent = newMessage;
+    setNewMessage("");
 
     try {
       const response = await fetch(
@@ -209,20 +240,21 @@ const Chat = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify(messageData),
+          body: JSON.stringify({
+            content: messageContent,
+            chatId: selectedChat._id,
+          }),
         }
       );
 
       if (response.ok) {
         const responseData = await response.json();
-
         const newMessageObj = responseData.data || responseData;
 
-        setMessages((prev) => [...prev, newMessageObj]);
-
-        socket.emit("sendMessage", newMessageObj);
-
-        setNewMessage("");
+        socket.emit("message:send", {
+          content: messageContent,
+          chatId: selectedChat._id,
+        });
 
         setChats((prev) =>
           prev.map((chat) =>
@@ -232,10 +264,10 @@ const Chat = () => {
           )
         );
       } else {
-        await response.text();
+        setNewMessage(messageContent);
       }
     } catch (error) {
-      console.error("Error sending message:", error);
+      setNewMessage(messageContent);
     }
   };
 
@@ -263,16 +295,11 @@ const Chat = () => {
 
       if (response.ok) {
         const newChat = await response.json();
-        setChats((prev) => [...prev, newChat.data || newChat]);
-        handleChatSelect(newChat.data || newChat);
-      } else {
-        const errorText = await response.text();
-        console.error("Server error response:", errorText);
-        console.error(`HTTP ${response.status}: ${response.statusText}`);
+        const chatData = newChat.data || newChat;
+        setChats((prev) => [...prev, chatData]);
+        handleChatSelect(chatData);
       }
-    } catch (error) {
-      console.error("Network error creating chat:", error);
-    }
+    } catch (error) {}
   };
 
   const getOtherParticipant = (chat: any) => {
@@ -298,7 +325,7 @@ const Chat = () => {
         <div className="flex-1 overflow-y-auto">
           <div className="p-2">
             {/* Existing Chats */}
-            {chats.map((chat) => {
+            {chats.map((chat: any) => {
               const otherParticipant = getOtherParticipant(chat);
               return (
                 <div
@@ -336,9 +363,9 @@ const Chat = () => {
                         </p>
                       )}
                     </div>
-                    {chat.lastMessage && (
+                    {chat.lastMessage.message && (
                       <span className="text-xs text-gray-400">
-                        {formatTime(chat.lastMessage.createdAt)}
+                        {formatTime(chat.lastMessage.message.createdAt)}
                       </span>
                     )}
                   </div>
@@ -372,7 +399,9 @@ const Chat = () => {
                         />
                       ) : (
                         <span className="text-gray-600 font-medium">
-                          {connection.name?.charAt(0).toUpperCase()}
+                          {connection.profile.displayName
+                            ?.charAt(0)
+                            .toUpperCase()}
                         </span>
                       )}
                     </div>
@@ -432,7 +461,8 @@ const Chat = () => {
                   <h3 className="font-medium text-gray-900">
                     {getOtherParticipant(selectedChat)?.profile.displayName}
                   </h3>
-                  {getOtherParticipant(selectedChat).isOnline ? (
+
+                  {getOtherParticipant(selectedChat)?.profile.isOnline ? (
                     <p className="text-sm text-green-500">Online</p>
                   ) : (
                     <p className="text-sm text-red-500">Offline</p>
