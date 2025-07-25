@@ -2,10 +2,21 @@ import { useEffect, useState, useRef } from "react";
 import { Send, MessageSquare } from "lucide-react";
 import socket from "@/socket/socket";
 import { getUserIdFromToken } from "@/utils/auth";
+import type { UserData } from "@/types/profileType";
 
 interface Message {
   _id: string;
-  text: string;
+  attachments: string[];
+  chat: string;
+  deleted: boolean;
+  edited: boolean;
+  reactions: [];
+  seenBy: {
+    _id: string;
+    seenAt: Date;
+    user: UserData;
+  }[];
+  content: string;
   sender: {
     _id: string;
     name: string;
@@ -42,13 +53,13 @@ interface ChatType {
 
 interface Connection {
   _id: string;
-  name: string;
+  firstName: string;
   profilePicture?: string;
 }
 
 const Chat = () => {
   const [chats, setChats] = useState<ChatType[]>([]);
-  const [connections, setConnections] = useState<Connection[]>([]);
+  const [connections, setConnections] = useState<any[]>([]);
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -113,7 +124,6 @@ const Chat = () => {
     }
   };
 
-  // Socket.IO event listeners
   useEffect(() => {
     if (!currentUserId) return;
 
@@ -141,7 +151,9 @@ const Chat = () => {
   const fetchMessages = async (chatId: string) => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/api/message/chat/${chatId}`,
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/api/messages/chat/${chatId}?userId=${currentUserId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -151,7 +163,8 @@ const Chat = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setMessages(data);
+        const messagesArray = data.data || data.messages || data || [];
+        setMessages(Array.isArray(messagesArray) ? messagesArray : []);
       }
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -162,14 +175,13 @@ const Chat = () => {
     if (!newMessage.trim() || !selectedChat || !currentUserId) return;
 
     const messageData = {
-      text: newMessage,
+      content: newMessage,
       chatId: selectedChat._id,
-      senderId: currentUserId,
     };
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/api/message`,
+        `${import.meta.env.VITE_SERVER_URL}/api/messages`,
         {
           method: "POST",
           headers: {
@@ -181,9 +193,27 @@ const Chat = () => {
       );
 
       if (response.ok) {
-        const message = await response.json();
-        socket.emit("sendMessage", message);
+        const responseData = await response.json();
+
+        const newMessageObj = responseData.data || responseData;
+
+        console.log(newMessageObj);
+
+        setMessages((prev) => [...prev, newMessageObj]);
+
+        socket.emit("sendMessage", newMessageObj);
+
         setNewMessage("");
+
+        setChats((prev) =>
+          prev.map((chat) =>
+            chat._id === selectedChat._id
+              ? { ...chat, lastMessage: newMessageObj }
+              : chat
+          )
+        );
+      } else {
+        await response.text();
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -212,11 +242,8 @@ const Chat = () => {
         }
       );
 
-      console.log("Response status:", response.status);
-
       if (response.ok) {
         const newChat = await response.json();
-        console.log("New chat created:", newChat);
         setChats((prev) => [...prev, newChat.data || newChat]);
         handleChatSelect(newChat.data || newChat);
       } else {
@@ -292,7 +319,7 @@ const Chat = () => {
                       </h3>
                       {chat.lastMessage && (
                         <p className="text-sm text-gray-500 truncate">
-                          {chat.lastMessage.text}
+                          {chat.lastMessage.content}
                         </p>
                       )}
                     </div>
@@ -324,9 +351,9 @@ const Chat = () => {
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-                      {connection.profilePicture ? (
+                      {connection?.profile.avatar ? (
                         <img
-                          src={connection.profilePicture}
+                          src={connection.profile.avatar}
                           alt={connection.name}
                           className="h-10 w-10 rounded-full object-cover"
                         />
@@ -368,7 +395,6 @@ const Chat = () => {
         {selectedChat ? (
           <>
             {/* Chat Header */}
-            {console.log("Selected chat:", getOtherParticipant(selectedChat))}
             <div className="p-4 bg-white border-b border-gray-200">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
@@ -400,34 +426,35 @@ const Chat = () => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4">
               <div className="space-y-4">
-                {messages.map((message) => {
-                  const isOwn = message.sender._id === currentUserId;
-                  return (
-                    <div
-                      key={message._id}
-                      className={`flex ${
-                        isOwn ? "justify-end" : "justify-start"
-                      }`}
-                    >
+                {messages &&
+                  messages.map((message) => {
+                    const isOwn = message.sender._id === currentUserId;
+                    return (
                       <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                          isOwn
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-200 text-gray-900"
+                        key={message._id}
+                        className={`flex ${
+                          isOwn ? "justify-end" : "justify-start"
                         }`}
                       >
-                        <p>{message.text}</p>
-                        <p
-                          className={`text-xs mt-1 ${
-                            isOwn ? "text-blue-100" : "text-gray-500"
+                        <div
+                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                            isOwn
+                              ? "bg-blue-500 text-white"
+                              : "bg-gray-200 text-gray-900"
                           }`}
                         >
-                          {formatTime(message.createdAt)}
-                        </p>
+                          <p>{message.content}</p>
+                          <p
+                            className={`text-xs mt-1 ${
+                              isOwn ? "text-blue-100" : "text-gray-500"
+                            }`}
+                          >
+                            {formatTime(message.createdAt)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
                 <div ref={messagesEndRef} />
               </div>
             </div>

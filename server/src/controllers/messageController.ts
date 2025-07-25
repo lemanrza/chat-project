@@ -17,8 +17,21 @@ export const sendMessage = async (
   next: NextFunction
 ) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated - req.user is undefined",
+      });
+    }
+
     const userId = req.user.id;
-    const { chatId, content, type, replyTo, attachments } = req.body;
+
+    // Simple extraction
+    const chatId = req.body?.chatId;
+    const content = req.body?.content;
+    const type = req.body?.type;
+    const replyTo = req.body?.replyTo;
+    const attachments = req.body?.attachments;
 
     if (!chatId || !content) {
       return res.status(400).json({
@@ -42,6 +55,7 @@ export const sendMessage = async (
 
     res.status(201).json(response);
   } catch (error) {
+    console.log("❌ Error in sendMessage controller:", error);
     next(error);
   }
 };
