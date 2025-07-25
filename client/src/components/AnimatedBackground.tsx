@@ -103,7 +103,7 @@ const ThreeBackground = () => {
       ref={mountRef}
       className="fixed top-0 left-0 w-full h-full -z-10 
                bg-gradient-to-br from-green-50 via-green-100 to-green-200 
-               dark:bg-gradient-to-br dark:from-green-900 dark:via-green-900 dark:to-green-700"
+               dark:bg-gradient-to-br dark:from-lime-700 dark:via-teal-800 dark:to-emerald-900"
     />
   );
 };

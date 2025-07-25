@@ -25,11 +25,36 @@ interface Tab {
   icon: React.ReactNode;
 }
 
+
 const hobbiesList = [
-  'Music', 'Sports', 'Travel', 'Reading', 'Gaming', 'Art', 'Cooking', 'Fitness', 'Movies', 'Tech', 'Photography', 'Writing', 'Fashion', 'Nature', 'DIY'
-];
-const countriesList = [
-  'Azerbaijan', 'Turkey', 'Russia', 'USA', 'UK', 'Germany', 'France', 'Italy', 'Spain', 'China', 'Japan', 'India', 'Brazil', 'Canada', 'Australia'
+  'Coffee',
+  'Travel',
+  'Netflix',
+  'Coding',
+  'Dogs',
+  'Cats',
+  'Music',
+  'Fitness',
+  'Cooking',
+  'Photo',
+  'Gaming',
+  'Hiking',
+  'Swimming',
+  'Theater',
+  'Sports',
+  'Garden',
+  'Guitar',
+  'Dancing',
+  'Soccer',
+  'Darts',
+  'Games',
+  'Wine',
+  'Beer',
+  'Beach',
+  'Cars',
+  'Comedy',
+  'Movies',
+  'Nature',
 ];
 
 const Feed = () => {
@@ -41,33 +66,19 @@ const Feed = () => {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
 
   const { t } = useTranslation();
   const reduxUser = useSelector((state: RootState) => state.user);
   const tabs: Tab[] = [
-    {
-      id: "discover",
-      label: t("feed_tab_discover"),
-      icon: <Search className="w-4 h-4" />,
-    },
-    {
-      id: "trending",
-      label: t("feed_tab_trending"),
-      icon: <div className="w-4 h-4 flex items-center">📈</div>,
-    },
-    {
-      id: "nearby",
-      label: t("feed_tab_nearby"),
-      icon: <MapPin className="w-4 h-4" />,
-    },
+    { id: "discover", label: t("feed_tab_discover"), icon: <Search className="w-4 h-4" /> },
+    { id: "trending", label: t("feed_tab_trending"), icon: <div className="w-4 h-4 flex items-center">📈</div> },
+    { id: "nearby", label: t("feed_tab_nearby"), icon: <MapPin className="w-4 h-4" /> },
   ];
-
   useEffect(() => {
     const fetchUser = async () => {
       try {
         if (!reduxUser.id) return;
-        const response = await controller.getOne(endpoints.users, reduxUser.id)
+        const response = await controller.getOne(endpoints.users, reduxUser.id);
         setUser(response.data);
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -90,6 +101,7 @@ const Feed = () => {
   }, [navigate]);
 
   const currentUserId = reduxUser?.id;
+
   const filteredUsers = users
     .filter(user => user.id !== currentUserId)
     .filter(userData => {
@@ -102,127 +114,9 @@ const Feed = () => {
         selectedHobbies.length === 0 ||
         (userData.hobbies && userData.hobbies.some(hobby => selectedHobbies.includes(hobby)));
 
-      const matchesCountry =
-        selectedCountries.length === 0 ||
-        (userData.profile?.location && selectedCountries.includes(userData.profile.location));
-
-      return matchesSearch && matchesHobbies && matchesCountry;
+      return matchesSearch && matchesHobbies;
     });
 
-  // const handleConnect = async (targetUserId: string) => {
-  //   try {
-  //     if (!user) {
-  //       enqueueSnackbar("User not loaded", {
-  //         variant: "error",
-  //         autoHideDuration: 2000,
-  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //       });
-  //       return;
-  //     }
-
-  //     // Check if already connected
-  //     const userConnections = user.connections && Array.isArray(user.connections)
-  //       ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
-  //       : [];
-  //     console.log(userConnections)
-  //     const isAlreadyConnected = userConnections.includes(targetUserId);
-
-  //     if (isAlreadyConnected) {
-  //       enqueueSnackbar("Already connected with this user", {
-  //         variant: "info",
-  //         autoHideDuration: 2000,
-  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //       });
-  //       return;
-  //     }
-
-  //     const targetUserResponse = await controller.getOne(endpoints.users, targetUserId);
-  //     const targetUser = targetUserResponse.data;
-
-  //     if (!targetUser) {
-  //       enqueueSnackbar("User not found", {
-  //         variant: "error",
-  //         autoHideDuration: 2000,
-  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //       });
-  //       return;
-  //     }
-
-  //     // Check if request already pending
-  //     const targetUserConnectionRequests = Array.isArray(targetUser.connectionsRequests)
-  //       ? targetUser.connectionsRequests.map((req: any) => typeof req === 'string' ? req : (req as UserData).id)
-  //       : [];
-
-  //     const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
-
-  //     if (isRequestPending) {
-  //       enqueueSnackbar("Connection request is already pending", {
-  //         variant: "info",
-  //         autoHideDuration: 2000,
-  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //       });
-  //       return;
-  //     }
-
-  //     if (targetUser.profileVisibility === "private") {
-  //       const updatedConnectionsRequests = [...targetUserConnectionRequests, user.id];
-
-  //       await controller.update(`${endpoints.users}/update`, targetUserId, {
-  //         connectionsRequests: updatedConnectionsRequests,
-  //       });
-
-  //       enqueueSnackbar("Connection request sent! Waiting for approval.", {
-  //         variant: "info",
-  //         autoHideDuration: 3000,
-  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //       });
-  //     } else {
-  //       // For public profile, connect both users immediately
-  //       const targetUserConnections = Array.isArray(targetUser.connections)
-  //         ? targetUser.connections.map((conn: any) => typeof conn === 'string' ? conn : (conn as UserData).id)
-  //         : [];
-
-  //       await controller.update(`${endpoints.users}/update`, targetUserId, {
-  //         connections: [...targetUserConnections, user.id],
-  //       });
-
-  //       if (user.id) {
-  //         await controller.update(`${endpoints.users}/update`, user.id, {
-  //           connections: [...userConnections, targetUserId],
-  //         });
-  //       }
-
-  //       enqueueSnackbar("Connected successfully!", {
-  //         variant: "success",
-  //         autoHideDuration: 2000,
-  //         anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //       });
-
-  //       // Update Redux state to reflect the new connection
-  //       dispatch(addConnection(targetUserId));
-  //     }
-  //   } catch (error: any) {
-  //     console.error("Error sending connection request:", error);
-
-  //     let errorMessage = "Failed to send connection request";
-
-  //     if (error.response?.data?.message) {
-  //       errorMessage = error.response.data.message;
-  //     } else if (error.response?.status === 404) {
-  //       errorMessage = "User not found";
-  //     } else if (error.response?.status === 401) {
-  //       errorMessage = "Unauthorized: Please log in again";
-  //       localStorage.removeItem("token");
-  //       navigate("/auth/login");
-  //     }
-
-  //     enqueueSnackbar(errorMessage, {
-  //       variant: "error",
-  //       autoHideDuration: 2000,
-  //       anchorOrigin: { vertical: "bottom", horizontal: "right" },
-  //     });
-  //   }
-  // }
   const handleConnect = async (targetUserId: string) => {
     try {
       if (!reduxUser.id) {
@@ -241,22 +135,20 @@ const Feed = () => {
         await controller.update(`${endpoints.users}/update`, targetUserId, {
           connectionsRequests: [...(targetUser.connectionsRequests || []), reduxUser.id],
         });
-        
+
         enqueueSnackbar("Connection request sent! Waiting for approval.", {
           variant: "info",
           autoHideDuration: 3000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
       } else {
-        // For public profiles, connect both users
         await controller.update(`${endpoints.users}/update`, targetUserId, {
           connections: [...(targetUser.connections || []), reduxUser.id],
         });
-        
-        // Get current user data and update their connections
+
         const currentUserResponse = await controller.getOne(endpoints.users, reduxUser.id);
         const currentUser = currentUserResponse.data;
-        
+
         await controller.update(`${endpoints.users}/update`, reduxUser.id, {
           connections: [...(currentUser.connections || []), targetUserId],
         });
@@ -268,17 +160,15 @@ const Feed = () => {
         });
       }
 
-      // Refresh user data to update UI
       const updatedUserResponse = await controller.getOne(endpoints.users, reduxUser.id);
       setUser(updatedUserResponse.data);
-      
-      // Refresh users list to update connection status
+
       const updatedUsersResponse = await controller.getAll(endpoints.users);
       setUsers(updatedUsersResponse.data);
 
     } catch (error: any) {
       console.error("Error in handleConnect:", error);
-      
+
       let errorMessage = "Failed to send connection request";
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
@@ -330,7 +220,6 @@ const Feed = () => {
             className="fixed top-0 right-0 h-full w-full max-w-sm z-40 flex flex-col p-6 backdrop-blur-lg bg-white/80 dark:bg-neutral-900/70 border-l border-gray-200 dark:border-neutral-700 shadow-xl"
             style={{ boxShadow: '0 12px 32px rgba(0,0,0,0.15)' }}
           >
-            {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-semibold text-[#00B878] dark:text-[#00E89E]">Filters</h2>
               <button
@@ -345,62 +234,36 @@ const Feed = () => {
               </button>
             </div>
 
-            {/* Hobbies Section */}
-            <div className="mb-6">
-              <h3 className="font-medium text-gray-800 dark:text-white mb-3 text-base">Hobbies</h3>
-              <div className="flex flex-wrap gap-2">
-                {hobbiesList.map(hobby => (
-                  <button
-                    key={hobby}
-                    onClick={() =>
-                      setSelectedHobbies(
-                        selectedHobbies.includes(hobby)
-                          ? selectedHobbies.filter(h => h !== hobby)
-                          : [...selectedHobbies, hobby]
-                      )
-                    }
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${selectedHobbies.includes(hobby)
-                      ? 'bg-[#00B878] text-white border-[#00B878]'
-                      : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700'
-                      }`}
-                  >
-                    {hobby}
-                  </button>
-                ))}
+            <div className="flex-grow overflow-y-auto">
+              <div className="mb-6">
+                <h3 className="font-medium text-gray-800 dark:text-white mb-3 text-base">Hobbies</h3>
+                <div className="flex flex-wrap gap-2">
+                  {hobbiesList.map(hobby => (
+                    <button
+                      key={hobby}
+                      onClick={() =>
+                        setSelectedHobbies(
+                          selectedHobbies.includes(hobby)
+                            ? selectedHobbies.filter(h => h !== hobby)
+                            : [...selectedHobbies, hobby]
+                        )
+                      }
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${selectedHobbies.includes(hobby)
+                        ? 'bg-[#00B878] text-white border-[#00B878]'
+                        : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700'
+                        }`}
+                    >
+                      {hobby}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Countries Section */}
-            <div className="mb-6">
-              <h3 className="font-medium text-gray-800 dark:text-white mb-3 text-base">Countries</h3>
-              <div className="flex flex-wrap gap-2">
-                {countriesList.map(country => (
-                  <button
-                    key={country}
-                    onClick={() =>
-                      setSelectedCountries(
-                        selectedCountries.includes(country)
-                          ? selectedCountries.filter(c => c !== country)
-                          : [...selectedCountries, country]
-                      )
-                    }
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${selectedCountries.includes(country)
-                      ? 'bg-[#00B878] text-white border-[#00B878]'
-                      : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700'
-                      }`}
-                  >
-                    {country}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Action Buttons */}
             <div className="mt-auto flex gap-2 pt-4 border-t border-gray-200 dark:border-neutral-700">
               <button
                 onClick={() => {
                   setSelectedHobbies([]);
-                  setSelectedCountries([]);
                 }}
                 className="flex-1 py-3 rounded-lg bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-white font-medium hover:bg-gray-200 dark:hover:bg-neutral-700 transition"
               >
@@ -416,7 +279,6 @@ const Feed = () => {
           </motion.aside>
         )}
       </AnimatePresence>
-
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="px-8 py-8 rounded-t-2xl shadow-sm">
@@ -622,7 +484,6 @@ const Feed = () => {
       </div>
     </div>
   );
-
 };
 
 export default Feed;

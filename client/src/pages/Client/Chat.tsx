@@ -385,7 +385,7 @@ const Chat = () => {
                         </p>
                       )}
                     </div>
-                    {chat.lastMessage.message && (
+                    {chat.lastMessage?.message && (
                       <span className="text-xs text-gray-400">
                         {formatTime(chat.lastMessage.message.createdAt)}
                       </span>
