@@ -65,19 +65,16 @@ const Sidebar = () => {
   };
   const handleLogout = async () => {
     try {
-      const userId = getUserIdFromToken(); // JWT token-dən userId-ni çıxar
+      const userId = getUserIdFromToken();
 
       if (userId) {
-        // İstifadəçini offline et
         await controller.update(`${endpoints.users}/me`, userId, {
           isOnline: false,
         });
       }
 
-      // Tokeni təmizlə
       localStorage.removeItem("token");
 
-      // Uğurlu çıxış bildirişi
       enqueueSnackbar("Logged out successfully", {
         variant: "success",
         autoHideDuration: 2000,
@@ -87,7 +84,6 @@ const Sidebar = () => {
         },
       });
 
-      // Login səhifəsinə yönləndir
       window.location.href = "/auth/login";
     } catch (error) {
       console.error("Logout failed:", error);
