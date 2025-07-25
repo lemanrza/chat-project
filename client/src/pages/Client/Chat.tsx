@@ -27,6 +27,8 @@ const Chat = () => {
   const [typing, setTyping] = useState<{ [key: string]: boolean }>({});
   const [connections, setConnections] = useState<Connection[]>([]);
   const [showConnectionsModal, setShowConnectionsModal] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState<Connection[]>([]);
+  const [showBrowseUsersModal, setShowBrowseUsersModal] = useState(false);
 
   useEffect(() => {
     initializeUser();
@@ -42,7 +44,11 @@ const Chat = () => {
       const userId = getUserIdFromToken();
       if (userId) {
         setCurrentUserId(userId);
-        await Promise.all([loadUserChats(userId), loadUserConnections(userId)]);
+        await Promise.all([
+          loadUserChats(userId),
+          loadUserConnections(userId),
+          loadAvailableUsers(userId),
+        ]);
       } else {
         enqueueSnackbar("Please login to view chats", {
           variant: "error",
@@ -80,16 +86,58 @@ const Chat = () => {
 
   const loadUserConnections = async (userId: string) => {
     try {
-      // Get current user data with populated connections using the /me/:id endpoint
       const response = await controller.getAll(
         `${endpoints.users}/me/${userId}`
       );
 
       if (response.success && response.data && response.data.connections) {
+        console.log(response.data.connections);
         setConnections(response.data.connections);
       }
     } catch (error) {
       console.error("Error loading connections:", error);
+    }
+  };
+
+  const loadAvailableUsers = async (userId: string) => {
+    try {
+      const response = await controller.getAll(
+        `${endpoints.users}/me/${userId}/available`
+      );
+
+      if (response.success && response.data) {
+        setAvailableUsers(response.data);
+      }
+    } catch (error) {
+      console.error("Error loading available users:", error);
+    }
+  };
+
+  const connectWithUser = async (connectionId: string) => {
+    try {
+      const response = await controller.post(
+        `${endpoints.users}/me/${currentUserId}/connections`,
+        { connectionId }
+      );
+
+      if (response.success) {
+        enqueueSnackbar("Connected successfully!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+
+        // Refresh connections and available users
+        await Promise.all([
+          loadUserConnections(currentUserId),
+          loadAvailableUsers(currentUserId),
+        ]);
+      }
+    } catch (error) {
+      console.error("Error connecting with user:", error);
+      enqueueSnackbar("Failed to connect with user", {
+        variant: "error",
+        autoHideDuration: 3000,
+      });
     }
   };
   const createDirectChatWithConnection = async (connectionId: string) => {
@@ -406,14 +454,23 @@ const Chat = () => {
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-900">Messages</h2>
-            <button
-              onClick={() => setShowConnectionsModal(true)}
-              className="p-2 text-white rounded-lg transition-colors shadow hover:bg-[#00a76d]"
-              style={{ backgroundColor: "#00B878" }}
-              title="Start new chat with connections"
-            >
-              <Plus size={20} />
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowBrowseUsersModal(true)}
+                className="p-2 text-gray-600 border border-gray-300 rounded-lg transition-colors hover:bg-gray-50"
+                title="Browse users to connect"
+              >
+                <Users size={20} />
+              </button>
+              <button
+                onClick={() => setShowConnectionsModal(true)}
+                className="p-2 text-white rounded-lg transition-colors shadow hover:bg-[#00a76d]"
+                style={{ backgroundColor: "#00B878" }}
+                title="Start new chat with connections"
+              >
+                <Plus size={20} />
+              </button>
+            </div>
           </div>
           <div className="relative">
             <Search
@@ -437,13 +494,21 @@ const Chat = () => {
               <p className="text-sm mb-4">
                 Start conversations with your connections!
               </p>
-              <button
-                onClick={() => setShowConnectionsModal(true)}
-                className="px-4 py-2 text-white rounded-lg transition-colors shadow hover:bg-[#00a76d]"
-                style={{ backgroundColor: "#00B878" }}
-              >
-                View Connections
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => setShowConnectionsModal(true)}
+                  className="px-4 py-2 text-white rounded-lg transition-colors shadow hover:bg-[#00a76d]"
+                  style={{ backgroundColor: "#00B878" }}
+                >
+                  View Connections
+                </button>
+                <button
+                  onClick={() => setShowBrowseUsersModal(true)}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Browse Users to Connect
+                </button>
+              </div>
             </div>
           ) : (
             chats.map((chat) => {
@@ -799,6 +864,81 @@ const Chat = () => {
             <div className="p-4 border-t border-gray-200 bg-gray-50">
               <button
                 onClick={() => setShowConnectionsModal(false)}
+                className="w-full px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Browse Users Modal */}
+      {showBrowseUsersModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Browse Users
+                </h3>
+                <button
+                  onClick={() => setShowBrowseUsersModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-xl"
+                >
+                  ×
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
+                Connect with other users in the platform
+              </p>
+            </div>
+
+            <div className="overflow-y-auto max-h-96">
+              {availableUsers.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <Users size={48} className="mx-auto mb-4 text-gray-300" />
+                  <p className="text-lg font-medium mb-2">No users available</p>
+                  <p className="text-sm">
+                    You're already connected to all users or there are no other
+                    users yet!
+                  </p>
+                </div>
+              ) : (
+                availableUsers.map((user) => (
+                  <div key={user._id} className="p-4 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow"
+                        style={{ backgroundColor: "#00B878" }}
+                      >
+                        {user.profile.firstName[0]}
+                        {user.profile.lastName[0]}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">
+                          {user.profile.firstName} {user.profile.lastName}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          @{user.username}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => connectWithUser(user._id)}
+                        className="px-3 py-1 text-sm text-white rounded-lg transition-colors shadow hover:bg-[#00a76d]"
+                        style={{ backgroundColor: "#00B878" }}
+                      >
+                        Connect
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="p-4 border-t border-gray-200 bg-gray-50">
+              <button
+                onClick={() => setShowBrowseUsersModal(false)}
                 className="w-full px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 Cancel

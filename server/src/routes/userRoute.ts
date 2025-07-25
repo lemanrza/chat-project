@@ -14,6 +14,9 @@ import {
   changePassword,
   deleteCurrentUser,
   verifyUserEmail,
+  addUserConnection,
+  removeUserConnection,
+  getAvailableUsersToConnect,
 } from "../controllers/userController.js";
 import userValidate from "../middlewares/userValidate.js";
 
@@ -35,6 +38,14 @@ userRouter.post(
   uploadProfileImage
 );
 userRouter.delete("/me/:userId/delete-image", deleteProfileImage);
+
+// Connection management routes
+userRouter.get("/me/:userId/available", getAvailableUsersToConnect);
+userRouter.post("/me/:userId/connections", addUserConnection);
+userRouter.delete(
+  "/me/:userId/connections/:connectionId",
+  removeUserConnection
+);
 
 userRouter.get("/:id", getUserById);
 userRouter.delete("/:id", deleteUser);

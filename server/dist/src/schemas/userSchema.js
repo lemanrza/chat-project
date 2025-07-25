@@ -64,7 +64,13 @@ const userSchema = new mongoose.Schema({
         },
     },
     connectionsRequests: {
-        type: 
+        type: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
+        default: [],
     }
 }, { timestamps: true, versionKey: false });
 export default userSchema;

@@ -13,6 +13,9 @@ import {
   deleteUser as deleteUserService,
   updateUser,
   verifyEmail,
+  addConnection,
+  removeConnection,
+  getAvailableUsers,
 } from "../services/userService.js";
 import formatMongoData from "../utils/formatMongoData.js";
 import bcrypt from "bcrypt";
@@ -777,6 +780,96 @@ export const changePassword = async (
 
     res.status(200).json({
       message: "Password changed successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Add connection between users
+export const addUserConnection = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.params.userId;
+    const { connectionId } = req.body;
+
+    if (!connectionId) {
+      return res.status(400).json({
+        message: "Connection ID is required",
+      });
+    }
+
+    if (userId === connectionId) {
+      return res.status(400).json({
+        message: "Cannot connect to yourself",
+      });
+    }
+
+    const result = await addConnection(userId, connectionId);
+
+    if (!result.success) {
+      return res.status(500).json({
+        message: result.message,
+      });
+    }
+
+    res.status(200).json({
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Remove connection between users
+export const removeUserConnection = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.params.userId;
+    const { connectionId } = req.params;
+
+    const result = await removeConnection(userId, connectionId);
+
+    if (!result.success) {
+      return res.status(500).json({
+        message: result.message,
+      });
+    }
+
+    res.status(200).json({
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get available users to connect with
+export const getAvailableUsersToConnect = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.params.userId;
+
+    const result = await getAvailableUsers(userId);
+
+    if (!result.success) {
+      return res.status(500).json({
+        message: result.message,
+      });
+    }
+
+    res.status(200).json({
+      message: "Available users retrieved successfully",
+      data: result.data,
     });
   } catch (error) {
     next(error);
