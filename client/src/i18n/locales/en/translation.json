@@ -1,6 +1,4 @@
 {
-  "chat": "Chat",
-  "wave": "Wave",
   "reset_password": "Reset your password",
   "forgot_password": "Forgot your password?",
   "email_address": "Email Address",
@@ -285,5 +283,6 @@
   "500_characters": "Maximum 500 characters for each field",
   "deletion_failed": "Deletion failed",
   "save_changes": "Save Changes",
-  "saving": "Saving..."
+  "saving": "Saving...",
+  "settings_language_en_full": "English"
 }

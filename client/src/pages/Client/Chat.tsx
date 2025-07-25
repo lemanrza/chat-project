@@ -203,8 +203,7 @@ const Chat = () => {
   const fetchMessages = async (chatId: string) => {
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL
+        `${import.meta.env.VITE_SERVER_URL
         }/api/messages/chat/${chatId}?userId=${currentUserId}`,
         {
           headers: {
@@ -313,12 +312,12 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-neutral-800">
       {/* Sidebar */}
-      <div className="w-1/3 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-1/3 bg-white border-r dark:bg-neutral-800 border-gray-200 flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Chats</h2>
+        <div className="p-4 border-b border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Chats</h2>
         </div>
 
         {/* Chat List */}
@@ -330,15 +329,14 @@ const Chat = () => {
               return (
                 <div
                   key={chat._id}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
-                    selectedChat?._id === chat._id
-                      ? "bg-blue-100 border-l-4 border-blue-500"
-                      : "hover:bg-gray-100"
-                  }`}
+                  className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${selectedChat?._id === chat._id
+                    ? "bg-blue-100 border-l-4 border-blue-500"
+                    : "hover:bg-gray-100"
+                    }`}
                   onClick={() => handleChatSelect(chat)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                    <div className="h-10 w-10 dark:bg-gray-700 bg-gray-300 rounded-full flex items-center justify-center">
                       {otherParticipant?.profile.avatar ? (
                         <img
                           src={otherParticipant.profile.avatar}
@@ -390,7 +388,7 @@ const Chat = () => {
                   onClick={() => createChatWithConnection(connection)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                    <div className="h-10 w-10 bg-gray-300 dark:bg-neutral-800 rounded-full flex items-center justify-center">
                       {connection?.profile.avatar ? (
                         <img
                           src={connection.profile.avatar}
@@ -438,7 +436,7 @@ const Chat = () => {
         {selectedChat ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 bg-white border-b border-gray-200">
+            <div className="p-4 bg-white dark:bg-neutral-800 border-b border-gray-200">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
                   {getOtherParticipant(selectedChat)?.profile.avatar ? (
@@ -480,22 +478,19 @@ const Chat = () => {
                     return (
                       <div
                         key={message._id}
-                        className={`flex ${
-                          isOwn ? "justify-end" : "justify-start"
-                        }`}
+                        className={`flex ${isOwn ? "justify-end" : "justify-start"
+                          }`}
                       >
                         <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                            isOwn
-                              ? "bg-blue-500 text-white"
-                              : "bg-gray-200 text-gray-900"
-                          }`}
+                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isOwn
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-200 text-gray-900"
+                            }`}
                         >
                           <p>{message.content}</p>
                           <p
-                            className={`text-xs mt-1 ${
-                              isOwn ? "text-blue-100" : "text-gray-500"
-                            }`}
+                            className={`text-xs mt-1 ${isOwn ? "text-blue-100" : "text-gray-500"
+                              }`}
                           >
                             {formatTime(message.createdAt)}
                           </p>
@@ -529,10 +524,10 @@ const Chat = () => {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
+          <div className="flex-1 flex items-center justify-center dark:bg-neutral-800 bg-gray-50">
             <div className="text-center">
-              <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
+              <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-whtie" />
+              <h3 className="text-xl font-medium text-gray-900 mb-2 dark:text-white">
                 Welcome to Chat
               </h3>
               <p className="text-gray-500">

@@ -1,6 +1,4 @@
 {
-  "chat": "Sohbet",
-  "wave": "Dalga",
   "reset_password": "Şifreni sıfırla",
   "forgot_password": "Şifreni mi unuttun?",
   "email_address": "E-posta adresi",
@@ -28,7 +26,6 @@
   "discover": "Keşfet",
   "messages": "Mesajlar",
   "create_account": "Hesabını oluştur ve eşsiz platformumuza katıl.",
-  "chat_wave": "Sohbet Dalgası",
   "connect_instantly": "Anında Bağlantı",
   "real_time_messaging": "Arkadaşlarla anlık mesajlaşma",
   "secure_private": "Güvenli ve Özel",
@@ -263,8 +260,7 @@
   "account.enable2faBtn": "2FA'yı Etkinleştir",
   "account.loginSessionsTitle": "Giriş Oturumları",
   "account.loginSessionsDesc": "Aktif giriş oturumlarınızı yönetin",
-  "account.viewSessionsBtn": "Oturumları Görüntüle"
-  ,
+  "account.viewSessionsBtn": "Oturumları Görüntüle",
   "changePassword.title": "Şifreyi Değiştir",
   "changePassword.notAvailable": "Şifre Kullanılamıyor",
   "changePassword.providerInfo": "{provider} ile kaydoldunuz. Şifre değişiklikleri {provider} hesabınız üzerinden yönetilir.",
@@ -284,5 +280,21 @@
   "changePassword.update": "Şifreyi Güncelle",
   "changePassword.cancel": "İptal",
   "account.minHobbiesError": "Lütfen en az 3 hobi seçin.",
-  "500_characters": "Her alan için maksimum 500 karakter"
+  "500_characters": "Her alan için maksimum 500 karakter",
+  "feed_filter_hobbies": "Hobiler",
+  "feed_filter_countries": "Ülkeler",
+  "feed_filter_clear": "Filtreleri Temizle",
+  "feed_filter_apply": "Filtreleri Uygula",
+  "feed_filter_no_hobbies": "Hobi seçilmedi",
+  "feed_filter_no_countries": "Ülke seçilmedi",
+  "feed_filter_no_results": "Filtrelere uygun kullanıcı bulunamadı",
+  "feed_filter_apply_success": "Filtreler başarıyla uygulandı",
+  "feed_filter_apply_failed": "Filtreler uygulanamadı",
+  "feed_filter_reset": "Filtreler sıfırlandı",
+  "feed_filter_reset_success": "Filtreler başarıyla sıfırlandı",
+  "feed_filter_reset_failed": "Filtreler sıfırlanamadı",
+  "feed_filter_hobbies_placeholder": "Hobileri seçin",
+  "feed_filter_countries_placeholder": "Ülkeleri seçin",
+  "feed_filter_hobbies_required": "Lütfen en az 3 hobi seçin",
+  "settings_language_en_full": "İngilizce"
 }

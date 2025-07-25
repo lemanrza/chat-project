@@ -25,7 +25,7 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
   // If userData is null, show loading or return early
   if (!userData) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm border border-gray-200">
         <h3 className="text-xl font-semibold text-gray-900 mb-6">
           {t("changePassword.title")}
         </h3>
@@ -133,8 +133,8 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
   if (userData?.provider !== "local") {
     const providerName = userData?.provider === "google" ? "Google" : "GitHub";
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <h3 className="text-xl font-semibold text-gray-900 mb-6">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm border border-gray-200">
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
           {t("changePassword.title")}
         </h3>
         <div className="text-center py-8">
@@ -153,14 +153,14 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
               />
             </svg>
           </div>
-          <h4 className="text-lg font-medium text-gray-900 mb-2">
+          <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             {t("changePassword.notAvailable")}
           </h4>
           <p className="text-gray-500 mb-4">
             {t("changePassword.providerInfo", { provider: providerName })}
           </p>
           <button
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg dark:text-white hover:bg-gray-50 transition-colors"
             onClick={() =>
               window.open(
                 userData?.provider === "google"
@@ -250,11 +250,11 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
             isSameAsCurrentPassword
           }
           className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 ${isChangingPassword ||
-              !passwordValidation.isValid ||
-              !passwordsMatch ||
-              isSameAsCurrentPassword
-              ? "bg-gray-400 cursor-not-allowed text-white"
-              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
+            !passwordValidation.isValid ||
+            !passwordsMatch ||
+            isSameAsCurrentPassword
+            ? "bg-gray-400 cursor-not-allowed text-white"
+            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
             }`}
         >
           {isChangingPassword ? (

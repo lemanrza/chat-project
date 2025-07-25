@@ -81,27 +81,24 @@ const Privacy = ({
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-6">
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-neutral-700 space-y-6">
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
         {t("privacy_settings", "Privacy Settings")}
       </h3>
 
       {/* Profile Visibility */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-6">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-neutral-700 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <Eye className="text-gray-600" size={20} />
+            <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-700 rounded-xl flex items-center justify-center">
+              <Eye className="text-gray-600 dark:text-gray-300" size={20} />
             </div>
             <div>
-              <div className="font-medium text-gray-900">
+              <div className="font-medium text-gray-900 dark:text-white">
                 {t("profile_visibility", "Profile Visibility")}
               </div>
-              <div className="text-sm text-gray-500">
-                {t(
-                  "control_who_can_see_profile",
-                  "Control who can see your profile"
-                )}
+              <div className="text-sm text-gray-500 dark:text-neutral-400">
+                {t("control_who_can_see_profile", "Control who can see your profile")}
               </div>
             </div>
           </div>
@@ -117,34 +114,29 @@ const Privacy = ({
                 )
               }
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B878]"></div>
+            <div className="w-11 h-6 bg-gray-200 dark:bg-neutral-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B878]"></div>
           </label>
         </div>
 
         {/* Message Privacy */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <MessageCircle className="text-gray-600" size={20} />
+            <div className="w-10 h-10 bg-gray-100 dark:bg-neutral-700 rounded-xl flex items-center justify-center">
+              <MessageCircle className="text-gray-600 dark:text-gray-300" size={20} />
             </div>
             <div>
-              <div className="font-medium text-gray-900">
+              <div className="font-medium text-gray-900 dark:text-white">
                 {t("message_privacy", "Message Privacy")}
               </div>
-              <div className="text-sm text-gray-500">
-                {t(
-                  "control_who_can_send_messages",
-                  "Control who can send you messages"
-                )}
+              <div className="text-sm text-gray-500 dark:text-neutral-400">
+                {t("control_who_can_send_messages", "Control who can send you messages")}
               </div>
             </div>
           </div>
           <select
             value={formData.messagePrivacy || "everyone"}
-            onChange={(e) =>
-              handleInputChange("messagePrivacy", e.target.value)
-            }
-            className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+            onChange={(e) => handleInputChange("messagePrivacy", e.target.value)}
+            className="px-4 py-2 border border-gray-200 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             <option value="everyone">{t("everyone", "Everyone")}</option>
             <option value="friends">{t("friends_only", "Friends Only")}</option>
@@ -158,52 +150,25 @@ const Privacy = ({
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-            isSaving
-              ? "bg-gray-400 cursor-not-allowed text-white"
-              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
-          }`}
+          className={`px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
+            ? "bg-gray-400 dark:bg-neutral-600 cursor-not-allowed text-white"
+            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
+            }`}
         >
           {isSaving ? (
             <span className="flex items-center">
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Saving...
+              {t("saving", "Saving...")}
             </span>
           ) : (
             <>
-              <svg
-                className="w-5 h-5 mr-2 inline"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
+              <svg className="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Save Changes
+              {t("save_changes", "Save Changes")}
             </>
           )}
         </button>
