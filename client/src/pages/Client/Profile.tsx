@@ -8,6 +8,7 @@ import Overview from "@/components/Profile/Overview";
 import Navigation from "@/components/Profile/Navigation";
 import Settings from "@/components/Profile/Settings";
 import { getUserIdFromToken, isTokenExpired } from "@/utils/auth";
+import type { FormData } from "@/types/profileType";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -15,7 +16,7 @@ const Profile = () => {
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
     email: "",
@@ -31,14 +32,12 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Check if token is expired first
         if (isTokenExpired()) {
           localStorage.removeItem("token");
           window.location.href = "/auth/login";
           return;
         }
 
-        // Get user ID from token
         const userId = getUserIdFromToken();
         if (!userId) {
           console.log("No user ID found in token, redirecting to login...");
@@ -47,11 +46,7 @@ const Profile = () => {
           return;
         }
 
-        // Use the new endpoint format: /auth/me/:userId
-        const response = await controller.getOne(
-          `${endpoints.users}/me`,
-          userId
-        );
+        const response = await controller.getOne(`${endpoints.users}/me`, userId);
         setUserData(response.data);
 
         setFormData({
@@ -63,7 +58,7 @@ const Profile = () => {
           hobbies: response.data.hobbies || [],
           connections: response.data.connections || [],
           connectionsRequests: response.data.connectionsRequests || [],
-          profileVisibility: response.data.profileVisibility || "public"
+          profileVisibility: (response.data.profileVisibility as "public" | "private") || "public",
         });
       } catch (error: any) {
         console.error("Error fetching user data:", error);
@@ -129,7 +124,6 @@ const Profile = () => {
       const uploadFormData = new FormData();
       uploadFormData.append("avatar", file);
 
-      // Get user ID from token for the API call
       const userId = getUserIdFromToken();
       if (!userId) {
         throw new Error("User ID not found");
@@ -203,7 +197,6 @@ const Profile = () => {
     try {
       setIsUploadingImage(true);
 
-      // Get user ID from token for the API call
       const userId = getUserIdFromToken();
       if (!userId) {
         throw new Error("User ID not found");
@@ -279,18 +272,14 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen  flex">
-      {/* Main Content */}
+    <div className="min-h-screen flex">
       <div className="flex-1 p-8">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold">Profile</h1>
         </div>
 
-        {/* Profile Card */}
         <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
           <div className="flex items-start gap-6">
-            {/* Avatar */}
             <div className="relative group">
               <div
                 className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold overflow-hidden transition-all duration-200 group-hover:shadow-xl group-hover:scale-[1.02] mx-auto"
@@ -310,7 +299,7 @@ const Profile = () => {
                   />
                 ) : (
                   userData?.profile?.firstName?.charAt(0) +
-                    userData?.profile?.lastName?.charAt(0) || "U"
+                  userData?.profile?.lastName?.charAt(0) || "U"
                 )}
               </div>
 
@@ -322,9 +311,7 @@ const Profile = () => {
                 className="hidden"
               />
 
-              {/* Action Buttons - Below the avatar */}
               <div className="mt-3 flex flex-col items-center gap-2">
-                {/* Upload Button */}
                 <button
                   className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
                     isUploadingImage
@@ -357,10 +344,9 @@ const Profile = () => {
                   )}
                 </button>
 
-                {/* Delete Button - only show if user has custom avatar */}
                 {userData?.profile?.avatar &&
                   userData.profile.avatar !==
-                    "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
+                  "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
                   !imagePreview && (
                     <button
                       className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
@@ -399,7 +385,6 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Profile Info */}
             <div className="flex-1">
               <h2 className="text-3xl font-semibold text-gray-900 mb-1">
                 {userData?.profile?.displayName ||
@@ -410,7 +395,6 @@ const Profile = () => {
                 {formData.bio || "No bio available"}
               </p>
 
-              {/* Location and Join Date */}
               <div className="flex items-center gap-6 text-gray-500 text-sm mb-6">
                 <div className="flex items-center gap-1">
                   <span>📍</span>
@@ -428,7 +412,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Stats */}
               <div className="flex items-center gap-8">
                 <div>
                   <span className="text-2xl font-bold text-gray-900">
@@ -445,15 +428,21 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Tab Navigation */}
         <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {/* Tab Content */}
-        {activeTab === "overview" && <Overview />}
+        {activeTab === "overview" && <Overview formData={formData} setFormData={setFormData} userData={userData} />}
 
         {activeTab === "settings" && <Settings />}
 
-        {activeTab === "privacy" && <Privacy />}
+        {activeTab === "privacy" && (
+          <Privacy
+            userData={userData}
+            setUserData={setUserData}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            setFormData={setFormData} // Pass setFormData to Privacy
+          />
+        )}
 
         {activeTab === "account" && (
           <Account

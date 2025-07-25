@@ -17,6 +17,7 @@ import {
   addUserConnection,
   removeUserConnection,
   getAvailableUsersToConnect,
+  updateUserController,
 } from "../controllers/userController.js";
 import userValidate from "../middlewares/userValidate.js";
 
@@ -48,6 +49,7 @@ userRouter.delete(
 );
 
 userRouter.get("/:id", getUserById);
+userRouter.put("/update/:id", updateUserController);
 userRouter.delete("/:id", deleteUser);
 
 export default userRouter;

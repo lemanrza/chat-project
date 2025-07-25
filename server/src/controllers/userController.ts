@@ -25,11 +25,7 @@ import cloudinary from "../config/cloudinaryConfig.js";
 import config from "../config/config.js";
 import multer from "multer";
 import path from "path";
-import {
-  AuthenticatedMulterRequest,
-  AuthenticatedRequest,
-  MulterRequest,
-} from "../types/userType.js";
+import { AuthenticatedRequest, MulterRequest } from "../types/userType.js";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -870,5 +866,31 @@ export const getAvailableUsersToConnect = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const updateUserController = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const payload = req.body;
+
+    const result = await updateUser(userId, payload);
+
+    if (!result.success) {
+      return res.status(404).json({
+        success: false,
+        message: result.message,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result.data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error",
+    });
   }
 };
