@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 import endpoints from "@/services/api";
 import controller from "@/services/commonRequest";
 import type { UserData } from "@/types/profileType";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
 import type { UserState } from "@/features/userSlice";
+import { addConnection } from "@/features/userSlice";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import {
@@ -27,6 +28,7 @@ interface Tab {
 
 const Feed = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user) as UserState;
 
   const [activeTab, setActiveTab] = useState("discover");
@@ -90,18 +92,6 @@ const Feed = () => {
     try {
       const isAlreadyConnected = user.connections.includes(targetUserId);
 
-      // 🔍 Doğru endpoint və cavab strukturuna əsasən istifadəçini alırıq
-      const targetUserResponse = await controller.getOne(
-        endpoints.users,
-        targetUserId
-      );
-      const targetUser = targetUserResponse.data; // <-- Əsas düzəliş buradadır
-
-      console.log("Target user:", targetUser);
-
-      const isRequestPending =
-        targetUser.connectionsRequests?.includes(user.id) || false;
-
       if (isAlreadyConnected) {
         enqueueSnackbar("Already connected with this user", {
           variant: "info",
@@ -111,33 +101,48 @@ const Feed = () => {
         return;
       }
 
-      if (isRequestPending) {
-        enqueueSnackbar("Connection request is already pending", {
-          variant: "info",
+      // Use the new connection API that handles public/private profiles
+      const response = await controller.post(`${endpoints.users}/me/${user.id}/connections`, {
+        connectionId: targetUserId,
+      });
+
+      console.log("Connection response:", response);
+
+      // Handle different response types
+      if (response.data.type === 'connected') {
+        // Public profile - immediate connection
+        enqueueSnackbar("Connected successfully!", {
+          variant: "success",
           autoHideDuration: 2000,
           anchorOrigin: { vertical: "bottom", horizontal: "right" },
         });
-        return;
+        
+        // Update Redux state to reflect the new connection
+        dispatch(addConnection(targetUserId));
+      } else if (response.data.type === 'request_sent') {
+        // Private profile - request sent
+        enqueueSnackbar("Connection request sent! Waiting for approval.", {
+          variant: "info",
+          autoHideDuration: 3000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
+      } else {
+        // Default success message
+        enqueueSnackbar(response.data.message || "Connection request processed!", {
+          variant: "success",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
       }
-
-      await controller.update(`${endpoints.users}/update/${targetUserId}`, "", {
-        connectionsRequests: [
-          ...(targetUser.connectionsRequests || []),
-          user.id,
-        ],
-      });
-
-      enqueueSnackbar("Connection request sent!", {
-        variant: "success",
-        autoHideDuration: 2000,
-        anchorOrigin: { vertical: "bottom", horizontal: "right" },
-      });
     } catch (error: any) {
       console.error("Error sending connection request:", error);
+      
       let errorMessage = "Failed to send connection request";
-
-      if (error.response?.status === 404) {
-        errorMessage = "User not found or invalid endpoint";
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 404) {
+        errorMessage = "User not found";
       } else if (error.response?.status === 401) {
         errorMessage = "Unauthorized: Please log in again";
         localStorage.removeItem("token");
@@ -198,10 +203,9 @@ const Feed = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
-                  ${
-                    activeTab === tab.id
-                      ? "shadow-md scale-105 text-[#00B878]"
-                      : "bg-transparent text-gray-700 hover:bg-gray-100"
+                  ${activeTab === tab.id
+                    ? "shadow-md scale-105 text-[#00B878]"
+                    : "bg-transparent text-gray-700 hover:bg-gray-100"
                   }`}
                 style={
                   activeTab === tab.id ? { backgroundColor: "#00B878" } : {}
@@ -238,15 +242,43 @@ const Feed = () => {
         {/* User Grid */}
         <div className="flex-1 overflow-auto p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredUsers.map((user) => {
-              const isAlreadyConnected = user.connections.includes(user.id);
-              const isRequestPending = user.connectionsRequests?.includes(
-                user.id
-              );
+            {filteredUsers.map((userData) => {
+              // Handle connections as either string[] or UserData[]
+              const userConnections = Array.isArray(user.connections) 
+                ? user.connections.map(conn => typeof conn === 'string' ? conn : (conn as UserData).id)
+                : [];
+              
+              const isAlreadyConnected = userConnections.includes(userData.id);
+              
+              // Check if current user has sent a request to this target user
+              // This means the target user's connectionsRequests should contain current user's ID
+              const targetUserConnectionRequests = Array.isArray(userData.connectionsRequests)
+                ? userData.connectionsRequests.map(req => typeof req === 'string' ? req : (req as UserData).id)
+                : [];
+                
+              const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
+
+              // Handle click for connected button
+              const handleConnectedClick = () => {
+                enqueueSnackbar("You are already connected with this user", {
+                  variant: "info",
+                  autoHideDuration: 2000,
+                  anchorOrigin: { vertical: "bottom", horizontal: "right" },
+                });
+              };
+
+              // Handle click for pending button
+              const handlePendingClick = () => {
+                enqueueSnackbar("Connection request is pending approval", {
+                  variant: "info",
+                  autoHideDuration: 2000,
+                  anchorOrigin: { vertical: "bottom", horizontal: "right" },
+                });
+              };
 
               return (
                 <div
-                  key={user.id}
+                  key={userData.id}
                   className="rounded-2xl p-6 bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200 group"
                 >
                   {/* User Avatar and Status */}
@@ -258,11 +290,11 @@ const Feed = () => {
                       >
                         <img
                           className="rounded-full"
-                          src={user.profile?.avatar}
-                          alt={user.profile?.firstName}
+                          src={userData.profile?.avatar}
+                          alt={userData.profile?.firstName}
                         />
                       </div>
-                      {user.isOnline && (
+                      {userData.isOnline && (
                         <div
                           className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full"
                           style={{ backgroundColor: "#00B878" }}
@@ -277,10 +309,10 @@ const Feed = () => {
                       className="font-bold text-lg mb-1"
                       style={{ color: "#374151" }}
                     >
-                      {user.profile?.firstName} {user.profile?.lastName}
+                      {userData.profile?.firstName} {userData.profile?.lastName}
                     </h3>
                     <p className="text-sm mb-3" style={{ color: "#6B7280" }}>
-                      {user.username}
+                      {userData.username}
                     </p>
 
                     {/* Location and Connections */}
@@ -290,7 +322,7 @@ const Feed = () => {
                         style={{ color: "#6B7280" }}
                       >
                         <MapPin className="w-4 h-4 mr-2" />
-                        <span>{user.profile?.location}</span>
+                        <span>{userData.profile?.location}</span>
                       </div>
                       <div
                         className="flex items-center text-sm"
@@ -299,7 +331,7 @@ const Feed = () => {
                         <Users className="w-4 h-4 mr-2" />
                         <span>
                           {t("feed_connections", {
-                            count: user.connections.length,
+                            count: userData.connections.length,
                           })}
                         </span>
                       </div>
@@ -310,12 +342,12 @@ const Feed = () => {
                       className="text-sm mb-4 leading-relaxed"
                       style={{ color: "#6B7280" }}
                     >
-                      {user.profile?.bio}
+                      {userData.profile?.bio}
                     </p>
 
                     {/* Interests */}
                     <div className="flex flex-wrap gap-2 mb-6">
-                      {user.hobbies?.map((interest, index) => (
+                      {userData.hobbies?.map((interest, index) => (
                         <span
                           key={index}
                           className="px-3 py-1 text-sm rounded-full font-medium"
@@ -334,21 +366,21 @@ const Feed = () => {
                   <div className="flex gap-3">
                     {isAlreadyConnected ? (
                       <button
-                        disabled
-                        className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-green-600 cursor-not-allowed"
+                        onClick={handleConnectedClick}
+                        className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-green-600 hover:bg-green-700 transition-colors cursor-pointer"
                       >
                         <Check /> {t("feed_connected")}
                       </button>
                     ) : isRequestPending ? (
                       <button
-                        disabled
-                        className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-gray-400 cursor-not-allowed"
+                        onClick={handlePendingClick}
+                        className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors cursor-pointer"
                       >
                         <Clock /> {t("feed_pending")}
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleConnect(user.id)}
+                        onClick={() => userData.id && handleConnect(userData.id)}
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-[#00B878] hover:bg-[#00a76d] cursor-pointer"
                       >
                         <UserPlus
@@ -359,7 +391,7 @@ const Feed = () => {
                       </button>
                     )}
                     <button
-                      onClick={() => handleMessage(user.id)}
+                      onClick={() => userData.id && handleMessage(userData.id)}
                       className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-all shadow"
                     >
                       <MessageCircle className="w-4 h-4" />

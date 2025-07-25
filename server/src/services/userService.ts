@@ -28,32 +28,122 @@ export const getAll = async () =>
     });
 
 export const getOne = async (id: any) =>
-  await UserModel.findById(id).select("-password");
+  await UserModel.findById(id).select("-password").populate('connectionsRequests').populate('connections');
 
 export const getOneWithConnections = async (id: any) =>
   await UserModel.findById(id).select("-password").populate({
     path: "connections",
     select: "-password",
+  }).populate({
+    path: "connectionsRequests",
+    select: "-password",
   });
 
+// Add a connection between two users (handles both public and private profiles)
 export const addConnection = async (userId: string, connectionId: string) => {
   try {
+    // Get the target user to check profile visibility
+    const targetUser = await UserModel.findById(connectionId).select('profileVisibility connectionsRequests connections');
+    
+    if (!targetUser) {
+      return {
+        success: false,
+        message: "Target user not found",
+      };
+    }
+
+    // Check if already connected (convert to string for comparison)
+    if (targetUser.connections.some(conn => conn.toString() === userId)) {
+      return {
+        success: false,
+        message: "Already connected to this user",
+      };
+    }
+
+    // Check if request already sent (convert to string for comparison)
+    if (targetUser.connectionsRequests.some(req => req.toString() === userId)) {
+      return {
+        success: false,
+        message: "Connection request already sent",
+      };
+    }
+
+    if (targetUser.profileVisibility === 'public') {
+      // For public profiles, connect immediately
+      await UserModel.findByIdAndUpdate(userId, {
+        $addToSet: { connections: connectionId },
+      });
+
+      await UserModel.findByIdAndUpdate(connectionId, {
+        $addToSet: { connections: userId },
+      });
+
+      return {
+        success: true,
+        message: "Connected successfully",
+        type: 'connected'
+      };
+    } else {
+      // For private profiles, send connection request
+      await UserModel.findByIdAndUpdate(connectionId, {
+        $addToSet: { connectionsRequests: userId },
+      });
+
+      return {
+        success: true,
+        message: "Connection request sent",
+        type: 'request_sent'
+      };
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || "Failed to add connection",
+    };
+  }
+};
+
+// Accept a connection request
+export const acceptConnectionRequest = async (userId: string, requesterId: string) => {
+  try {
+    // Add connection to both users
     await UserModel.findByIdAndUpdate(userId, {
-      $addToSet: { connections: connectionId },
+      $addToSet: { connections: requesterId },
+      $pull: { connectionsRequests: requesterId },
     });
 
-    await UserModel.findByIdAndUpdate(connectionId, {
+    await UserModel.findByIdAndUpdate(requesterId, {
       $addToSet: { connections: userId },
     });
 
     return {
       success: true,
-      message: "Connection added successfully",
+      message: "Connection request accepted",
     };
   } catch (error: any) {
     return {
       success: false,
-      message: error.message || "Failed to add connection",
+      message: error.message || "Failed to accept connection request",
+    };
+  }
+};
+
+// Reject a connection request
+export const rejectConnectionRequest = async (userId: string, requesterId: string) => {
+  try {
+    // Remove the request from connectionsRequests
+    await UserModel.findByIdAndUpdate(userId, {
+      $pull: { connectionsRequests: requesterId },
+    });
+
+    return {
+      success: true,
+      message: "Connection request rejected",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || "Failed to reject connection request",
     };
   }
 };
@@ -134,13 +224,32 @@ export const deleteUser = async (id: string) => {
 
 export const updateUser = async (id: string, payload: any) => {
   try {
-    const user = await UserModel.findByIdAndUpdate(id, payload, { new: true });
+    const user = await UserModel.findById(id);
     if (!user) {
       return {
         success: false,
         message: "User not found",
       };
     }
+
+    // Handle connectionsRequests specifically (append to existing array)
+    if (payload.connectionsRequests) {
+      const updatedConnectionsRequests = [
+        ...user.connectionsRequests,
+        ...payload.connectionsRequests, // Expecting array of user IDs
+      ];
+      user.connectionsRequests = updatedConnectionsRequests;
+      delete payload.connectionsRequests; // Remove from payload to avoid overwriting
+    }
+
+    // Update all other fields from payload
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] !== undefined) {
+        (user as any)[key] = payload[key];
+      }
+    });
+
+    await user.save();
     return {
       success: true,
       data: user,
