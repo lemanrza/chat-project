@@ -105,7 +105,7 @@ const PersonalInformations = ({
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [locationSearch, setLocationSearch] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
-
+  const { t } = useTranslation();
   useEffect(() => {
     if (userData?.hobbies) {
       setSelectedHobbies(userData.hobbies);
@@ -375,11 +375,10 @@ const PersonalInformations = ({
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-            isSaving
-              ? "bg-gray-400 cursor-not-allowed text-white"
-              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
-          }`}
+          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
+            ? "bg-gray-400 cursor-not-allowed text-white"
+            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
+            }`}
         >
           {isSaving ? (
             <span className="flex items-center">
