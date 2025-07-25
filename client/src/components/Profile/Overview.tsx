@@ -11,38 +11,9 @@ interface OverviewProps {
 }
 
 const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
-  const [connectionRequests, setConnectionRequests] = useState<ConnectionRequest[]>([]);
-  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
-
-  // Fetch details for users in connectionsRequests
-  useEffect(() => {
-    const fetchConnectionRequests = async () => {
-      if (!formData.connectionsRequests.length) {
-        setConnectionRequests([]);
-        return;
-      }
-
-      setIsLoadingRequests(true);
-      try {
-        const requests = await Promise.all(
-          formData.connectionsRequests.map(async (userId: string) => {
-            const response = await controller.getOne(`${endpoints.users}/me`, userId);
-            const user = response.data;
-            return {
-              id: user.id,
-              firstName: user.profile?.firstName || "Unknown",
-              lastName: user.profile?.lastName || "",
-              avatar: user.profile?.avatar || "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png",
-            };
-          })
-        );
-        setConnectionRequests(requests);
-      } catch (error) {
-        console.error("Error fetching connection requests:", error);
-        enqueueSnackbar("Failed to load connection requests", {
   // Since userData.connectionsRequests are now populated user objects, we can use them directly
   const connectionRequests = userData?.connectionsRequests || [];
-  
+
   // Debug logs to see what we're actually getting
   console.log("=== OVERVIEW DEBUG ===");
   console.log("userData:", userData);
@@ -52,11 +23,14 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
   console.log("connectionRequests length:", connectionRequests.length);
   if (connectionRequests.length > 0) {
     console.log("First connection request:", connectionRequests[0]);
-    console.log("First request keys:", Object.keys(connectionRequests[0] || {}));
+    console.log(
+      "First request keys:",
+      Object.keys(connectionRequests[0] || {})
+    );
   }
   console.log("formData:", formData);
   console.log("=== END DEBUG ===");
-  
+
   // Handle accepting a connection request
   const handleAcceptRequest = async (requestUser: any) => {
     try {
@@ -77,11 +51,14 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
       // Get the request user ID from different possible locations
       const requestUserId = requestUser?.id || requestUser?._id || requestUser;
-      
+
       // Use the new accept endpoint
-      const response = await controller.post(`${endpoints.users}/me/${currentUserId}/connections/accept`, {
-        requesterId: requestUserId,
-      });
+      const response = await controller.post(
+        `${endpoints.users}/me/${currentUserId}/connections/accept`,
+        {
+          requesterId: requestUserId,
+        }
+      );
 
       console.log("Accept response:", response);
 
@@ -90,12 +67,14 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
         const reqId = req?.id || req?._id || req;
         return reqId !== requestUserId;
       });
-      
+
       // Update formData locally
       setFormData((prev) => ({
         ...prev,
         connections: [...prev.connections, requestUserId],
-        connectionsRequests: updatedRequests.map((req: any) => req?.id || req?._id || req),
+        connectionsRequests: updatedRequests.map(
+          (req: any) => req?.id || req?._id || req
+        ),
       }));
 
       enqueueSnackbar("Connection request accepted!", {
@@ -106,11 +85,14 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
     } catch (error: any) {
       console.error("Error accepting connection request:", error);
       console.error("Error details:", error.response?.data);
-      enqueueSnackbar(error.response?.data?.message || "Failed to accept connection request", {
-        variant: "error",
-        autoHideDuration: 2000,
-        anchorOrigin: { vertical: "bottom", horizontal: "right" },
-      });
+      enqueueSnackbar(
+        error.response?.data?.message || "Failed to accept connection request",
+        {
+          variant: "error",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        }
+      );
     }
   };
 
@@ -135,9 +117,12 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
       const requestUserId = requestUser?.id || requestUser?._id || requestUser;
 
       // Use the new reject endpoint
-      const response = await controller.post(`${endpoints.users}/me/${currentUserId}/connections/reject`, {
-        requesterId: requestUserId,
-      });
+      const response = await controller.post(
+        `${endpoints.users}/me/${currentUserId}/connections/reject`,
+        {
+          requesterId: requestUserId,
+        }
+      );
 
       console.log("Reject response:", response);
 
@@ -146,8 +131,10 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
         const reqId = req?.id || req?._id || req;
         return reqId !== requestUserId;
       });
-      
-      const updatedRequestIds = updatedRequests.map((req: any) => req?.id || req?._id || req);
+
+      const updatedRequestIds = updatedRequests.map(
+        (req: any) => req?.id || req?._id || req
+      );
 
       // Update formData locally
       setFormData((prev) => ({
@@ -163,11 +150,14 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
     } catch (error: any) {
       console.error("Error rejecting connection request:", error);
       console.error("Error details:", error.response?.data);
-      enqueueSnackbar(error.response?.data?.message || "Failed to reject connection request", {
-        variant: "error",
-        autoHideDuration: 2000,
-        anchorOrigin: { vertical: "bottom", horizontal: "right" },
-      });
+      enqueueSnackbar(
+        error.response?.data?.message || "Failed to reject connection request",
+        {
+          variant: "error",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        }
+      );
     }
   };
 
@@ -177,7 +167,10 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
       <div className="grid grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "#E6FAF3" }}>
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ background: "#E6FAF3" }}
+            >
               <MessageCircle size={24} style={{ color: "#00B878" }} />
             </div>
             <div>
@@ -193,7 +186,9 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
               <Users className="text-blue-600" size={24} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">{formData.connections.length}</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {formData.connections.length}
+              </div>
               <div className="text-gray-500 text-sm">Connections</div>
             </div>
           </div>
@@ -214,10 +209,15 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
       {/* Quick Actions */}
       <div className="col-span-9">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Quick Actions
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style={{ background: "#E6FAF3" }}>
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
+              style={{ background: "#E6FAF3" }}
+            >
               <MessageCircle size={24} style={{ color: "#00B878" }} />
             </div>
             <div className="font-medium text-gray-900 mb-1">New Chat</div>
@@ -248,7 +248,9 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
 
       {/* Connection Requests */}
       <div className="mt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Connection Requests</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Connection Requests
+        </h3>
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           {connectionRequests.length === 0 ? (
             <div className="text-center py-6">
@@ -256,27 +258,43 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
             </div>
           ) : (
             connectionRequests.map((request: any, index: number) => {
-              console.log("Processing connection request:", request, "Type:", typeof request);
-              
+              console.log(
+                "Processing connection request:",
+                request,
+                "Type:",
+                typeof request
+              );
+
               // Handle different data structures
               const requestId = request?.id || request?._id || request;
               let isUserObject = false;
               let firstName = "Unknown";
               let lastName = "";
-              let avatar = "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png";
+              let avatar =
+                "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png";
 
-              if (request && typeof request === 'object') {
+              if (request && typeof request === "object") {
                 isUserObject = true;
                 // Try different property paths for name
-                firstName = request.firstName || request.profile?.firstName || 'Unknown';
-                lastName = request.lastName || request.profile?.lastName || '';
+                firstName =
+                  request.firstName || request.profile?.firstName || "Unknown";
+                lastName = request.lastName || request.profile?.lastName || "";
                 avatar = request.avatar || request.profile?.avatar || avatar;
               }
-              
-              console.log("Rendering request:", { request, isUserObject, requestId, firstName, lastName });
-              
+
+              console.log("Rendering request:", {
+                request,
+                isUserObject,
+                requestId,
+                firstName,
+                lastName,
+              });
+
               return (
-                <div key={requestId || index} className="flex items-center justify-between mb-4 last:mb-0">
+                <div
+                  key={requestId || index}
+                  className="flex items-center justify-between mb-4 last:mb-0"
+                >
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 rounded-full overflow-hidden">
                       <img
@@ -287,9 +305,13 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">
-                        {isUserObject ? `${firstName} ${lastName}`.trim() : `User ID: ${requestId}`}
+                        {isUserObject
+                          ? `${firstName} ${lastName}`.trim()
+                          : `User ID: ${requestId}`}
                       </div>
-                      <div className="text-sm text-gray-500">Sent you a connection request</div>
+                      <div className="text-sm text-gray-500">
+                        Sent you a connection request
+                      </div>
                     </div>
                   </div>
                   <div className="space-x-2">
