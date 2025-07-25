@@ -78,9 +78,6 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
         const reqId = req?.id || req?._id || req;
         return reqId !== requestUserId;
       });
-      const updatedRequestIds = updatedRequests.map(
-        (req: any) => req?.id || req?._id || req
-      );
 
       setFormData((prev) => ({
         ...prev,

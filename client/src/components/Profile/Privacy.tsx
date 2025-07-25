@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { MessageCircle, Eye } from "lucide-react";
-
-import { useTranslation } from "react-i18next";
 import { enqueueSnackbar } from "notistack";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
@@ -23,7 +21,6 @@ const Privacy = ({
   handleInputChange,
   setFormData,
 }: PrivacyProps) => {
-  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveChanges = async () => {
@@ -76,28 +73,24 @@ const Privacy = ({
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-6">
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">
-        {t("privacy_settings", "Privacy Settings")}
-      </h3>
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+      <h3 className="text-xl font-semibold text-gray-900 mb-6">Privacy Settings</h3>
+
       <div className="space-y-6">
-      {/* Profile Visibility */}
+        {/* Profile Visibility */}
+        {/* Profile Visibility */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-            <Eye className="text-gray-600" size={20} />
-          </div>
-          <div>
-            <div className="font-medium text-gray-900">
-              {t("profile_visibility", "Profile Visibility")}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                <Eye className="text-gray-600" size={20} />
+              </div>
+              <div>
+                <div className="font-medium text-gray-900">Profile Visibility</div>
+                <div className="text-sm text-gray-500">Control who can see your profile</div>
+              </div>
             </div>
-            <div className="text-sm text-gray-500">
-              {t("control_who_can_see_profile", "Control who can see your profile")>   
-            </div>
-          </div>
-        </div>
-    <label className="relative inline-flex items-center cursor-pointer">
+            <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 className="sr-only peer"
@@ -111,32 +104,28 @@ const Privacy = ({
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B878]"></div>
             </label>
-      </div>
-
-      {/* Message Privacy */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-            <MessageCircle className="text-gray-600" size={20} />
-          </div>
-          <div>
-            <div className="font-medium text-gray-900">
-              {t("message_privacy", "Message Privacy")}
-            </div>
-            <div className="text-sm text-gray-500">
-              {t("control_who_can_send_messages", "Control who can send you messages")}
-            </div>
           </div>
         </div>
-        <select
-          value={formData.messagePrivacy || "everyone"}
-          onChange={(e) => handleInputChange("messagePrivacy", e.target.value)}
-          className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-          <option value="everyone">{t("everyone", "Everyone")}</option>
-          <option value="friends">{t("friends_only", "Friends Only")}</option>
-          <option value="none">{t("no_one", "No One")}</option>
-        </select>
+
+        {/* Message Privacy */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                <MessageCircle className="text-gray-600" size={20} />
+              </div>
+              <div>
+                <div className="font-medium text-gray-900">Message Privacy</div>
+                <div className="text-sm text-gray-500">Control who can send you messages</div>
+              </div>
+            </div>
+            <select className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+              <option value="everyone">Everyone</option>
+              <option value="friends">Friends Only</option>
+              <option value="none">No One</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* Save Button */}
@@ -144,9 +133,9 @@ const Privacy = ({
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
-              ? "bg-gray-400 cursor-not-allowed text-white"
-              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
+          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
+            ? "bg-gray-400 cursor-not-allowed text-white"
+            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
             }`}
         >
           {isSaving ? (
@@ -181,7 +170,12 @@ const Privacy = ({
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
               Save Changes
             </>
