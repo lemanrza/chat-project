@@ -11,6 +11,35 @@ interface OverviewProps {
 }
 
 const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
+  const [connectionRequests, setConnectionRequests] = useState<ConnectionRequest[]>([]);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+
+  // Fetch details for users in connectionsRequests
+  useEffect(() => {
+    const fetchConnectionRequests = async () => {
+      if (!formData.connectionsRequests.length) {
+        setConnectionRequests([]);
+        return;
+      }
+
+      setIsLoadingRequests(true);
+      try {
+        const requests = await Promise.all(
+          formData.connectionsRequests.map(async (userId: string) => {
+            const response = await controller.getOne(`${endpoints.users}/me`, userId);
+            const user = response.data;
+            return {
+              id: user.id,
+              firstName: user.profile?.firstName || "Unknown",
+              lastName: user.profile?.lastName || "",
+              avatar: user.profile?.avatar || "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png",
+            };
+          })
+        );
+        setConnectionRequests(requests);
+      } catch (error) {
+        console.error("Error fetching connection requests:", error);
+        enqueueSnackbar("Failed to load connection requests", {
   // Since userData.connectionsRequests are now populated user objects, we can use them directly
   const connectionRequests = userData?.connectionsRequests || [];
   

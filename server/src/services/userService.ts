@@ -15,15 +15,17 @@ const CLIENT_URL = config.CLIENT_URL;
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 10 * 60 * 1000;
 
-export const getAll = async () => {
-  return await UserModel.find().select("-password").populate({
-    path: "connections",
-    select: "-password",
-  }).populate({
-    path: "connectionsRequests",
-    select: "-password",
-  });
-};
+export const getAll = async () =>
+  await UserModel.find()
+    .select("-password")
+    .populate({
+      path: "connections",
+      select: "-password",
+    })
+    .populate({
+      path: "connectionsRequests",
+      select: "-password",
+    });
 
 export const getOne = async (id: any) =>
   await UserModel.findById(id).select("-password").populate('connectionsRequests').populate('connections');
@@ -146,13 +148,11 @@ export const rejectConnectionRequest = async (userId: string, requesterId: strin
   }
 };
 
-// Remove a connection between two users
 export const removeConnection = async (
   userId: string,
   connectionId: string
 ) => {
   try {
-    // Remove connection from both users
     await UserModel.findByIdAndUpdate(userId, {
       $pull: { connections: connectionId },
     });
@@ -173,7 +173,6 @@ export const removeConnection = async (
   }
 };
 
-// Get all users except current user and their connections
 export const getAvailableUsers = async (userId: string) => {
   try {
     const currentUser = await UserModel.findById(userId).select("connections");
