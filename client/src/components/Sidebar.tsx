@@ -64,28 +64,44 @@ const Sidebar = () => {
     );
   };
   const handleLogout = async () => {
-    const userId = getUserIdFromToken();
-    if (userId) {
-      await controller.update(`${endpoints.users}/me`, userId, {
-        isOnline: false,
+    try {
+      const userId = getUserIdFromToken(); // JWT token-dən userId-ni çıxar
+
+      if (userId) {
+        // İstifadəçini offline et
+        await controller.update(`${endpoints.users}/me`, userId, {
+          isOnline: false,
+        });
+      }
+
+      // Tokeni təmizlə
+      localStorage.removeItem("token");
+
+      // Uğurlu çıxış bildirişi
+      enqueueSnackbar("Logged out successfully", {
+        variant: "success",
+        autoHideDuration: 2000,
+        anchorOrigin: {
+          vertical: "bottom",
+          horizontal: "right",
+        },
+      });
+
+      // Login səhifəsinə yönləndir
+      window.location.href = "/auth/login";
+    } catch (error) {
+      console.error("Logout failed:", error);
+      enqueueSnackbar("Something went wrong during logout.", {
+        variant: "error",
+        autoHideDuration: 2000,
+        anchorOrigin: {
+          vertical: "bottom",
+          horizontal: "right",
+        },
       });
     }
-    await controller.update(`${endpoints.users}/me`, "", {
-      isOnline: false,
-    });
-    localStorage.removeItem("token");
-
-    enqueueSnackbar("Logged out successfully", {
-      variant: "success",
-      autoHideDuration: 2000,
-      anchorOrigin: {
-        vertical: "bottom",
-        horizontal: "right",
-      },
-    });
-
-    window.location.href = "/auth/login";
   };
+
 
   return (
     <div
