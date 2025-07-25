@@ -10,8 +10,8 @@ export interface UserData {
   };
   email: string;
   username: string;
-  connections: string[];
-  connectionsRequests: string[];
+  connections: string[] | UserData[]; // Can be either IDs or populated user objects
+  connectionsRequests: string[] | UserData[]; // Can be either IDs or populated user objects
   hobbies: string[];
   createdAt: string;
   provider: string;
