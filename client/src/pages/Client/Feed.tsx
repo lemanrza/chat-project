@@ -297,8 +297,8 @@ const Feed = () => {
                       )
                     }
                     className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${selectedHobbies.includes(hobby)
-                        ? 'bg-[#00B878] text-white border-[#00B878]'
-                        : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700'
+                      ? 'bg-[#00B878] text-white border-[#00B878]'
+                      : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700'
                       }`}
                   >
                     {hobby}
@@ -322,8 +322,8 @@ const Feed = () => {
                       )
                     }
                     className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${selectedCountries.includes(country)
-                        ? 'bg-[#00B878] text-white border-[#00B878]'
-                        : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700'
+                      ? 'bg-[#00B878] text-white border-[#00B878]'
+                      : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700'
                       }`}
                   >
                     {country}
