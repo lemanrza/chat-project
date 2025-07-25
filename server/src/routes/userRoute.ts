@@ -52,7 +52,6 @@ userRouter.delete(
   deleteProfileImage
 );
 
-// Connection management routes
 userRouter.get(
   "/me/:userId/available",
   authenticateToken,
@@ -69,7 +68,6 @@ userRouter.delete(
   removeUserConnection
 );
 
-// Connection request management routes
 userRouter.post("/me/:userId/connections/accept", acceptConnection);
 userRouter.post("/me/:userId/connections/reject", rejectConnection);
 
