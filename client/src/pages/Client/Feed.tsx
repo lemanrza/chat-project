@@ -431,11 +431,11 @@ const Feed = () => {
                       </div>
                     </div>
 
-                    <p className="text-sm text-gray-500 dark:text-gray-300 mb-4 leading-relaxed">
+                    <p className="text-sm text-gray-500 h-20 dark:text-gray-300 mb-4 leading-relaxed">
                       {userData.profile?.bio}
                     </p>
 
-                    <div className="flex flex-wrap gap-2 mb-6">
+                    <div className="flex flex-wrap h-6 gap-2 mb-6">
                       {userData.hobbies?.map((interest, index) => (
                         <span
                           key={index}
