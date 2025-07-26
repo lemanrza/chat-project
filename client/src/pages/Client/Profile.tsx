@@ -456,6 +456,7 @@ const Profile = () => {
             formData={formData}
             setFormData={setFormData}
             userData={userData}
+            setUserData={setUserData}
           />
         )}
 

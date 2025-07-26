@@ -8,10 +8,17 @@ interface OverviewProps {
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   userData: UserData | null;
+  setUserData: React.Dispatch<React.SetStateAction<any>>;
 }
 
-const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
+const Overview = ({
+  formData,
+  setFormData,
+  userData,
+  setUserData,
+}: OverviewProps) => {
   const connectionRequests = userData?.connectionsRequests || [];
+  const connections = userData?.connections || [];
 
   const handleAcceptRequest = async (requestUser: any) => {
     try {
@@ -40,12 +47,20 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
         return reqId !== requestUserId;
       });
 
+      // Update both formData and userData
       setFormData((prev) => ({
         ...prev,
         connections: [...prev.connections, requestUserId],
         connectionsRequests: updatedRequests.map(
           (req: any) => req?.id || req?._id || req
         ),
+      }));
+
+      // Update userData to reflect changes immediately
+      setUserData((prev: any) => ({
+        ...prev,
+        connections: [...(prev.connections || []), requestUser],
+        connectionsRequests: updatedRequests,
       }));
 
       enqueueSnackbar("Connection request accepted!", {
@@ -98,9 +113,16 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
         (req: any) => req?.id || req?._id || req
       );
 
+      // Update both formData and userData
       setFormData((prev) => ({
         ...prev,
         connectionsRequests: updatedRequestIds,
+      }));
+
+      // Update userData to reflect changes immediately
+      setUserData((prev: any) => ({
+        ...prev,
+        connectionsRequests: updatedRequests,
       }));
 
       enqueueSnackbar("Connection request rejected", {
@@ -113,6 +135,65 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
       console.error("Error details:", error.response?.data);
       enqueueSnackbar(
         error.response?.data?.message || "Failed to reject connection request",
+        {
+          variant: "error",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        }
+      );
+    }
+  };
+
+  const handleRemoveConnection = async (connectionUser: any) => {
+    try {
+      const currentUserId = userData?.id || (userData as any)?._id;
+      if (!currentUserId) {
+        console.error("No user ID found in userData:", userData);
+        enqueueSnackbar("User ID not found", {
+          variant: "error",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
+        return;
+      }
+
+      const connectionUserId =
+        connectionUser?.id || connectionUser?._id || connectionUser;
+
+      await controller.deleteOne(
+        `${endpoints.users}/me/${currentUserId}/connections`,
+        connectionUserId
+      );
+
+      const updatedConnections = connections.filter((conn: any) => {
+        const connId = conn?.id || conn?._id || conn;
+        return connId !== connectionUserId;
+      });
+
+      // Update both formData and userData
+      setFormData((prev) => ({
+        ...prev,
+        connections: updatedConnections.map(
+          (conn: any) => conn?.id || conn?._id || conn
+        ),
+      }));
+
+      // Update userData to reflect changes immediately
+      setUserData((prev: any) => ({
+        ...prev,
+        connections: updatedConnections,
+      }));
+
+      enqueueSnackbar("Connection removed successfully", {
+        variant: "success",
+        autoHideDuration: 2000,
+        anchorOrigin: { vertical: "bottom", horizontal: "right" },
+      });
+    } catch (error: any) {
+      console.error("Error removing connection:", error);
+      console.error("Error details:", error.response?.data);
+      enqueueSnackbar(
+        error.response?.data?.message || "Failed to remove connection",
         {
           variant: "error",
           autoHideDuration: 2000,
@@ -274,6 +355,77 @@ const Overview = ({ formData, setFormData, userData }: OverviewProps) => {
                       className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 focus:outline-none transition duration-200"
                     >
                       Reject
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* My Connections */}
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          My Connections
+        </h3>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          {connections.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-gray-600">No connections yet</p>
+            </div>
+          ) : (
+            connections.map((connection: any, index: number) => {
+              const connectionId =
+                connection?.id || connection?._id || connection;
+              let isUserObject = false;
+              let firstName = "Unknown";
+              let lastName = "";
+              let avatar =
+                "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png";
+
+              if (connection && typeof connection === "object") {
+                isUserObject = true;
+                firstName =
+                  connection.firstName ||
+                  connection.profile?.firstName ||
+                  "Unknown";
+                lastName =
+                  connection.lastName || connection.profile?.lastName || "";
+                avatar =
+                  connection.avatar || connection.profile?.avatar || avatar;
+              }
+
+              return (
+                <div
+                  key={connectionId || index}
+                  className="flex items-center justify-between mb-4 last:mb-0"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 rounded-full overflow-hidden">
+                      <img
+                        src={avatar}
+                        alt={`${firstName} ${lastName}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {isUserObject
+                          ? `${firstName} ${lastName}`.trim()
+                          : `User ID: ${connectionId}`}
+                      </div>
+                      <div className="text-sm text-green-600">✓ Connected</div>
+                    </div>
+                  </div>
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => {
+                        handleRemoveConnection(connection);
+                      }}
+                      className="bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 hover:text-red-700 border border-red-200 hover:border-red-300 focus:outline-none transition duration-200"
+                    >
+                      Remove
                     </button>
                   </div>
                 </div>
