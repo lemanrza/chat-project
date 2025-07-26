@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { Send, MessageSquare } from "lucide-react";
 import socket, { reconnectSocket } from "@/socket/socket";
 import { getUserIdFromToken } from "@/utils/auth";
@@ -70,6 +71,12 @@ const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showGifPicker, setShowGifPicker] = useState(false);
 
+  const location = useLocation();
+  const navigationState = location.state as {
+    targetUserId?: string;
+    targetUserName?: string;
+  } | null;
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -86,11 +93,51 @@ const Chat = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const handleTargetUserChat = async () => {
+      if (
+        !navigationState?.targetUserId ||
+        !currentUserId ||
+        chats.length === 0
+      ) {
+        return;
+      }
+
+      const targetUserId = navigationState.targetUserId;
+
+      const existingChat = chats.find((chat) => {
+        return chat.members?.some(
+          (member: any) => member.user && member.user._id === targetUserId
+        );
+      });
+
+      if (existingChat) {
+        setSelectedChat(existingChat);
+        fetchMessages(existingChat._id, currentUserId);
+      } else {
+        const targetConnection = connections.find(
+          (conn: any) => conn._id === targetUserId || conn.id === targetUserId
+        );
+
+        if (targetConnection) {
+          await createChatWithConnection(targetConnection);
+        }
+      }
+
+      window.history.replaceState({}, document.title);
+    };
+
+    if (currentUserId && chats.length > 0) {
+      handleTargetUserChat();
+    }
+  }, [navigationState, currentUserId, chats, connections]);
+
   const fetchMessages = async (chatId: string, userId?: string) => {
     const userIdToUse = userId || currentUserId;
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL
+        `${
+          import.meta.env.VITE_SERVER_URL
         }/api/messages/chat/${chatId}?userId=${userIdToUse}`,
         {
           headers: {
@@ -114,7 +161,8 @@ const Chat = () => {
   const fetchChatData = async (chatId: string) => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL
+        `${
+          import.meta.env.VITE_SERVER_URL
         }/api/chats/${chatId}?userId=${currentUserId}`,
         {
           headers: {
@@ -471,7 +519,8 @@ const Chat = () => {
         displayName:
           user.profile?.displayName ||
           (user.profile?.firstName || user.profile?.lastName
-            ? `${user.profile.firstName || ""} ${user.profile.lastName || ""
+            ? `${user.profile.firstName || ""} ${
+                user.profile.lastName || ""
               }`.trim()
             : user.username || "Unknown User"),
       },
@@ -557,10 +606,11 @@ const Chat = () => {
                 return (
                   <div
                     key={chat._id}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${selectedChat?._id === chat._id
-                      ? "bg-blue-100 border-l-4 border-blue-500"
-                      : "hover:bg-gray-100"
-                      }`}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
+                      selectedChat?._id === chat._id
+                        ? "bg-blue-100 border-l-4 border-blue-500"
+                        : "hover:bg-gray-100"
+                    }`}
                     onClick={() => handleChatSelect(chat)}
                   >
                     <div className="flex items-center gap-3">
@@ -644,8 +694,9 @@ const Chat = () => {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 truncate">
                         {connection.profile?.displayName ||
-                          `${connection.firstName || ""} ${connection.lastName || ""
-                            }`.trim() ||
+                          `${connection.firstName || ""} ${
+                            connection.lastName || ""
+                          }`.trim() ||
                           "Unknown User"}
                       </h3>
                       <p className="text-sm text-green-600">
@@ -712,8 +763,8 @@ const Chat = () => {
             </div>
 
             {/* Messages */}
-            <div className="space-y-4">
-              <>
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="space-y-4">
                 {messages &&
                   messages.map((message) => {
                     if (!message || !message.sender || !message.sender._id) {
@@ -722,58 +773,102 @@ const Chat = () => {
 
                     const isOwn = message.sender._id === currentUserId;
                     return (
-                      <div key={message._id}>
-                        {message.content &&
+                      <div
+                        key={message._id}
+                        className={`flex message-container ${
+                          isOwn ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`max-w-xs lg:max-w-md rounded-2xl overflow-hidden ${
+                            message.content &&
+                            (message.content.includes("giphy.com") ||
+                              message.content.includes(".gif") ||
+                              message.content.startsWith("https://media"))
+                              ? "bg-transparent p-1"
+                              : isOwn
+                              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2"
+                              : "bg-gray-100 text-gray-900 px-4 py-2"
+                          }`}
+                        >
+                          {/* Check if message content is a GIF URL */}
+                          {message.content &&
                           (message.content.includes("giphy.com") ||
                             message.content.includes(".gif") ||
                             message.content.startsWith("https://media")) ? (
-                          <div className="gif-message">
-                            <img
-                              src={message.content}
-                              alt="GIF"
-                              className="w-full h-auto rounded-xl shadow-sm hover:shadow-md transition-shadow"
-                              style={{
-                                maxHeight: "250px",
-                                minWidth: "200px",
-                              }}
-                              onError={(e) => {
-                                const target = e.currentTarget;
-                                const fallback = target.nextElementSibling as HTMLElement;
-                                target.style.display = "none";
-                                if (fallback) {
-                                  fallback.style.display = "block";
-                                  fallback.className = `px-4 py-2 rounded-2xl ${isOwn
-                                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-                                    : "bg-gray-100 text-gray-900"
+                            <div className="gif-message">
+                              <img
+                                src={message.content}
+                                alt="GIF"
+                                className="w-full h-auto rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                                style={{
+                                  maxHeight: "250px",
+                                  minWidth: "200px",
+                                }}
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  const fallback =
+                                    target.nextElementSibling as HTMLElement;
+                                  target.style.display = "none";
+                                  if (fallback) {
+                                    fallback.style.display = "block";
+                                    fallback.className = `px-4 py-2 rounded-2xl ${
+                                      isOwn
+                                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+                                        : "bg-gray-100 text-gray-900"
                                     }`;
-                                }
-                              }}
-                            />
-                            <p style={{ display: "none" }} className="text-sm">
-                              Failed to load GIF: {message.content}
+                                  }
+                                }}
+                              />
+                              <p
+                                style={{ display: "none" }}
+                                className="text-sm"
+                              >
+                                Failed to load GIF: {message.content}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="break-words">
+                              {message.content || "No content"}
                             </p>
-                          </div>
-                        ) : (
-                          <p className="break-words">{message.content || "No content"}</p>
-                        )}
-                        <p>{message.createdAt ? formatTime(message.createdAt) : ""}</p>
+                          )}
+
+                          <p
+                            className={`text-xs mt-1 ${
+                              message.content &&
+                              (message.content.includes("giphy.com") ||
+                                message.content.includes(".gif") ||
+                                message.content.startsWith("https://media"))
+                                ? isOwn
+                                  ? "text-gray-600 bg-white/80 px-2 py-1 rounded-full inline-block ml-auto"
+                                  : "text-white bg-gray-800/80 px-2 py-1 rounded-full inline-block"
+                                : isOwn
+                                ? "text-blue-100"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {message.createdAt
+                              ? formatTime(message.createdAt)
+                              : ""}
+                          </p>
+                        </div>
                       </div>
                     );
                   })}
                 <div ref={messagesEndRef} />
-              </>
+              </div>
             </div>
-
 
             {/* Message Input */}
             <div className="p-4 bg-white border-t border-gray-200">
               <div className="flex gap-3 items-center">
                 <button
                   onClick={() => setShowGifPicker(true)}
-                  className={`p-2.5 rounded-full transition-all duration-200 ${showGifPicker
-                    ? "bg-blue-500 text-white shadow-lg"
-                    : "hover:bg-gray-100 text-gray-600 hover:text-blue-500"
-                    }`}
+                  className={`p-2.5 rounded-full transition-all duration-200 ${
+                    showGifPicker
+                      ? "bg-blue-500 text-white shadow-lg"
+                      : "hover:bg-gray-100 text-gray-600 hover:text-blue-500"
+                  }`}
                   title="Send GIF"
                 >
                   <Image className="w-5 h-5" />
@@ -818,7 +913,7 @@ const Chat = () => {
           </div>
         )}
       </div>
-    </div >
+    </div>
   );
 };
 

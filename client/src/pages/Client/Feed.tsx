@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import endpoints from "@/services/api";
 import controller from "@/services/commonRequest";
 import { enqueueSnackbar } from "notistack";
@@ -66,6 +67,7 @@ const Feed = () => {
   const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
 
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const reduxUser = useSelector((state: RootState) => state.user);
   const tabs: Tab[] = [
     {
@@ -250,8 +252,77 @@ const Feed = () => {
     }
   };
 
-  const handleMessage = (userId: string) => {
-    console.log("Messaging user:", userId);
+  const handleMessage = async (targetUserId: string) => {
+    try {
+      const currentUserId = getUserIdFromToken();
+      if (!currentUserId) {
+        enqueueSnackbar("Please log in to send messages", {
+          variant: "warning",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
+        return;
+      }
+
+      const targetUser = users.find((u) => u.id === targetUserId);
+      if (!targetUser) {
+        enqueueSnackbar("User not found", {
+          variant: "error",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        });
+        return;
+      }
+
+      const isConnected =
+        targetUser.connections && Array.isArray(targetUser.connections)
+          ? targetUser.connections.some((conn: any) => {
+              const connId =
+                typeof conn === "string" ? conn : conn.id || conn._id;
+              return connId === currentUserId;
+            })
+          : false;
+
+      if (!isConnected) {
+        enqueueSnackbar(
+          "You need to connect with this user first to send messages",
+          {
+            variant: "warning",
+            autoHideDuration: 3000,
+            anchorOrigin: { vertical: "bottom", horizontal: "right" },
+          }
+        );
+        return;
+      }
+
+      navigate("/app/chat", {
+        state: {
+          targetUserId: targetUserId,
+          targetUserName:
+            `${targetUser.profile?.firstName || ""} ${
+              targetUser.profile?.lastName || ""
+            }`.trim() || targetUser.username,
+        },
+      });
+
+      enqueueSnackbar(
+        `Opening chat with ${
+          targetUser.profile?.firstName || targetUser.username
+        }`,
+        {
+          variant: "success",
+          autoHideDuration: 2000,
+          anchorOrigin: { vertical: "bottom", horizontal: "right" },
+        }
+      );
+    } catch (error: any) {
+      console.error("Error in handleMessage:", error);
+      enqueueSnackbar("Failed to open chat", {
+        variant: "error",
+        autoHideDuration: 2000,
+        anchorOrigin: { vertical: "bottom", horizontal: "right" },
+      });
+    }
   };
 
   if (loading) {
@@ -565,10 +636,19 @@ const Feed = () => {
                     )}
                     <button
                       onClick={() => userData.id && handleMessage(userData.id)}
-                      className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 transition-all shadow"
+                      className={`flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium transition-all shadow ${
+                        isAlreadyConnected
+                          ? "border border-[#00B878] bg-white dark:bg-neutral-800 text-[#00B878] hover:bg-[#00B878] hover:text-white"
+                          : "border border-gray-300 dark:border-neutral-600 bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-75"
+                      }`}
+                      title={
+                        isAlreadyConnected
+                          ? "Click to open chat"
+                          : "Connect with this user to send messages"
+                      }
                     >
                       <MessageCircle className="w-4 h-4" />
-                      {t("feed_message")}
+                      {isAlreadyConnected ? t("feed_message") : "Message"}
                     </button>
                   </div>
                 </div>
