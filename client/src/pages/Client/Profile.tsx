@@ -25,9 +25,16 @@ const Profile = () => {
     hobbies: [],
     connections: [],
     connectionsRequests: [],
-    profileVisibility: "public"
+    profileVisibility: "public",
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const DEFAULT_AVATAR_URL =
+    "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png";
+
+  const isCustomAvatar = (avatarUrl: string | undefined) => {
+    return avatarUrl && avatarUrl !== DEFAULT_AVATAR_URL;
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -40,13 +47,15 @@ const Profile = () => {
 
         const userId = getUserIdFromToken();
         if (!userId) {
-          console.log("No user ID found in token, redirecting to login...");
           localStorage.removeItem("token");
           window.location.href = "/auth/login";
           return;
         }
 
-        const response = await controller.getOne(`${endpoints.users}/me`, userId);
+        const response = await controller.getOne(
+          `${endpoints.users}/me`,
+          userId
+        );
         setUserData(response.data);
 
         setFormData({
@@ -58,13 +67,14 @@ const Profile = () => {
           hobbies: response.data.hobbies || [],
           connections: response.data.connections || [],
           connectionsRequests: response.data.connectionsRequests || [],
-          profileVisibility: (response.data.profileVisibility as "public" | "private") || "public",
+          profileVisibility:
+            (response.data.profileVisibility as "public" | "private") ||
+            "public",
         });
       } catch (error: any) {
         console.error("Error fetching user data:", error);
 
         if (error.response?.status === 401 || error.response?.status === 403) {
-          console.log("Authentication failed, redirecting to login...");
           localStorage.removeItem("token");
           window.location.href = "/auth/login";
           return;
@@ -141,18 +151,24 @@ const Profile = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to upload image");
+        const errorData = await response.json();
+        console.error("❌ Server error:", errorData);
+        throw new Error(errorData.message || "Failed to upload image");
       }
 
       const result = await response.json();
 
-      setUserData((prev: any) => ({
-        ...prev,
-        profile: {
-          ...prev.profile,
-          avatar: result.data.avatar,
-        },
-      }));
+      setUserData((prev: any) => {
+        const updatedData = {
+          ...prev,
+          profile: {
+            ...prev.profile,
+            avatar: result.data.avatar,
+            public_id: result.data.public_id,
+          },
+        };
+        return updatedData;
+      });
 
       URL.revokeObjectURL(previewUrl);
       setImagePreview("");
@@ -165,22 +181,25 @@ const Profile = () => {
           horizontal: "right",
         },
       });
-    } catch (error) {
-      console.error("Error uploading image:", error);
+    } catch (error: any) {
+      console.error("❌ Error uploading image:", error);
 
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
         setImagePreview("");
       }
 
-      enqueueSnackbar("Failed to upload image. Please try again.", {
-        variant: "error",
-        autoHideDuration: 3000,
-        anchorOrigin: {
-          vertical: "bottom",
-          horizontal: "right",
-        },
-      });
+      enqueueSnackbar(
+        error.message || "Failed to upload image. Please try again.",
+        {
+          variant: "error",
+          autoHideDuration: 3000,
+          anchorOrigin: {
+            vertical: "bottom",
+            horizontal: "right",
+          },
+        }
+      );
     } finally {
       setIsUploadingImage(false);
       if (fileInputRef.current) {
@@ -213,15 +232,18 @@ const Profile = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete image");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete image");
       }
+
+      await response.json();
 
       setUserData((prev: any) => ({
         ...prev,
         profile: {
           ...prev.profile,
-          avatar:
-            "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png",
+          avatar: DEFAULT_AVATAR_URL,
+          public_id: undefined,
         },
       }));
 
@@ -230,7 +252,7 @@ const Profile = () => {
         setImagePreview("");
       }
 
-      enqueueSnackbar("Profile image deleted successfully!", {
+      enqueueSnackbar("Profile image removed successfully!", {
         variant: "success",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -238,16 +260,19 @@ const Profile = () => {
           horizontal: "right",
         },
       });
-    } catch (error) {
-      console.error("Error deleting image:", error);
-      enqueueSnackbar("Failed to delete image. Please try again.", {
-        variant: "error",
-        autoHideDuration: 3000,
-        anchorOrigin: {
-          vertical: "bottom",
-          horizontal: "right",
-        },
-      });
+    } catch (error: any) {
+      console.error("❌ Error deleting image:", error);
+      enqueueSnackbar(
+        error.message || "Failed to remove image. Please try again.",
+        {
+          variant: "error",
+          autoHideDuration: 3000,
+          anchorOrigin: {
+            vertical: "bottom",
+            horizontal: "right",
+          },
+        }
+      );
     } finally {
       setIsUploadingImage(false);
     }
@@ -299,7 +324,7 @@ const Profile = () => {
                   />
                 ) : (
                   userData?.profile?.firstName?.charAt(0) +
-                  userData?.profile?.lastName?.charAt(0) || "U"
+                    userData?.profile?.lastName?.charAt(0) || "U"
                 )}
               </div>
 
@@ -344,44 +369,40 @@ const Profile = () => {
                   )}
                 </button>
 
-                {userData?.profile?.avatar &&
-                  userData.profile.avatar !==
-                  "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
-                  !imagePreview && (
-                    <button
-                      className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
-                        isUploadingImage
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-200 hover:border-red-300"
-                      }`}
-                      onClick={
-                        !isUploadingImage ? handleDeleteImage : undefined
-                      }
-                      disabled={isUploadingImage}
-                    >
-                      {isUploadingImage ? (
-                        <>
-                          <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
-                          <span>Removing...</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          >
-                            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14ZM10 11v6M14 11v6" />
-                          </svg>
-                          <span>Remove Photo</span>
-                        </>
-                      )}
-                    </button>
-                  )}
+                {/* Show remove button only if user has a custom avatar (not default) and no preview */}
+                {isCustomAvatar(userData?.profile?.avatar) && !imagePreview && (
+                  <button
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
+                      isUploadingImage
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-200 hover:border-red-300"
+                    }`}
+                    onClick={!isUploadingImage ? handleDeleteImage : undefined}
+                    disabled={isUploadingImage}
+                  >
+                    {isUploadingImage ? (
+                      <>
+                        <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
+                        <span>Removing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        >
+                          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14ZM10 11v6M14 11v6" />
+                        </svg>
+                        <span>Remove Photo</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -430,7 +451,13 @@ const Profile = () => {
 
         <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {activeTab === "overview" && <Overview formData={formData} setFormData={setFormData} userData={userData} />}
+        {activeTab === "overview" && (
+          <Overview
+            formData={formData}
+            setFormData={setFormData}
+            userData={userData}
+          />
+        )}
 
         {activeTab === "settings" && <Settings />}
 
@@ -440,7 +467,7 @@ const Profile = () => {
             setUserData={setUserData}
             formData={formData}
             handleInputChange={handleInputChange}
-            setFormData={setFormData} // Pass setFormData to Privacy
+            setFormData={setFormData}
           />
         )}
 

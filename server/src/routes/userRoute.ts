@@ -33,10 +33,8 @@ userRouter.post("/login", loginUser);
 userRouter.get("/unlock-account", unlockAccount);
 userRouter.get("/verify-email", verifyUserEmail);
 
-
 userRouter.post("/forgot-password", forgotPassword);
 userRouter.post("/reset-password", resetPassword);
-
 
 userRouter.get("/me/:userId", getCurrentUser);
 userRouter.put("/me/:userId", updateCurrentUser);
@@ -44,7 +42,13 @@ userRouter.delete("/me/:userId", deleteCurrentUser);
 userRouter.post("/me/:userId/change-password", changePassword);
 userRouter.post(
   "/me/:userId/upload-image",
+  (req, res, next) => {
+    next();
+  },
   upload.single("avatar"),
+  (req, res, next) => {
+    next();
+  },
   uploadProfileImage
 );
 userRouter.delete("/me/:userId/delete-image", deleteProfileImage);
