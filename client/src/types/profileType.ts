@@ -1,6 +1,8 @@
 export interface UserData {
   id: string;
   profile: {
+    [x: string]: any;
+    country: any;
     firstName: string;
     lastName: string;
     bio: string;
