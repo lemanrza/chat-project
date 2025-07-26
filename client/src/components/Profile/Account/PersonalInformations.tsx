@@ -219,66 +219,66 @@ const PersonalInformations = ({
   const isMinHobbiesSelected = selectedHobbies.length >= 3;
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">
+    <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
         Personal Information
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             First Name
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={formData.firstName}
             onChange={(e) => handleInputChange("firstName", e.target.value)}
             placeholder="Enter your first name"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             Last Name
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={formData.lastName}
             onChange={(e) => handleInputChange("lastName", e.target.value)}
             placeholder="Enter your last name"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             Email Address
           </label>
           <input
             type="email"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
             placeholder="Enter your email address"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             Username
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed"
             value={userData?.username || ""}
             disabled
             placeholder="Username cannot be changed"
           />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             Location
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={locationSearch || formData.location}
             onChange={(e) => {
               handleInputChange("location", e.target.value);
@@ -287,47 +287,46 @@ const PersonalInformations = ({
             placeholder="Search and select your location"
           />
           {isSearching && (
-            <div className="text-sm text-gray-500">Searching...</div>
+            <div className="text-sm text-gray-500 dark:text-gray-300">Searching...</div>
           )}
           {locations.length > 0 && (
-            <ul className="bg-white shadow-md border border-gray-300 mt-2 rounded-lg max-h-60 overflow-auto">
+            <ul className="bg-white dark:bg-[#262626] shadow-md border border-gray-300 dark:border-gray-600 mt-2 rounded-lg max-h-60 overflow-auto">
               {locations.map((location) => (
                 <li
-                  key={location.id} // Use the id to key each element in the list
+                  key={location.id}
                   className="px-4 py-2 cursor-pointer hover:bg-[#00B878] hover:text-white"
                   onClick={() => {
                     handleInputChange(
                       "location",
                       `${location.city}, ${location.country}`
-                    ); // You can change this to location.country if you want to display the country
-                    setLocationSearch(`${location.city}, ${location.country}`); // Set the search input to the selected city
-                    setLocations([]); // Clear the list after selection
+                    );
+                    setLocationSearch(`${location.city}, ${location.country}`);
+                    setLocations([]);
                   }}
                 >
-                  {location.city}, {location.country}{" "}
-                  {/* Here we are displaying city and country */}
+                  {location.city}, {location.country}
                 </li>
               ))}
             </ul>
           )}
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             Bio
           </label>
           <textarea
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors resize-none"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors resize-none"
             rows={4}
             value={formData.bio}
             onChange={(e) => handleInputChange("bio", e.target.value)}
             placeholder="Tell us about yourself..."
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
             {formData.bio.length}/500 characters
           </p>
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             Hobbies
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
@@ -345,13 +344,13 @@ const PersonalInformations = ({
                     type="checkbox"
                     id={interest.name}
                     checked={isChecked}
-                    disabled={isDisabled} // Disable the checkbox if there are already 5 selected hobbies
+                    disabled={isDisabled}
                     onChange={() => handleHobbyChange(interest.name)}
                     className="h-5 w-5 rounded border-gray-300 text-[#00B878] focus:ring-[#00B878] focus:ring-2 accent-[#00B878]"
                   />
                   <label
                     htmlFor={interest.name}
-                    className="text-sm text-gray-700 cursor-pointer"
+                    className="text-sm text-gray-700 dark:text-white cursor-pointer"
                   >
                     <span className="mr-2">
                       <IconComponent size={16} className="inline" />
@@ -363,9 +362,7 @@ const PersonalInformations = ({
             })}
           </div>
           {!isMinHobbiesSelected && (
-            <p className="text-sm text-red-500 mt-2">
-              Please select at least 3 hobbies.
-            </p>
+            <p className="text-sm text-red-500 mt-2">Please select at least 3 hobbies.</p>
           )}
         </div>
       </div>

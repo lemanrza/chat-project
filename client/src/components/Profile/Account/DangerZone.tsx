@@ -11,16 +11,16 @@ const DangerZone = () => {
       title: "Delete Account?",
       html: `
         <div class="text-left">
-          <p class="mb-4 text-gray-700">Are you absolutely sure you want to delete your account?</p>
-          <div class="bg-red-50 p-3 rounded-lg mb-4">
-            <p class="text-sm text-red-700 font-medium mb-2">This action will:</p>
-            <ul class="text-sm text-red-600 space-y-1">
+          <p class="mb-4 text-gray-700 dark:text-gray-300">Are you absolutely sure you want to delete your account?</p>
+          <div class="bg-red-50 dark:bg-red-700 p-3 rounded-lg mb-4">
+            <p class="text-sm text-red-700 dark:text-red-300 font-medium mb-2">This action will:</p>
+            <ul class="text-sm text-red-600 dark:text-red-400 space-y-1">
               <li>• Permanently delete all your chat history</li>
               <li>• Remove your profile and personal information</li>
               <li>• Make account recovery impossible</li>
             </ul>
           </div>
-          <p class="text-sm text-gray-600">This action cannot be undone.</p>
+          <p class="text-sm text-gray-600 dark:text-gray-300">This action cannot be undone.</p>
         </div>
       `,
       icon: "warning",
@@ -32,7 +32,7 @@ const DangerZone = () => {
       focusCancel: true,
       customClass: {
         popup: "!rounded-xl",
-        title: "!text-xl !font-semibold !text-gray-900",
+        title: "!text-xl !font-semibold !text-gray-900 dark:text-white",
         htmlContainer: "!m-0",
         actions: "!mt-6",
         confirmButton: "!px-6 !py-2.5 !rounded-lg !font-medium",
@@ -72,7 +72,7 @@ const DangerZone = () => {
           confirmButtonText: "Continue to Login",
           customClass: {
             popup: "!rounded-xl",
-            title: "!text-xl !font-semibold !text-gray-900",
+            title: "!text-xl !font-semibold !text-gray-900 dark:text-white",
             confirmButton: "!px-6 !py-2.5 !rounded-lg !font-medium",
           },
         });
@@ -89,11 +89,10 @@ const DangerZone = () => {
           confirmButtonText: t("try_again", "Try Again"),
           customClass: {
             popup: "!rounded-xl",
-            title: "!text-xl !font-semibold !text-gray-900",
+            title: "!text-xl !font-semibold !text-gray-900 dark:text-white",
             confirmButton: "!px-6 !py-2.5 !rounded-lg !font-medium",
           },
         });
-
       }
     }
   };
@@ -119,10 +118,10 @@ const DangerZone = () => {
   };
 
   return (
-    <div className="bg-red-50 rounded-xl p-6 shadow-sm border border-red-200">
-      <h3 className="text-xl font-semibold text-red-900 mb-6 flex items-center gap-2">
+    <div className="bg-red-50 dark:bg-red-800 rounded-xl p-6 shadow-sm border border-red-200 dark:border-red-700">
+      <h3 className="text-xl font-semibold text-red-900 dark:text-white mb-6 flex items-center gap-2">
         <svg
-          className="w-6 h-6 text-red-600"
+          className="w-6 h-6 text-red-600 dark:text-red-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -139,11 +138,11 @@ const DangerZone = () => {
 
       <div className="space-y-4">
         {/* Sign Out Option */}
-        <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-red-200">
+        <div className="flex items-center justify-between p-4 bg-white dark:bg-[#262626] rounded-lg border border-red-200 dark:border-red-600">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-700 rounded-full flex items-center justify-center">
               <svg
-                className="w-5 h-5 text-orange-600"
+                className="w-5 h-5 text-orange-600 dark:text-orange-300"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -157,10 +156,10 @@ const DangerZone = () => {
               </svg>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900">
+              <h4 className="font-medium text-gray-900 dark:text-white">
                 {t("sign_out", "Sign Out")}
               </h4>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {t("sign_out_description")}
               </p>
             </div>
@@ -174,10 +173,10 @@ const DangerZone = () => {
         </div>
 
         {/* Delete Account Option */}
-        <div className="flex items-start space-x-3 p-4 bg-white rounded-lg border border-red-200">
-          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+        <div className="flex items-start space-x-3 p-4 bg-white dark:bg-[#262626] rounded-lg border border-red-200 dark:border-red-600">
+          <div className="w-10 h-10 bg-red-100 dark:bg-red-700 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
             <svg
-              className="w-5 h-5 text-red-600"
+              className="w-5 h-5 text-red-600 dark:text-red-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -191,26 +190,26 @@ const DangerZone = () => {
             </svg>
           </div>
           <div className="flex-1">
-            <h4 className="font-medium text-red-900 mb-2">
+            <h4 className="font-medium text-red-900 dark:text-white mb-2">
               {t("delete_account", "Delete Account")}
             </h4>
-            <p className="text-sm text-red-700 mb-4">
+            <p className="text-sm text-red-700 dark:text-red-400 mb-4">
               {t("delete_account_confirmation")}
             </p>
             <div className="space-y-2 mb-4">
-              <div className="flex items-center space-x-2 text-xs text-red-600">
+              <div className="flex items-center space-x-2 text-xs text-red-600 dark:text-red-400">
                 <span>•</span>
                 <span>
                   {t("delete_account_chat_history")}
                 </span>
               </div>
-              <div className="flex items-center space-x-2 text-xs text-red-600">
+              <div className="flex items-center space-x-2 text-xs text-red-600 dark:text-red-400">
                 <span>•</span>
                 <span>
                   {t("delete_account_profile_info")}
                 </span>
               </div>
-              <div className="flex items-center space-x-2 text-xs text-red-600">
+              <div className="flex items-center space-x-2 text-xs text-red-600 dark:text-red-400">
                 <span>•</span>
                 <span>
                   {t("delete_account_recovery")}

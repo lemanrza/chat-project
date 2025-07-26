@@ -300,15 +300,14 @@ const Profile = () => {
     <div className="min-h-screen flex">
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-semibold">Profile</h1>
+          <h1 className="text-2xl font-semibold dark:text-white">Profile</h1>
         </div>
 
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
+        <div className="bg-white dark:bg-[#262626] rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
           <div className="flex items-start gap-6">
             <div className="relative group">
               <div
-                className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold overflow-hidden transition-all duration-200 group-hover:shadow-xl group-hover:scale-[1.02] mx-auto"
-                style={{ backgroundColor: "#00B878" }}
+                className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold overflow-hidden transition-all duration-200 group-hover:shadow-xl group-hover:scale-[1.02] mx-auto bg-[#00B878] dark:bg-[#00B878]"
               >
                 {imagePreview ? (
                   <img
@@ -324,7 +323,7 @@ const Profile = () => {
                   />
                 ) : (
                   userData?.profile?.firstName?.charAt(0) +
-                    userData?.profile?.lastName?.charAt(0) || "U"
+                  userData?.profile?.lastName?.charAt(0) || "U"
                 )}
               </div>
 
@@ -338,11 +337,10 @@ const Profile = () => {
 
               <div className="mt-3 flex flex-col items-center gap-2">
                 <button
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
-                    isUploadingImage
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${isUploadingImage
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-[#00B878] text-white hover:bg-emerald-600 border border-[#00B878] hover:border-emerald-600"
-                  }`}
+                    }`}
                   onClick={!isUploadingImage ? triggerFileInput : undefined}
                   disabled={isUploadingImage}
                 >
@@ -372,11 +370,10 @@ const Profile = () => {
                 {/* Show remove button only if user has a custom avatar (not default) and no preview */}
                 {isCustomAvatar(userData?.profile?.avatar) && !imagePreview && (
                   <button
-                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
-                      isUploadingImage
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${isUploadingImage
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                         : "bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-200 hover:border-red-300"
-                    }`}
+                      }`}
                     onClick={!isUploadingImage ? handleDeleteImage : undefined}
                     disabled={isUploadingImage}
                   >
@@ -407,16 +404,16 @@ const Profile = () => {
             </div>
 
             <div className="flex-1">
-              <h2 className="text-3xl font-semibold text-gray-900 mb-1">
+              <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-1">
                 {userData?.profile?.displayName ||
                   `${formData.firstName} ${formData.lastName}`}
               </h2>
-              <p className="text-gray-500 mb-4">@{userData?.username}</p>
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">@{userData?.username}</p>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                 {formData.bio || "No bio available"}
               </p>
 
-              <div className="flex items-center gap-6 text-gray-500 text-sm mb-6">
+              <div className="flex items-center gap-6 text-gray-500 text-sm dark:text-gray-400 mb-6">
                 <div className="flex items-center gap-1">
                   <span>📍</span>
                   <span>{formData.location || "Location not set"}</span>
@@ -435,19 +432,21 @@ const Profile = () => {
 
               <div className="flex items-center gap-8">
                 <div>
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
                     {userData?.connections?.length || 0}
                   </span>
-                  <p className="text-gray-500 text-sm">Connections</p>
+                  <p className="text-gray-500 text-sm dark:text-gray-400">Connections</p>
                 </div>
                 <div>
-                  <span className="text-2xl font-bold text-gray-900">23</span>
-                  <p className="text-gray-500 text-sm">Active Chats</p>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">23</span>
+                  <p className="text-gray-500 text-sm dark:text-gray-400">Active Chats</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+
 
         <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
