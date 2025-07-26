@@ -14,7 +14,6 @@ import { authenticateToken } from "../middlewares/authMiddleware.js";
 
 const chatRouter = express.Router();
 
-// Apply authentication middleware to all routes
 chatRouter.use(authenticateToken);
 
 chatRouter.post("/", createNewChat);

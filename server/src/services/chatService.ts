@@ -21,15 +21,12 @@ export interface UpdateChatData {
   };
 }
 
-// Create a new chat
 export const createChat = async (data: CreateChatData) => {
   try {
-    // For direct chats, ensure only 2 members
     if (data.type === "direct" && data.members.length !== 2) {
       throw new Error("Direct chat must have exactly 2 members");
     }
 
-    // Check if direct chat already exists
     if (data.type === "direct") {
       const existingChat = await ChatModel.findOne({
         type: "direct",
@@ -47,7 +44,6 @@ export const createChat = async (data: CreateChatData) => {
       }
     }
 
-    // Create members array with metadata
     const membersWithMetadata = data.members.map((memberId) => ({
       user: new Types.ObjectId(memberId),
       role: memberId === data.createdBy ? "admin" : "member",
@@ -71,7 +67,6 @@ export const createChat = async (data: CreateChatData) => {
 
     await chat.save();
 
-    // Populate the created chat
     const populatedChat = await ChatModel.findById(chat._id)
       .populate("members.user", "username email profile")
       .populate("createdBy", "username email profile");
@@ -89,7 +84,6 @@ export const createChat = async (data: CreateChatData) => {
   }
 };
 
-// Get user's chats
 export const getUserChats = async (userId: string) => {
   try {
     const chats = await ChatModel.find({
@@ -115,7 +109,6 @@ export const getUserChats = async (userId: string) => {
   }
 };
 
-// Get chat by ID
 export const getChatById = async (chatId: string, userId: string) => {
   try {
     const chat = await ChatModel.findOne({
@@ -147,14 +140,12 @@ export const getChatById = async (chatId: string, userId: string) => {
   }
 };
 
-// Update chat
 export const updateChat = async (
   chatId: string,
   updateData: UpdateChatData,
   userId: string
 ) => {
   try {
-    // Check if user is admin or moderator
     const chat = await ChatModel.findOne({
       _id: new Types.ObjectId(chatId),
       "members.user": new Types.ObjectId(userId),
@@ -189,14 +180,12 @@ export const updateChat = async (
   }
 };
 
-// Add member to chat
 export const addMemberToChat = async (
   chatId: string,
   newMemberId: string,
   addedBy: string
 ) => {
   try {
-    // Check if user has permission to add members
     const chat = await ChatModel.findOne({
       _id: new Types.ObjectId(chatId),
       "members.user": new Types.ObjectId(addedBy),
@@ -217,7 +206,6 @@ export const addMemberToChat = async (
       };
     }
 
-    // Check if member already exists
     const existingMember = chat.members.find(
       (member: any) => member.user.toString() === newMemberId && member.isActive
     );
@@ -229,7 +217,6 @@ export const addMemberToChat = async (
       };
     }
 
-    // Add new member
     const updatedChat = await ChatModel.findByIdAndUpdate(
       chatId,
       {
@@ -258,7 +245,6 @@ export const addMemberToChat = async (
   }
 };
 
-// Remove member from chat
 export const removeMemberFromChat = async (
   chatId: string,
   memberId: string,
@@ -285,7 +271,6 @@ export const removeMemberFromChat = async (
       };
     }
 
-    // Update member status
     const updatedChat = await ChatModel.findOneAndUpdate(
       {
         _id: new Types.ObjectId(chatId),
@@ -313,7 +298,6 @@ export const removeMemberFromChat = async (
   }
 };
 
-// Archive chat
 export const archiveChat = async (chatId: string, userId: string) => {
   try {
     const chat = await ChatModel.findOneAndUpdate(
@@ -351,7 +335,6 @@ export const archiveChat = async (chatId: string, userId: string) => {
   }
 };
 
-// Delete chat (only for admins)
 export const deleteChat = async (chatId: string, userId: string) => {
   try {
     const chat = await ChatModel.findOne({
@@ -367,10 +350,8 @@ export const deleteChat = async (chatId: string, userId: string) => {
       };
     }
 
-    // Delete all messages in the chat
     await MessageModel.deleteMany({ chat: new Types.ObjectId(chatId) });
 
-    // Delete the chat
     await ChatModel.findByIdAndDelete(chatId);
 
     return {
@@ -385,7 +366,6 @@ export const deleteChat = async (chatId: string, userId: string) => {
   }
 };
 
-// Search chats
 export const searchChats = async (userId: string, query: string) => {
   try {
     const chats = await ChatModel.find({

@@ -137,12 +137,15 @@ const Chat = () => {
         }
       );
 
+      console.log(
+        `${import.meta.env.VITE_SERVER_URL}/api/chats?userId=${userId}`
+      );
+
       if (chatsResponse.ok) {
         const chatsData = await chatsResponse.json();
         const chatsArray = chatsData.data || chatsData;
         setChats(chatsArray);
 
-        // Auto-select the first chat and load its messages
         if (chatsArray.length > 0 && !selectedChat) {
           const firstChat = chatsArray[0];
           setSelectedChat(firstChat);
