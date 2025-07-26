@@ -87,8 +87,7 @@ const Chat = () => {
     const userIdToUse = userId || currentUserId;
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL
+        `${import.meta.env.VITE_SERVER_URL
         }/api/messages/chat/${chatId}?userId=${userIdToUse}`,
         {
           headers: {
@@ -112,8 +111,7 @@ const Chat = () => {
   const fetchChatData = async (chatId: string) => {
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL
+        `${import.meta.env.VITE_SERVER_URL
         }/api/chats/${chatId}?userId=${currentUserId}`,
         {
           headers: {
@@ -470,8 +468,7 @@ const Chat = () => {
         displayName:
           user.profile?.displayName ||
           (user.profile?.firstName || user.profile?.lastName
-            ? `${user.profile.firstName || ""} ${
-                user.profile.lastName || ""
+            ? `${user.profile.firstName || ""} ${user.profile.lastName || ""
               }`.trim()
             : user.username || "Unknown User"),
       },
@@ -516,11 +513,10 @@ const Chat = () => {
                 return (
                   <div
                     key={chat._id}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
-                      selectedChat?._id === chat._id
+                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${selectedChat?._id === chat._id
                         ? "bg-blue-100 border-l-4 border-blue-500"
                         : "hover:bg-gray-100"
-                    }`}
+                      }`}
                     onClick={() => handleChatSelect(chat)}
                   >
                     <div className="flex items-center gap-3">
@@ -604,9 +600,8 @@ const Chat = () => {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 truncate">
                         {connection.profile?.displayName ||
-                          `${connection.firstName || ""} ${
-                            connection.lastName || ""
-                          }`.trim() ||
+                          `${connection.firstName || ""} ${connection.lastName || ""
+                            }`.trim() ||
                           "Unknown User"}
                       </h3>
                       <p className="text-sm text-green-600">
@@ -685,22 +680,19 @@ const Chat = () => {
                     return (
                       <div
                         key={message._id}
-                        className={`flex ${
-                          isOwn ? "justify-end" : "justify-start"
-                        }`}
+                        className={`flex ${isOwn ? "justify-end" : "justify-start"
+                          }`}
                       >
                         <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                            isOwn
+                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isOwn
                               ? "bg-blue-500 text-white"
                               : "bg-gray-200 text-gray-900"
-                          }`}
+                            }`}
                         >
                           <p>{message.content || "No content"}</p>
                           <p
-                            className={`text-xs mt-1 ${
-                              isOwn ? "text-blue-100" : "text-gray-500"
-                            }`}
+                            className={`text-xs mt-1 ${isOwn ? "text-blue-100" : "text-gray-500"
+                              }`}
                           >
                             {message.createdAt
                               ? formatTime(message.createdAt)

@@ -296,5 +296,13 @@
   "feed_filter_hobbies_placeholder": "Hobileri seçin",
   "feed_filter_countries_placeholder": "Ülkeleri seçin",
   "feed_filter_hobbies_required": "Lütfen en az 3 hobi seçin",
-  "settings_language_en_full": "İngilizce"
+  "settings_language_en_full": "İngilizce",
+  "chat_welcome_title": "Sohbete Hoş Geldiniz",
+  "chat_welcome_subtext": "Mesajlaşmaya başlamak için bir sohbet veya bağlantı seçin",
+  "chat_input_placeholder": "Bir mesaj yazın...",
+  "chat_status_online": "Çevrimiçi",
+  "chat_status_offline": "Çevrimdışı",
+  "chat_no_content": "İçerik yok",
+  "chat_send": "Gönder",
+  "chat_user_unknown": "Bilinmeyen Kullanıcı"
 }

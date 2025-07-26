@@ -334,5 +334,17 @@
   "feed_filter_hobbies_placeholder": "Hobbiləri axtarın",
   "feed_filter_countries_placeholder": "Ölkələri axtarın",
   "feed_filters_title": "Filtrlər",
-  "settings_language_en_full": "İngilis (ABŞ)"
+  "settings_language_en_full": "İngilis (ABŞ)",
+  "chat_welcome_title": "Söhbətə xoş gəlmisiniz",
+  "chat_welcome_subtext": "Mesajlaşmaya başlamaq üçün söhbət və ya əlaqə seçin",
+  "chat_input_placeholder": "Mesaj yazın...",
+  "chat_status_online": "Onlayn",
+  "chat_status_offline": "Oflayn",
+  "chat_no_content": "Məzmun yoxdur",
+  "chat_send": "Göndər",
+  "chat_user_unknown": "Naməlum İstifadəçi",
+  "filters": "Filtrlər",
+  "hobies": "Hobbilər",
+  "clear_filters": "Hamısını təmizlə",
+  "apply_filters": "Filtrləri tətbiq et"
 }

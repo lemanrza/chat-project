@@ -284,5 +284,13 @@
   "deletion_failed": "Deletion failed",
   "save_changes": "Save Changes",
   "saving": "Saving...",
-  "settings_language_en_full": "English"
+  "settings_language_en_full": "English",
+  "chat_welcome_title": "Welcome to Chat",
+  "chat_welcome_subtext": "Select a chat or connection to start messaging",
+  "chat_input_placeholder": "Type a message...",
+  "chat_status_online": "Online",
+  "chat_status_offline": "Offline",
+  "chat_no_content": "No content",
+  "chat_send": "Send",
+  "chat_user_unknown": "Unknown User"
 }
