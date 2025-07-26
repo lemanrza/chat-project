@@ -1,6 +1,8 @@
+import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 import { registerMessageHandlers } from "../utils/messageHandlers.js";
+import { registerChatHandlers } from "../utils/chatHandlers.js";
 const connectedUsers = new Map();
 const authenticateSocket = async (socket, next) => {
     try {
@@ -24,45 +26,37 @@ const authenticateSocket = async (socket, next) => {
         next(new Error("Authentication error"));
     }
 };
-export const initializeSocket = async (server) => {
-    // Use type assertion to bypass TypeScript module resolution issues
-    const SocketIO = await import("socket.io");
-    const io = new SocketIO.Server(server, {
+export const initializeSocket = (server) => {
+    const io = new Server(server, {
         cors: {
-            origin: "*",
-            methods: ["GET", "POST"],
+            origin: process.env.CLIENT_URL || "http://localhost:5173",
+            credentials: true,
         },
     });
+    io.use(authenticateSocket);
     io.on("connection", (socket) => {
-        console.log("A user connected:", socket.id);
-        // Authentication check
-        socket.on("auth:join", (data) => {
-            if (!data.userId) {
-                socket.emit("auth:error", { message: "User ID is required" });
-                return;
-            }
-            socket.userId = data.userId;
-            socket.join(`user:${data.userId}`);
-            console.log(`User ${data.userId} joined room`);
-        });
-        // Join chat rooms
-        socket.on("join:chats", (chatIds) => {
-            if (!socket.userId) {
-                socket.emit("auth:error", { message: "Authentication required" });
-                return;
-            }
+        const authSocket = socket;
+        connectedUsers.set(authSocket.user.id, authSocket);
+        authSocket.on("join:chats", async (chatIds) => {
             chatIds.forEach((chatId) => {
-                socket.join(`chat:${chatId}`);
+                authSocket.join(`chat:${chatId}`);
             });
-            console.log(`User ${socket.userId} joined chats:`, chatIds);
         });
-        // Register message handlers
-        registerMessageHandlers(io, socket);
-        socket.on("disconnect", () => {
-            console.log("User disconnected:", socket.id);
+        registerMessageHandlers(io, authSocket);
+        registerChatHandlers(io, authSocket);
+        authSocket.on("status:online", () => {
+            authSocket.broadcast.emit("user:online", {
+                userId: authSocket.user.id,
+                username: authSocket.user.username,
+            });
+        });
+        authSocket.on("disconnect", () => {
+            connectedUsers.delete(authSocket.user.id);
+            authSocket.broadcast.emit("user:offline", {
+                userId: authSocket.user.id,
+                username: authSocket.user.username,
+            });
         });
     });
-    // Store io instance globally for access in other parts of the app
-    global.io = io;
     return io;
 };

@@ -8,7 +8,6 @@ export const sendMessage = async (req, res, next) => {
             });
         }
         const userId = req.user.id;
-        // Simple extraction
         const chatId = req.body?.chatId;
         const content = req.body?.content;
         const type = req.body?.type;
@@ -31,10 +30,25 @@ export const sendMessage = async (req, res, next) => {
         if (!response.success) {
             return res.status(400).json(response);
         }
+        const message = response.data;
+        if (global.io && message) {
+            const broadcastData = {
+                id: message._id.toString(),
+                content: message.content,
+                senderId: userId,
+                senderName: req.user.username || "User",
+                chatId: chatId,
+                timestamp: message.createdAt,
+            };
+            global.io.to(`chat:${chatId}`).emit("message:new", broadcastData);
+            global.io.emit("test:broadcast", { message: "This is a test broadcast" });
+        }
+        else {
+            console.log("❌ Cannot broadcast - global.io:", !!global.io, "message:", !!message);
+        }
         res.status(201).json(response);
     }
     catch (error) {
-        console.log("❌ Error in sendMessage controller:", error);
         next(error);
     }
 };

@@ -321,7 +321,6 @@ export const uploadProfileImage = async (req, res, _) => {
             });
         }
         if (!req.file) {
-            console.log("No file provided");
             return res.status(400).json({
                 message: "No image file provided",
             });
@@ -338,34 +337,66 @@ export const uploadProfileImage = async (req, res, _) => {
             const avatarUrl = currentUser.profile.avatar;
             if (avatarUrl.includes("cloudinary.com")) {
                 try {
-                    const urlParts = avatarUrl.split("/");
-                    const fileWithExtension = urlParts[urlParts.length - 1];
-                    const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
-                    await cloudinary.uploader.destroy(publicId);
+                    let publicId = currentUser.profile?.public_id;
+                    if (!publicId) {
+                        const urlParts = avatarUrl.split("/");
+                        const uploadIndex = urlParts.findIndex((part) => part === "upload");
+                        if (uploadIndex !== -1 && uploadIndex + 2 < urlParts.length) {
+                            const pathAfterUpload = urlParts.slice(uploadIndex + 2).join("/");
+                            publicId = pathAfterUpload.replace(/\.[^/.]+$/, "");
+                        }
+                    }
+                    if (publicId) {
+                        await cloudinary.uploader.destroy(publicId);
+                    }
                 }
                 catch (cloudinaryError) {
-                    console.error("Error deleting old avatar from Cloudinary:", cloudinaryError);
+                    console.error("❌ Error deleting old avatar from Cloudinary:", cloudinaryError);
                 }
             }
         }
-        const uploadResult = await cloudinary.uploader.upload(req.file.path, {
-            folder: "user_profiles",
-            public_id: `user_${userId}_${Date.now()}`,
-            transformation: [
-                { width: 400, height: 400, crop: "fill", gravity: "face" },
-                { quality: "auto" },
-            ],
-        });
-        const response = await updateUser(userId, {
-            $set: {
-                "profile.avatar": uploadResult.secure_url,
-                "profile.public_id": uploadResult.public_id,
-                "profile.updatedAt": new Date(),
-            },
-        });
-        if (!response.success) {
+        let uploadResult;
+        try {
+            uploadResult = await cloudinary.uploader.upload(req.file.path, {
+                folder: "user_profiles",
+                public_id: `user_${userId}_${Date.now()}`,
+                transformation: [
+                    { width: 400, height: 400, crop: "fill", gravity: "face" },
+                    { quality: "auto" },
+                    { format: "webp" },
+                ],
+                timeout: 60000,
+            });
+        }
+        catch (cloudinaryError) {
+            console.error("❌ Cloudinary upload failed:", cloudinaryError);
             return res.status(500).json({
-                message: response.message,
+                message: "Failed to upload image to Cloudinary",
+                error: cloudinaryError instanceof Error
+                    ? cloudinaryError.message
+                    : "Unknown error",
+            });
+        }
+        const updateData = {
+            "profile.avatar": uploadResult.secure_url,
+            "profile.public_id": uploadResult.public_id,
+            "profile.updatedAt": new Date(),
+        };
+        let updatedUser;
+        try {
+            updatedUser = await UserModel.findByIdAndUpdate(userId, { $set: updateData }, { new: true, runValidators: true });
+        }
+        catch (dbError) {
+            console.error("❌ Database update failed:", dbError);
+            return res.status(500).json({
+                message: "Failed to update user in database",
+                error: dbError instanceof Error ? dbError.message : "Unknown error",
+            });
+        }
+        if (!updatedUser) {
+            console.error("❌ No user returned from database update");
+            return res.status(500).json({
+                message: "Failed to update user in database - no user returned",
             });
         }
         res.status(200).json({
@@ -373,7 +404,7 @@ export const uploadProfileImage = async (req, res, _) => {
             data: {
                 avatar: uploadResult.secure_url,
                 public_id: uploadResult.public_id,
-                user: response.data,
+                user: updatedUser,
             },
         });
     }
@@ -393,7 +424,6 @@ export const deleteProfileImage = async (req, res, next) => {
                 message: "User ID is required",
             });
         }
-        console.log("Delete image request from user:", userId);
         const currentUser = await getOne(userId);
         if (!currentUser) {
             return res.status(404).json({
@@ -406,21 +436,30 @@ export const deleteProfileImage = async (req, res, next) => {
             const avatarUrl = currentUser.profile.avatar;
             if (avatarUrl.includes("cloudinary.com")) {
                 try {
-                    const urlParts = avatarUrl.split("/");
-                    const fileWithExtension = urlParts[urlParts.length - 1];
-                    const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
-                    console.log("Deleting from Cloudinary with public_id:", publicId);
-                    await cloudinary.uploader.destroy(publicId);
-                    console.log("Successfully deleted from Cloudinary");
+                    let publicId = currentUser.profile?.public_id;
+                    if (!publicId) {
+                        const urlParts = avatarUrl.split("/");
+                        const uploadIndex = urlParts.findIndex((part) => part === "upload");
+                        if (uploadIndex !== -1 && uploadIndex + 2 < urlParts.length) {
+                            const pathAfterUpload = urlParts.slice(uploadIndex + 2).join("/");
+                            publicId = pathAfterUpload.replace(/\.[^/.]+$/, "");
+                        }
+                    }
+                    if (publicId) {
+                        const deleteResult = await cloudinary.uploader.destroy(publicId);
+                    }
                 }
                 catch (cloudinaryError) {
-                    console.error("Error deleting from Cloudinary:", cloudinaryError);
+                    console.error("❌ Error deleting from Cloudinary:", cloudinaryError);
                 }
             }
         }
         const response = await updateUser(userId, {
-            $set: {
-                "profile.avatar": defaultAvatarUrl,
+            profile: {
+                ...currentUser.profile,
+                avatar: defaultAvatarUrl,
+                public_id: undefined,
+                updatedAt: new Date(),
             },
         });
         if (!response.success) {
@@ -475,7 +514,6 @@ export const deleteCurrentUser = async (req, res) => {
                 message: "User ID is required",
             });
         }
-        console.log("Delete account request from user:", userId);
         const currentUser = await getOne(userId);
         if (!currentUser) {
             return res.status(404).json({
@@ -491,9 +529,7 @@ export const deleteCurrentUser = async (req, res) => {
                     const urlParts = avatarUrl.split("/");
                     const fileWithExtension = urlParts[urlParts.length - 1];
                     const publicId = `user_profiles/${fileWithExtension.split(".")[0]}`;
-                    console.log("Deleting avatar from Cloudinary with public_id:", publicId);
                     await cloudinary.uploader.destroy(publicId);
-                    console.log("Successfully deleted avatar from Cloudinary");
                 }
                 catch (cloudinaryError) {
                     console.error("Error deleting avatar from Cloudinary:", cloudinaryError);
@@ -548,21 +584,12 @@ export const changePassword = async (req, res, next) => {
                 message: "Password change not available for social login accounts",
             });
         }
-        console.log("User provider:", user.provider);
-        console.log("User has password:", !!user.password);
-        console.log("Password field type:", typeof user.password);
-        console.log("Password comparison input:", {
-            currentPasswordLength: currentPassword.length,
-            hasStoredPassword: !!user.password,
-            storedPasswordLength: user.password?.length,
-        });
         if (!user.password) {
             return res.status(400).json({
                 message: "No password found for this account",
             });
         }
         const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-        console.log("Password validation result:", isCurrentPasswordValid);
         if (!isCurrentPasswordValid) {
             return res.status(400).json({
                 message: "Current password is incorrect",
@@ -697,7 +724,6 @@ export const getPendingConnectionRequests = async (req, res, next) => {
         next(error);
     }
 };
-// Accept a connection request
 export const acceptConnection = async (req, res, next) => {
     try {
         const userId = req.params.userId;
