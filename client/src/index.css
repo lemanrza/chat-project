@@ -119,3 +119,40 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* GIF Message Animations */
+.gif-message img {
+  transition: all 0.3s ease-in-out;
+}
+
+.gif-message img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Chat message animations */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-container {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+/* GIF picker grid improvements */
+.giphy-grid img {
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+.giphy-grid img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
