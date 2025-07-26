@@ -23,13 +23,13 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
   // If userData is null, show loading or return early
   if (!userData) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <h3 className="text-xl font-semibold text-gray-900 mb-6">
+      <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
           Change Password
         </h3>
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-3/4 mb-4"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/2"></div>
         </div>
       </div>
     );
@@ -130,14 +130,14 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
   // Non-local provider view
   if (userData?.provider !== "local") {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <h3 className="text-xl font-semibold text-gray-900 mb-6">
+      <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
           Change Password
         </h3>
         <div className="text-center py-8">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
             <svg
-              className="w-8 h-8 text-gray-400"
+              className="w-8 h-8 text-gray-400 dark:text-gray-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -150,17 +150,17 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
               />
             </svg>
           </div>
-          <h4 className="text-lg font-medium text-gray-900 mb-2">
+          <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Password Not Available
           </h4>
-          <p className="text-gray-500 mb-4">
+          <p className="text-gray-500 dark:text-gray-300 mb-4">
             You signed up with{" "}
             {userData?.provider === "google" ? "Google" : "GitHub"}. Password
             changes are managed through your{" "}
             {userData?.provider === "google" ? "Google" : "GitHub"} account.
           </p>
           <button
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             onClick={() =>
               window.open(
                 userData?.provider === "google"
@@ -178,8 +178,8 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
   }
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">
+    <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
         Change Password
       </h3>
 
@@ -249,13 +249,14 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
             !passwordsMatch ||
             isSameAsCurrentPassword
           }
-          className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 ${isChangingPassword ||
-              !passwordValidation.isValid ||
-              !passwordsMatch ||
-              isSameAsCurrentPassword
+          className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+            isChangingPassword ||
+            !passwordValidation.isValid ||
+            !passwordsMatch ||
+            isSameAsCurrentPassword
               ? "bg-gray-400 cursor-not-allowed text-white"
               : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
-            }`}
+          }`}
         >
           {isChangingPassword ? (
             <span className="flex items-center">

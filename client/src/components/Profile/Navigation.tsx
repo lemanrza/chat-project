@@ -8,7 +8,7 @@ const Navigation = ({ activeTab, setActiveTab }: any) => {
         className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
           activeTab === "overview"
             ? "text-white"
-            : "text-gray-600 hover:bg-gray-100"
+            : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
         }`}
         style={activeTab === "overview" ? { backgroundColor: "#00B878" } : {}}
       >
@@ -20,7 +20,7 @@ const Navigation = ({ activeTab, setActiveTab }: any) => {
         className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
           activeTab === "settings"
             ? "text-white"
-            : "text-gray-600 hover:bg-gray-100"
+            : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
         }`}
         style={activeTab === "settings" ? { backgroundColor: "#00B878" } : {}}
       >
@@ -32,7 +32,7 @@ const Navigation = ({ activeTab, setActiveTab }: any) => {
         className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
           activeTab === "privacy"
             ? "text-white"
-            : "text-gray-600 hover:bg-gray-100"
+            : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
         }`}
         style={activeTab === "privacy" ? { backgroundColor: "#00B878" } : {}}
       >
@@ -44,7 +44,7 @@ const Navigation = ({ activeTab, setActiveTab }: any) => {
         className={`flex items-center gap-2 px-6 py-3 rounded-lg ${
           activeTab === "account"
             ? "text-white"
-            : "text-gray-600 hover:bg-gray-100"
+            : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
         }`}
         style={activeTab === "account" ? { backgroundColor: "#00B878" } : {}}
       >

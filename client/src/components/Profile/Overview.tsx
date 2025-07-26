@@ -47,7 +47,6 @@ const Overview = ({
         return reqId !== requestUserId;
       });
 
-      // Update both formData and userData
       setFormData((prev) => ({
         ...prev,
         connections: [...prev.connections, requestUserId],
@@ -56,7 +55,6 @@ const Overview = ({
         ),
       }));
 
-      // Update userData to reflect changes immediately
       setUserData((prev: any) => ({
         ...prev,
         connections: [...(prev.connections || []), requestUser],
@@ -70,7 +68,6 @@ const Overview = ({
       });
     } catch (error: any) {
       console.error("Error accepting connection request:", error);
-      console.error("Error details:", error.response?.data);
       enqueueSnackbar(
         error.response?.data?.message || "Failed to accept connection request",
         {
@@ -113,13 +110,11 @@ const Overview = ({
         (req: any) => req?.id || req?._id || req
       );
 
-      // Update both formData and userData
       setFormData((prev) => ({
         ...prev,
         connectionsRequests: updatedRequestIds,
       }));
 
-      // Update userData to reflect changes immediately
       setUserData((prev: any) => ({
         ...prev,
         connectionsRequests: updatedRequests,
@@ -132,7 +127,6 @@ const Overview = ({
       });
     } catch (error: any) {
       console.error("Error rejecting connection request:", error);
-      console.error("Error details:", error.response?.data);
       enqueueSnackbar(
         error.response?.data?.message || "Failed to reject connection request",
         {
@@ -170,7 +164,6 @@ const Overview = ({
         return connId !== connectionUserId;
       });
 
-      // Update both formData and userData
       setFormData((prev) => ({
         ...prev,
         connections: updatedConnections.map(
@@ -178,7 +171,6 @@ const Overview = ({
         ),
       }));
 
-      // Update userData to reflect changes immediately
       setUserData((prev: any) => ({
         ...prev,
         connections: updatedConnections,
@@ -191,7 +183,6 @@ const Overview = ({
       });
     } catch (error: any) {
       console.error("Error removing connection:", error);
-      console.error("Error details:", error.response?.data);
       enqueueSnackbar(
         error.response?.data?.message || "Failed to remove connection",
         {
@@ -207,7 +198,7 @@ const Overview = ({
     <>
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center"
@@ -216,34 +207,34 @@ const Overview = ({
               <MessageCircle size={24} style={{ color: "#00B878" }} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">154</div>
-              <div className="text-gray-500 text-sm">Total Messages</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">154</div>
+              <div className="text-gray-500 dark:text-gray-400 text-sm">Total Messages</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
               <Users className="text-blue-600" size={24} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formData.connections.length}
               </div>
-              <div className="text-gray-500 text-sm">Connections</div>
+              <div className="text-gray-500 dark:text-gray-400 text-sm">Connections</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
               <Heart className="text-purple-600" size={24} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">12</div>
-              <div className="text-gray-500 text-sm">Favorites</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">12</div>
+              <div className="text-gray-500 dark:text-gray-400 text-sm">Favorites</div>
             </div>
           </div>
         </div>
@@ -251,52 +242,52 @@ const Overview = ({
 
       {/* Quick Actions */}
       <div className="col-span-9">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Quick Actions
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
+          <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
               style={{ background: "#E6FAF3" }}
             >
               <MessageCircle size={24} style={{ color: "#00B878" }} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">New Chat</div>
+            <div className="font-medium text-gray-900 dark:text-white mb-1">New Chat</div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
+          <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Users className="text-blue-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">Find Friends</div>
+            <div className="font-medium text-gray-900 dark:text-white mb-1">Find Friends</div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
+          <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Settings className="text-purple-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">Preferences</div>
+            <div className="font-medium text-gray-900 dark:text-white mb-1">Preferences</div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow cursor-pointer">
+          <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Shield className="text-orange-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 mb-1">Privacy</div>
+            <div className="font-medium text-gray-900 dark:text-white mb-1">Privacy</div>
           </div>
         </div>
       </div>
 
       {/* Connection Requests */}
       <div className="mt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Connection Requests
         </h3>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           {connectionRequests.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-gray-600">No pending connection requests</p>
+              <p className="text-gray-600 dark:text-gray-400">No pending connection requests</p>
             </div>
           ) : (
             connectionRequests.map((request: any, index: number) => {
@@ -329,12 +320,12 @@ const Overview = ({
                       />
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-gray-900 dark:text-white">
                         {isUserObject
                           ? `${firstName} ${lastName}`.trim()
                           : `User ID: ${requestId}`}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         Sent you a connection request
                       </div>
                     </div>
@@ -352,7 +343,7 @@ const Overview = ({
                       onClick={() => {
                         handleRejectRequest(request);
                       }}
-                      className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 focus:outline-none transition duration-200"
+                      className="bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 focus:outline-none transition duration-200"
                     >
                       Reject
                     </button>
@@ -366,13 +357,13 @@ const Overview = ({
 
       {/* My Connections */}
       <div className="mt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           My Connections
         </h3>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           {connections.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-gray-600">No connections yet</p>
+              <p className="text-gray-600 dark:text-gray-400">No connections yet</p>
             </div>
           ) : (
             connections.map((connection: any, index: number) => {
@@ -410,12 +401,12 @@ const Overview = ({
                       />
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-gray-900 dark:text-white">
                         {isUserObject
                           ? `${firstName} ${lastName}`.trim()
                           : `User ID: ${connectionId}`}
                       </div>
-                      <div className="text-sm text-green-600">✓ Connected</div>
+                      <div className="text-sm text-green-600 dark:text-green-400">✓ Connected</div>
                     </div>
                   </div>
                   <div className="space-x-2">

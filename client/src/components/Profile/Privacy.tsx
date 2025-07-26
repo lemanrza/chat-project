@@ -11,7 +11,7 @@ interface PrivacyProps {
   setUserData: React.Dispatch<React.SetStateAction<UserData | null>>;
   formData: FormData;
   handleInputChange: (field: string, value: string) => void;
-  setFormData: React.Dispatch<React.SetStateAction<FormData>>; 
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 }
 
 const Privacy = ({ userData, setUserData, formData, handleInputChange, setFormData }: PrivacyProps) => {
@@ -78,52 +78,53 @@ const Privacy = ({ userData, setUserData, formData, handleInputChange, setFormDa
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">Privacy Settings</h3>
+    <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Privacy Settings</h3>
 
       <div className="space-y-6">
         {/* Profile Visibility */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                <Eye className="text-gray-600" size={20} />
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">Profile Visibility</div>
-                <div className="text-sm text-gray-500">Control who can see your profile</div>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={formData.profileVisibility === "public"}
-                onChange={() =>
-                  handleInputChange(
-                    "profileVisibility",
-                    formData.profileVisibility === "public" ? "private" : "public"
-                  )
-                }
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00B878]"></div>
-            </label>
-          </div>
-        </div>
+<div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
+        <Eye className="text-gray-600 dark:text-white" size={20} />
+      </div>
+      <div>
+        <div className="font-medium text-gray-900 dark:text-white">Profile Visibility</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">Control who can see your profile</div>
+      </div>
+    </div>
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        className="sr-only peer"
+        checked={formData.profileVisibility === "public"}
+        onChange={() =>
+          handleInputChange(
+            "profileVisibility",
+            formData.profileVisibility === "public" ? "private" : "public"
+          )
+        }
+      />
+      <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:bg-[#00B878] peer-checked:border-[#00B878] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+    </label>
+  </div>
+</div>
+
 
         {/* Message Privacy */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                <MessageCircle className="text-gray-600" size={20} />
+              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
+                <MessageCircle className="text-gray-600 dark:text-white" size={20} />
               </div>
               <div>
-                <div className="font-medium text-gray-900">Message Privacy</div>
-                <div className="text-sm text-gray-500">Control who can send you messages</div>
+                <div className="font-medium text-gray-900 dark:text-white">Message Privacy</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Control who can send you messages</div>
               </div>
             </div>
-            <select className="px-4 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+            <select className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
               <option value="everyone">Everyone</option>
               <option value="friends">Friends Only</option>
               <option value="none">No One</option>
@@ -137,10 +138,11 @@ const Privacy = ({ userData, setUserData, formData, handleInputChange, setFormDa
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
+          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+            isSaving
               ? "bg-gray-400 cursor-not-allowed text-white"
               : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
-            }`}
+          }`}
         >
           {isSaving ? (
             <span className="flex items-center">
