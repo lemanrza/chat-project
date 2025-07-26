@@ -558,8 +558,8 @@ const Chat = () => {
                   <div
                     key={chat._id}
                     className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${selectedChat?._id === chat._id
-                        ? "bg-blue-100 border-l-4 border-blue-500"
-                        : "hover:bg-gray-100"
+                      ? "bg-blue-100 border-l-4 border-blue-500"
+                      : "hover:bg-gray-100"
                       }`}
                     onClick={() => handleChatSelect(chat)}
                   >
@@ -712,8 +712,8 @@ const Chat = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="space-y-4">
+            <div className="space-y-4">
+              <>
                 {messages &&
                   messages.map((message) => {
                     if (!message || !message.sender || !message.sender._id) {
@@ -722,73 +722,58 @@ const Chat = () => {
 
                     const isOwn = message.sender._id === currentUserId;
                     return (
-                      <div
-                        key={message._id}>
-                          {/* Check if message content is a GIF URL */}
-                          {message.content &&
+                      <div key={message._id}>
+                        {message.content &&
                           (message.content.includes("giphy.com") ||
                             message.content.includes(".gif") ||
                             message.content.startsWith("https://media")) ? (
-                            <div className="gif-message">
-                              <img
-                                src={message.content}
-                                alt="GIF"
-                                className="w-full h-auto rounded-xl shadow-sm hover:shadow-md transition-shadow"
-                                style={{
-                                  maxHeight: "250px",
-                                  minWidth: "200px",
-                                }}
-                                onError={(e) => {
-                                  const target = e.currentTarget;
-                                  const fallback =
-                                    target.nextElementSibling as HTMLElement;
-                                  target.style.display = "none";
-                                  if (fallback) {
-                                    fallback.style.display = "block";
-                                    fallback.className = `px-4 py-2 rounded-2xl ${
-                                      isOwn
-                                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-                                        : "bg-gray-100 text-gray-900"
+                          <div className="gif-message">
+                            <img
+                              src={message.content}
+                              alt="GIF"
+                              className="w-full h-auto rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                              style={{
+                                maxHeight: "250px",
+                                minWidth: "200px",
+                              }}
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                const fallback = target.nextElementSibling as HTMLElement;
+                                target.style.display = "none";
+                                if (fallback) {
+                                  fallback.style.display = "block";
+                                  fallback.className = `px-4 py-2 rounded-2xl ${isOwn
+                                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+                                    : "bg-gray-100 text-gray-900"
                                     }`;
-                                  }
-                                }}
-                              />
-                              <p
-                                style={{ display: "none" }}
-                                className="text-sm"
-                              >
-                                Failed to load GIF: {message.content}
-                              </p>
-                            </div>
-                          ) : (
-                            <p className="break-words">
-                              {message.content || "No content"}
+                                }
+                              }}
+                            />
+                            <p style={{ display: "none" }} className="text-sm">
+                              Failed to load GIF: {message.content}
                             </p>
-                          )}
-
-                          <p>
-                            {message.createdAt
-                              ? formatTime(message.createdAt)
-                              : ""}
-                          </p>
-                        </div>
+                          </div>
+                        ) : (
+                          <p className="break-words">{message.content || "No content"}</p>
+                        )}
+                        <p>{message.createdAt ? formatTime(message.createdAt) : ""}</p>
                       </div>
                     );
                   })}
                 <div ref={messagesEndRef} />
-              </div>
+              </>
             </div>
+
 
             {/* Message Input */}
             <div className="p-4 bg-white border-t border-gray-200">
               <div className="flex gap-3 items-center">
                 <button
                   onClick={() => setShowGifPicker(true)}
-                  className={`p-2.5 rounded-full transition-all duration-200 ${
-                    showGifPicker
-                      ? "bg-blue-500 text-white shadow-lg"
-                      : "hover:bg-gray-100 text-gray-600 hover:text-blue-500"
-                  }`}
+                  className={`p-2.5 rounded-full transition-all duration-200 ${showGifPicker
+                    ? "bg-blue-500 text-white shadow-lg"
+                    : "hover:bg-gray-100 text-gray-600 hover:text-blue-500"
+                    }`}
                   title="Send GIF"
                 >
                   <Image className="w-5 h-5" />
@@ -833,7 +818,7 @@ const Chat = () => {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 
