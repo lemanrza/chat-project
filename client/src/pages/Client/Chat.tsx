@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { Send, MessageSquare } from "lucide-react";
 import socket, { reconnectSocket } from "@/socket/socket";
 import { getUserIdFromToken } from "@/utils/auth";
@@ -70,6 +71,12 @@ const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showGifPicker, setShowGifPicker] = useState(false);
 
+  const location = useLocation();
+  const navigationState = location.state as {
+    targetUserId?: string;
+    targetUserName?: string;
+  } | null;
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -85,6 +92,45 @@ const Chat = () => {
       fetchUserData(userId);
     }
   }, []);
+
+  useEffect(() => {
+    const handleTargetUserChat = async () => {
+      if (
+        !navigationState?.targetUserId ||
+        !currentUserId ||
+        chats.length === 0
+      ) {
+        return;
+      }
+
+      const targetUserId = navigationState.targetUserId;
+
+      const existingChat = chats.find((chat) => {
+        return chat.members?.some(
+          (member: any) => member.user && member.user._id === targetUserId
+        );
+      });
+
+      if (existingChat) {
+        setSelectedChat(existingChat);
+        fetchMessages(existingChat._id, currentUserId);
+      } else {
+        const targetConnection = connections.find(
+          (conn: any) => conn._id === targetUserId || conn.id === targetUserId
+        );
+
+        if (targetConnection) {
+          await createChatWithConnection(targetConnection);
+        }
+      }
+
+      window.history.replaceState({}, document.title);
+    };
+
+    if (currentUserId && chats.length > 0) {
+      handleTargetUserChat();
+    }
+  }, [navigationState, currentUserId, chats, connections]);
 
   const fetchMessages = async (chatId: string, userId?: string) => {
     const userIdToUse = userId || currentUserId;
