@@ -99,8 +99,8 @@ const Chat = () => {
 
       if (response.ok) {
         const data = await response.json();
-        const messagesArray = data.data || data.messages || data || [];
-        setMessages(Array.isArray(messagesArray) ? messagesArray : []);
+        const messagesArray = data.data?.messages || [];
+        setMessages(messagesArray);
       } else {
         setMessages([]);
       }
@@ -135,10 +135,6 @@ const Chat = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
-      );
-
-      console.log(
-        `${import.meta.env.VITE_SERVER_URL}/api/chats?userId=${userId}`
       );
 
       if (chatsResponse.ok) {
