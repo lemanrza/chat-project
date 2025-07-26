@@ -109,6 +109,70 @@ const Chat = () => {
     }
   };
 
+  const fetchChatData = async (chatId: string) => {
+    try {
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/api/chats/${chatId}?userId=${currentUserId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const chatData = await response.json();
+        const chat = chatData.data || chatData;
+
+        setChats((prev) => {
+          const exists = prev.some(
+            (existingChat) => existingChat._id === chat._id
+          );
+          if (exists) {
+            return prev.map((existingChat) =>
+              existingChat._id === chat._id ? chat : existingChat
+            );
+          } else {
+            return [chat, ...prev];
+          }
+        });
+
+        setSelectedChat((prevSelected: any) => {
+          if (prevSelected && prevSelected._id === chat._id) {
+            return chat;
+          }
+          return prevSelected;
+        });
+
+        return chat;
+      } else {
+        const errorText = await response.text();
+        console.error(
+          "❌ Failed to fetch chat data. Status:",
+          response.status,
+          "Error:",
+          errorText
+        );
+
+        console.warn(
+          "⚠️ Failed to fetch individual chat, refreshing all chats"
+        );
+        if (currentUserId) {
+          fetchUserData(currentUserId);
+        }
+        return null;
+      }
+    } catch (error) {
+      console.error("❌ Error fetching chat data:", error);
+      if (currentUserId) {
+        fetchUserData(currentUserId);
+      }
+      return null;
+    }
+  };
+
   const fetchUserData = async (userId: string) => {
     setIsLoading(true);
     try {
@@ -210,11 +274,25 @@ const Chat = () => {
         });
       }
 
-      setChats((prev) =>
-        prev.map((chat) =>
-          chat._id === message.chat ? { ...chat, lastMessage: message } : chat
-        )
-      );
+      setChats((prev) => {
+        const existingChatIndex = prev.findIndex(
+          (chat) => chat._id === message.chat
+        );
+
+        if (existingChatIndex !== -1) {
+          const updatedChats = [...prev];
+          updatedChats[existingChatIndex] = {
+            ...updatedChats[existingChatIndex],
+            lastMessage: message,
+          };
+          return updatedChats;
+        } else {
+          if (currentUserId) {
+            fetchChatData(message.chat);
+          }
+          return prev;
+        }
+      });
     };
 
     const handleChatDeleted = (data: { chatId: string }) => {
@@ -354,11 +432,15 @@ const Chat = () => {
         const newChat = await response.json();
         const chatData = newChat.data || newChat;
 
-        setChats((prev) => [...prev, chatData]);
+        const completeChat = await fetchChatData(chatData._id);
 
-        setSelectedChat(chatData);
-
-        fetchMessages(chatData._id, currentUserId);
+        if (completeChat) {
+          setSelectedChat(completeChat);
+          fetchMessages(completeChat._id, currentUserId);
+        } else {
+          setSelectedChat(chatData);
+          fetchMessages(chatData._id, currentUserId);
+        }
       }
     } catch (error) {
       console.error("Failed to create chat:", error);
@@ -369,10 +451,35 @@ const Chat = () => {
     if (!chat || !chat.members || !Array.isArray(chat.members)) {
       return null;
     }
-    return chat.members.find(
+
+    const otherMember = chat.members.find(
       (member: any) =>
         member && member.user && member.user._id !== currentUserId
-    )?.user;
+    );
+
+    if (!otherMember || !otherMember.user) {
+      return null;
+    }
+
+    const user = otherMember.user;
+
+    const userWithDisplayName = {
+      ...user,
+      profile: {
+        ...user.profile,
+        displayName:
+          user.profile?.displayName ||
+          (user.profile?.firstName || user.profile?.lastName
+            ? `${user.profile.firstName || ""} ${
+                user.profile.lastName || ""
+              }`.trim()
+            : user.username || "Unknown User"),
+      },
+      isOnline: user.isOnline,
+      lastSeen: user.lastSeen,
+    };
+
+    return userWithDisplayName;
   };
 
   const formatTime = (dateString: string) => {
@@ -443,9 +550,9 @@ const Chat = () => {
                           </p>
                         )}
                       </div>
-                      {chat.lastMessage && chat.lastMessage.message && (
+                      {chat.lastMessage && chat.lastMessage.createdAt && (
                         <span className="text-xs text-gray-400">
-                          {formatTime(chat.lastMessage.message.createdAt)}
+                          {formatTime(chat.lastMessage.createdAt)}
                         </span>
                       )}
                     </div>
@@ -556,7 +663,7 @@ const Chat = () => {
                       "Unknown User"}
                   </h3>
 
-                  {getOtherParticipant(selectedChat)?.isOnline == true ? (
+                  {getOtherParticipant(selectedChat)?.isOnline === true ? (
                     <p className="text-sm text-green-500">Online</p>
                   ) : (
                     <p className="text-sm text-red-500">Offline</p>
