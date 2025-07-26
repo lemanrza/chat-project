@@ -205,6 +205,9 @@ const Feed = () => {
     console.log("Messaging user:", userId);
   };
 
+  if (users.length === 0) return null;
+
+
   if (loading) {
     return (
       <div className="w-full flex items-center justify-center min-h-screen">
@@ -362,6 +365,22 @@ const Feed = () => {
             {filteredUsers.map((userData) => {
               if (!user) return null;
 
+              const currentUserId = user.id || reduxUser.id;
+              
+              const isAlreadyConnected = userData.connections && Array.isArray(userData.connections) 
+                ? userData.connections.some((conn: any) => {
+                    const connId = typeof conn === 'string' ? conn : conn.id || conn._id;
+                    return connId === currentUserId;
+                  })
+                : false;
+
+              const isRequestPending = userData.connectionsRequests && Array.isArray(userData.connectionsRequests)
+                ? userData.connectionsRequests.some((req: any) => {
+                    const reqId = typeof req === 'string' ? req : req.id || req._id;
+                    return reqId === currentUserId;
+                  })
+                : false;
+
               const handleConnectedClick = () => {
                 enqueueSnackbar("You are already connected with this user", {
                   variant: "info",
@@ -379,13 +398,6 @@ const Feed = () => {
               };
 
               const isPublic = userData.profileVisibility === 'public';
-
-              // const response = pendingRequests.find((p): any => p._id == user._id);
-              // console.log(user._id)
-              // console.log(isRequestPending)
-
-
-              // console.log(pendingRequests)
 
               return (
                 <div
@@ -449,7 +461,7 @@ const Feed = () => {
                   </div>
 
                   <div className="flex gap-3">
-                    {/* {isAlreadyConnected ? (
+                    {isAlreadyConnected ? (
                       <button
                         onClick={handleConnectedClick}
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-green-600 hover:bg-green-700 transition-colors cursor-pointer"
@@ -471,13 +483,7 @@ const Feed = () => {
                         <UserPlus className="w-4 h-4" />
                         {t("feed_connect")}
                       </button>
-                    )} */}
-                    <button
-                      onClick={handleConnectedClick}
-                      className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors cursor-pointer"
-                    >
-                      <Clock /> {t("feed_pending")}
-                    </button>
+                    )}
                     <button
                       onClick={() => userData.id && handleMessage(userData.id)}
                       className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 transition-all shadow"
