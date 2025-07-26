@@ -20,6 +20,8 @@ import {
   updateUserController,
   acceptConnection,
   rejectConnection,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/userController.js";
 import userValidate from "../middlewares/userValidate.js";
 
@@ -30,6 +32,9 @@ userRouter.post("/register", userValidate, registerUser);
 userRouter.post("/login", loginUser);
 userRouter.get("/unlock-account", unlockAccount);
 userRouter.get("/verify-email", verifyUserEmail);
+
+userRouter.post('/forgot-password', forgotPassword);
+userRouter.post('/reset-password', resetPassword);
 
 userRouter.get("/me/:userId", getCurrentUser);
 userRouter.put("/me/:userId", updateCurrentUser);
