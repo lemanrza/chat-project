@@ -4,6 +4,7 @@ import PasswordRequirements from "./components/PasswordRequirements";
 import type { UserData } from "@/types/profileType";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
 import { validatePassword } from "@/lib/validatePassword";
+import { t } from "i18next";
 
 interface ChangePasswordProps {
   userData: UserData | null;
@@ -132,7 +133,7 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
     return (
       <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-          Change Password
+          {t("change_password")}
         </h3>
         <div className="text-center py-8">
           <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
@@ -151,10 +152,10 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
             </svg>
           </div>
           <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Password Not Available
+            {t("change_password_not_available")}
           </h4>
           <p className="text-gray-500 dark:text-gray-300 mb-4">
-            You signed up with{" "}
+            {t("change_password_provider_info")}{" "}
             {userData?.provider === "google" ? "Google" : "GitHub"}. Password
             changes are managed through your{" "}
             {userData?.provider === "google" ? "Google" : "GitHub"} account.
@@ -170,7 +171,7 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
               )
             }
           >
-            Manage on {userData?.provider === "google" ? "Google" : "GitHub"}
+            {t("")} {userData?.provider === "google" ? "Google" : "GitHub"}
           </button>
         </div>
       </div>
@@ -249,14 +250,13 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
             !passwordsMatch ||
             isSameAsCurrentPassword
           }
-          className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-            isChangingPassword ||
+          className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 ${isChangingPassword ||
             !passwordValidation.isValid ||
             !passwordsMatch ||
             isSameAsCurrentPassword
-              ? "bg-gray-400 cursor-not-allowed text-white"
-              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
-          }`}
+            ? "bg-gray-400 cursor-not-allowed text-white"
+            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
+            }`}
         >
           {isChangingPassword ? (
             <span className="flex items-center">

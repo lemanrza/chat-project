@@ -3,6 +3,7 @@ import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { enqueueSnackbar } from "notistack";
 import type { UserData, FormData } from "@/types/profileType";
+import { t } from "i18next";
 
 interface OverviewProps {
   formData: FormData;
@@ -196,7 +197,6 @@ const Overview = ({
 
   return (
     <>
-      {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-6 mb-8">
         <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">
@@ -208,7 +208,7 @@ const Overview = ({
             </div>
             <div>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">154</div>
-              <div className="text-gray-500 dark:text-gray-400 text-sm">Total Messages</div>
+              <div className="text-gray-500 dark:text-gray-400 text-sm">{t("total_messages")}</div>
             </div>
           </div>
         </div>
@@ -222,7 +222,7 @@ const Overview = ({
               <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formData.connections.length}
               </div>
-              <div className="text-gray-500 dark:text-gray-400 text-sm">Connections</div>
+              <div className="text-gray-500 dark:text-gray-400 text-sm">{t("connections")}</div>
             </div>
           </div>
         </div>
@@ -234,7 +234,7 @@ const Overview = ({
             </div>
             <div>
               <div className="text-2xl font-bold text-gray-900 dark:text-white">12</div>
-              <div className="text-gray-500 dark:text-gray-400 text-sm">Favorites</div>
+              <div className="text-gray-500 dark:text-gray-400 text-sm">{t("favorites")}</div>
             </div>
           </div>
         </div>
@@ -243,7 +243,7 @@ const Overview = ({
       {/* Quick Actions */}
       <div className="col-span-9">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Quick Actions
+          {t("quick_actions")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center hover:shadow-md transition-shadow cursor-pointer">
@@ -253,28 +253,28 @@ const Overview = ({
             >
               <MessageCircle size={24} style={{ color: "#00B878" }} />
             </div>
-            <div className="font-medium text-gray-900 dark:text-white mb-1">New Chat</div>
+            <div className="font-medium text-gray-900 dark:text-white mb-1">{t("new_chat")}</div>
           </div>
 
           <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Users className="text-blue-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 dark:text-white mb-1">Find Friends</div>
+            <div className="font-medium text-gray-900 dark:text-white mb-1">{t("find_friends")}</div>
           </div>
 
           <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Settings className="text-purple-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 dark:text-white mb-1">Preferences</div>
+            <div className="font-medium text-gray-900 dark:text-white mb-1">{t("preferences")}</div>
           </div>
 
           <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 text-center hover:shadow-md transition-shadow cursor-pointer">
             <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-3">
               <Shield className="text-orange-600" size={24} />
             </div>
-            <div className="font-medium text-gray-900 dark:text-white mb-1">Privacy</div>
+            <div className="font-medium text-gray-900 dark:text-white mb-1">{t("privacy")}</div>
           </div>
         </div>
       </div>
@@ -282,12 +282,12 @@ const Overview = ({
       {/* Connection Requests */}
       <div className="mt-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Connection Requests
+          {t("connection_requests")}
         </h3>
         <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           {connectionRequests.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-gray-600 dark:text-gray-400">No pending connection requests</p>
+              <p className="text-gray-600 dark:text-gray-400">{t("no_pending_requests")}</p>
             </div>
           ) : (
             connectionRequests.map((request: any, index: number) => {
@@ -300,8 +300,7 @@ const Overview = ({
 
               if (request && typeof request === "object") {
                 isUserObject = true;
-                firstName =
-                  request.firstName || request.profile?.firstName || "Unknown";
+                firstName = request.firstName || request.profile?.firstName || "Unknown";
                 lastName = request.lastName || request.profile?.lastName || "";
                 avatar = request.avatar || request.profile?.avatar || avatar;
               }
@@ -321,12 +320,10 @@ const Overview = ({
                     </div>
                     <div>
                       <div className="font-medium text-gray-900 dark:text-white">
-                        {isUserObject
-                          ? `${firstName} ${lastName}`.trim()
-                          : `User ID: ${requestId}`}
+                        {isUserObject ? `${firstName} ${lastName}`.trim() : `User ID: ${requestId}`}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Sent you a connection request
+                        {t("sent_you_request")}
                       </div>
                     </div>
                   </div>
@@ -337,7 +334,7 @@ const Overview = ({
                       }}
                       className="bg-[#00B878] text-white px-4 py-2 rounded-lg hover:bg-[#00a76d] focus:outline-none transition duration-200"
                     >
-                      Accept
+                      {t("accept")}
                     </button>
                     <button
                       onClick={() => {
@@ -345,7 +342,7 @@ const Overview = ({
                       }}
                       className="bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 focus:outline-none transition duration-200"
                     >
-                      Reject
+                      {t("reject")}
                     </button>
                   </div>
                 </div>
@@ -358,17 +355,16 @@ const Overview = ({
       {/* My Connections */}
       <div className="mt-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          My Connections
+          {t("my_connections")}
         </h3>
         <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           {connections.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-gray-600 dark:text-gray-400">No connections yet</p>
+              <p className="text-gray-600 dark:text-gray-400">{t("no_connections_yet")}</p>
             </div>
           ) : (
             connections.map((connection: any, index: number) => {
-              const connectionId =
-                connection?.id || connection?._id || connection;
+              const connectionId = connection?.id || connection?._id || connection;
               let isUserObject = false;
               let firstName = "Unknown";
               let lastName = "";
@@ -377,14 +373,9 @@ const Overview = ({
 
               if (connection && typeof connection === "object") {
                 isUserObject = true;
-                firstName =
-                  connection.firstName ||
-                  connection.profile?.firstName ||
-                  "Unknown";
-                lastName =
-                  connection.lastName || connection.profile?.lastName || "";
-                avatar =
-                  connection.avatar || connection.profile?.avatar || avatar;
+                firstName = connection.firstName || connection.profile?.firstName || "Unknown";
+                lastName = connection.lastName || connection.profile?.lastName || "";
+                avatar = connection.avatar || connection.profile?.avatar || avatar;
               }
 
               return (
@@ -402,11 +393,11 @@ const Overview = ({
                     </div>
                     <div>
                       <div className="font-medium text-gray-900 dark:text-white">
-                        {isUserObject
-                          ? `${firstName} ${lastName}`.trim()
-                          : `User ID: ${connectionId}`}
+                        {isUserObject ? `${firstName} ${lastName}`.trim() : `User ID: ${connectionId}`}
                       </div>
-                      <div className="text-sm text-green-600 dark:text-green-400">✓ Connected</div>
+                      <div className="text-sm text-green-600 dark:text-green-400">
+                        {t("connected")}
+                      </div>
                     </div>
                   </div>
                   <div className="space-x-2">
@@ -416,7 +407,7 @@ const Overview = ({
                       }}
                       className="bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 hover:text-red-700 border border-red-200 hover:border-red-300 focus:outline-none transition duration-200"
                     >
-                      Remove
+                      {t("remove")}
                     </button>
                   </div>
                 </div>

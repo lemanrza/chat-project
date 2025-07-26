@@ -5,6 +5,7 @@ import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { getUserIdFromToken } from "@/utils/auth";
 import type { UserData, FormData } from "@/types/profileType";
+import { t } from "i18next";
 
 interface PrivacyProps {
   userData: UserData | null;
@@ -79,38 +80,43 @@ const Privacy = ({ userData, setUserData, formData, handleInputChange, setFormDa
 
   return (
     <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Privacy Settings</h3>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+        {t("privacy_settings")}
+      </h3>
 
       <div className="space-y-6">
         {/* Profile Visibility */}
-<div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-3">
-      <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
-        <Eye className="text-gray-600 dark:text-white" size={20} />
-      </div>
-      <div>
-        <div className="font-medium text-gray-900 dark:text-white">Profile Visibility</div>
-        <div className="text-sm text-gray-500 dark:text-gray-400">Control who can see your profile</div>
-      </div>
-    </div>
-    <label className="relative inline-flex items-center cursor-pointer">
-      <input
-        type="checkbox"
-        className="sr-only peer"
-        checked={formData.profileVisibility === "public"}
-        onChange={() =>
-          handleInputChange(
-            "profileVisibility",
-            formData.profileVisibility === "public" ? "private" : "public"
-          )
-        }
-      />
-      <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:bg-[#00B878] peer-checked:border-[#00B878] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-    </label>
-  </div>
-</div>
-
+        <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
+                <Eye className="text-gray-600 dark:text-white" size={20} />
+              </div>
+              <div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {t("profile_visibility")}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {t("control_who_can_see_your_profile")}
+                </div>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={formData.profileVisibility === "public"}
+                onChange={() =>
+                  handleInputChange(
+                    "profileVisibility",
+                    formData.profileVisibility === "public" ? "private" : "public"
+                  )
+                }
+              />
+              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:bg-[#00B878] peer-checked:border-[#00B878] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+            </label>
+          </div>
+        </div>
 
         {/* Message Privacy */}
         <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
@@ -120,14 +126,18 @@ const Privacy = ({ userData, setUserData, formData, handleInputChange, setFormDa
                 <MessageCircle className="text-gray-600 dark:text-white" size={20} />
               </div>
               <div>
-                <div className="font-medium text-gray-900 dark:text-white">Message Privacy</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">Control who can send you messages</div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {t("message_privacy")}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {t("control_who_can_send_you_messages")}
+                </div>
               </div>
             </div>
             <select className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
-              <option value="everyone">Everyone</option>
-              <option value="friends">Friends Only</option>
-              <option value="none">No One</option>
+              <option value="everyone">{t("everyone")}</option>
+              <option value="friends">{t("friends_only")}</option>
+              <option value="none">{t("no_one")}</option>
             </select>
           </div>
         </div>
@@ -138,11 +148,10 @@ const Privacy = ({ userData, setUserData, formData, handleInputChange, setFormDa
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-            isSaving
-              ? "bg-gray-400 cursor-not-allowed text-white"
-              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
-          }`}
+          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
+            ? "bg-gray-400 cursor-not-allowed text-white"
+            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
+            }`}
         >
           {isSaving ? (
             <span className="flex items-center">
@@ -166,7 +175,7 @@ const Privacy = ({ userData, setUserData, formData, handleInputChange, setFormDa
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Saving...
+              {t("saving")}
             </span>
           ) : (
             <>
@@ -183,7 +192,7 @@ const Privacy = ({ userData, setUserData, formData, handleInputChange, setFormDa
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              Save Changes
+              {t("save_changes")}
             </>
           )}
         </button>

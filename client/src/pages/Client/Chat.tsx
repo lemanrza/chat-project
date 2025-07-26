@@ -6,6 +6,7 @@ import { getUserIdFromToken } from "@/utils/auth";
 import type { UserData } from "@/types/profileType";
 import GifPicker from "@/components/GifPicker";
 import { Image } from "lucide-react";
+import { t } from "i18next";
 
 interface Message {
   _id: string;
@@ -136,8 +137,7 @@ const Chat = () => {
     const userIdToUse = userId || currentUserId;
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL
+        `${import.meta.env.VITE_SERVER_URL
         }/api/messages/chat/${chatId}?userId=${userIdToUse}`,
         {
           headers: {
@@ -161,8 +161,7 @@ const Chat = () => {
   const fetchChatData = async (chatId: string) => {
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL
+        `${import.meta.env.VITE_SERVER_URL
         }/api/chats/${chatId}?userId=${currentUserId}`,
         {
           headers: {
@@ -391,7 +390,7 @@ const Chat = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        Loading chats...
+        {t("loading")}
       </div>
     );
   }
@@ -519,8 +518,7 @@ const Chat = () => {
         displayName:
           user.profile?.displayName ||
           (user.profile?.firstName || user.profile?.lastName
-            ? `${user.profile.firstName || ""} ${
-                user.profile.lastName || ""
+            ? `${user.profile.firstName || ""} ${user.profile.lastName || ""
               }`.trim()
             : user.username || "Unknown User"),
       },
@@ -577,7 +575,7 @@ const Chat = () => {
     }
   };
 
- return (
+  return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-800">
       {/* Sidebar */}
       <div className="w-1/3 bg-white dark:bg-[#262626] border-r border-gray-200 dark:border-gray-700 flex flex-col">
@@ -692,7 +690,7 @@ const Chat = () => {
                           "Unknown User"}
                       </h3>
                       <p className="text-sm text-green-600 dark:text-green-400">
-                        Click to start chat
+                        {t("click_to_start")}
                       </p>
                     </div>
                   </div>
@@ -705,7 +703,7 @@ const Chat = () => {
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No connections yet</p>
-                <p className="text-sm">Add some connections to start chatting</p>
+                <p className="text-sm">{t("add_connections_to_start_chatting")}</p>
               </div>
             )}
           </div>
@@ -738,9 +736,9 @@ const Chat = () => {
                   </h3>
 
                   {getOtherParticipant(selectedChat)?.isOnline === true ? (
-                    <p className="text-sm text-green-500 dark:text-green-400">Online</p>
+                    <p className="text-sm text-green-500 dark:text-green-400">{t("online")}</p>
                   ) : (
-                    <p className="text-sm text-red-500 dark:text-red-400">Offline</p>
+                    <p className="text-sm text-red-500 dark:text-red-400">{t("offline")}</p>
                   )}
                 </div>
               </div>
@@ -768,15 +766,15 @@ const Chat = () => {
                               message.content.startsWith("https://media"))
                             ? "bg-transparent p-1"
                             : isOwn
-                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2"
-                          }`}
+                              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2"
+                            }`}
                         >
                           {/* Check if message content is a GIF URL */}
                           {message.content &&
-                          (message.content.includes("giphy.com") ||
-                            message.content.includes(".gif") ||
-                            message.content.startsWith("https://media")) ? (
+                            (message.content.includes("giphy.com") ||
+                              message.content.includes(".gif") ||
+                              message.content.startsWith("https://media")) ? (
                             <div className="gif-message">
                               <img
                                 src={message.content}
@@ -793,11 +791,10 @@ const Chat = () => {
                                   target.style.display = "none";
                                   if (fallback) {
                                     fallback.style.display = "block";
-                                    fallback.className = `px-4 py-2 rounded-2xl ${
-                                      isOwn
-                                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-                                        : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
-                                    }`;
+                                    fallback.className = `px-4 py-2 rounded-2xl ${isOwn
+                                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+                                      : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                      }`;
                                   }
                                 }}
                               />
@@ -813,18 +810,17 @@ const Chat = () => {
                           )}
 
                           <p
-                            className={`text-xs mt-1 ${
-                              message.content &&
+                            className={`text-xs mt-1 ${message.content &&
                               (message.content.includes("giphy.com") ||
                                 message.content.includes(".gif") ||
                                 message.content.startsWith("https://media"))
-                                ? isOwn
-                                  ? "text-gray-600 bg-white/80 px-2 py-1 rounded-full inline-block ml-auto"
-                                  : "text-white bg-gray-800/80 px-2 py-1 rounded-full inline-block"
-                                : isOwn
+                              ? isOwn
+                                ? "text-gray-600 bg-white/80 px-2 py-1 rounded-full inline-block ml-auto"
+                                : "text-white bg-gray-800/80 px-2 py-1 rounded-full inline-block"
+                              : isOwn
                                 ? "text-blue-100"
                                 : "text-gray-500"
-                            }`}
+                              }`}
                           >
                             {message.createdAt
                               ? formatTime(message.createdAt)
@@ -843,11 +839,10 @@ const Chat = () => {
               <div className="flex gap-3 items-center">
                 <button
                   onClick={() => setShowGifPicker(true)}
-                  className={`p-2.5 rounded-full transition-all duration-200 ${
-                    showGifPicker
-                      ? "bg-blue-500 text-white shadow-lg"
-                      : "hover:bg-gray-100 text-gray-600 hover:text-blue-500"
-                  }`}
+                  className={`p-2.5 rounded-full transition-all duration-200 ${showGifPicker
+                    ? "bg-blue-500 text-white shadow-lg"
+                    : "hover:bg-gray-100 text-gray-600 hover:text-blue-500"
+                    }`}
                   title="Send GIF"
                 >
                   <Image className="w-5 h-5" />
@@ -883,10 +878,10 @@ const Chat = () => {
             <div className="text-center">
               <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
               <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
-                Welcome to Chat
+                {t("welcome_to_chat")}
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Select a chat or connection to start messaging
+                {t("start_messaging")}
               </p>
             </div>
           </div>
