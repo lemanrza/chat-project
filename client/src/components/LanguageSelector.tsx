@@ -25,12 +25,12 @@ const LanguageSelection: React.FC<LanguageSelectionProps> = ({ onLanguageSelect 
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="min-h-screen  flex items-center justify-center p-4">
             <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="bg-white dark:bg-neutral-900 rounded-3xl shadow-xl p-8 max-w-md w-full transition-colors duration-300"
+                className="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full"
             >
                 <motion.div
                     initial={{ scale: 0 }}
@@ -40,8 +40,7 @@ const LanguageSelection: React.FC<LanguageSelectionProps> = ({ onLanguageSelect 
                 >
                     <h1 className="text-3xl gap-2 font-bold text-center flex mx-auto items-center">
                         <img src={chatlogo} alt="chat logo" className="w-10" />
-                        <span className="text-neutral-700 dark:text-neutral-200">Chat</span>
-                        <span className="text-green-500">Wave</span>
+                        <span className="text-gray-700">Chat</span> <span className="text-green-500">Wave</span>
                     </h1>
                 </motion.div>
 
@@ -49,19 +48,17 @@ const LanguageSelection: React.FC<LanguageSelectionProps> = ({ onLanguageSelect 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5, duration: 0.6 }}
-                    className="text-2xl font-bold text-center text-neutral-800 dark:text-neutral-100 mb-2"
+                    className="text-2xl font-bold text-center text-gray-800 mb-2"
                 >
-                    Choose Language
-                </motion.h1>
+                    Choose Language                </motion.h1>
 
                 <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.7, duration: 0.6 }}
-                    className="text-neutral-600 dark:text-neutral-400 text-center mb-8"
+                    className="text-gray-600 text-center mb-8"
                 >
-                    Select Language Prompt
-                </motion.p>
+                    Select Language Prompt                </motion.p>
 
                 <div className="space-y-3">
                     {languages.map((language, index) => (
@@ -73,10 +70,10 @@ const LanguageSelection: React.FC<LanguageSelectionProps> = ({ onLanguageSelect 
                             whileHover={{ scale: 1.02, x: 5 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => handleLanguageSelect(language.code)}
-                            className="w-full bg-gray-50 dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-200 dark:border-neutral-700 hover:border-green-400 rounded-2xl p-4 flex items-center justify-between transition-all duration-200 group"
+                            className="w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-green-400 rounded-2xl p-4 flex items-center justify-between transition-all duration-200 group"
                         >
                             <LanguageOption code={language.code} name={language.name} />
-                            <ChevronRight className="w-5 h-5 text-gray-400 dark:text-neutral-400 group-hover:text-green-500 transition-colors" />
+                            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-green-500 transition-colors" />
                         </motion.button>
                     ))}
                 </div>

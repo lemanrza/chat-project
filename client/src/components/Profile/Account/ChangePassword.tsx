@@ -4,14 +4,12 @@ import PasswordRequirements from "./components/PasswordRequirements";
 import type { UserData } from "@/types/profileType";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
 import { validatePassword } from "@/lib/validatePassword";
-import { useTranslation } from "react-i18next";
 
 interface ChangePasswordProps {
   userData: UserData | null;
 }
 
 const ChangePassword = ({ userData }: ChangePasswordProps) => {
-  const { t } = useTranslation();
   const {
     passwordData,
     showPasswords,
@@ -25,9 +23,9 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
   // If userData is null, show loading or return early
   if (!userData) {
     return (
-      <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm border border-gray-200">
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
         <h3 className="text-xl font-semibold text-gray-900 mb-6">
-          {t("changePassword.title")}
+          Change Password
         </h3>
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
@@ -52,7 +50,7 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
       !passwordData.newPassword ||
       !passwordData.confirmPassword
     ) {
-      enqueueSnackbar(t("changePassword.allFieldsRequired"), {
+      enqueueSnackbar("All password fields are required", {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
@@ -61,7 +59,7 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
     }
 
     if (isSameAsCurrentPassword) {
-      enqueueSnackbar(t("changePassword.mustBeDifferent"), {
+      enqueueSnackbar("New password must be different from current password", {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
@@ -70,7 +68,7 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
     }
 
     if (!passwordsMatch) {
-      enqueueSnackbar(t("changePassword.notMatch"), {
+      enqueueSnackbar("New password and confirmation don't match", {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
@@ -79,7 +77,7 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
     }
 
     if (!passwordValidation.isValid) {
-      enqueueSnackbar(t("changePassword.requirements"), {
+      enqueueSnackbar("Please ensure your password meets all requirements", {
         variant: "error",
         autoHideDuration: 4000,
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
@@ -108,18 +106,18 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || t("changePassword.failed"));
+        throw new Error(result.message || "Failed to change password");
       }
 
       resetForm();
-      enqueueSnackbar(t("changePassword.success"), {
+      enqueueSnackbar("Password changed successfully!", {
         variant: "success",
         autoHideDuration: 3000,
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
       });
     } catch (error: any) {
       console.error("Error changing password:", error);
-      enqueueSnackbar(error.message || t("changePassword.failed"), {
+      enqueueSnackbar(error.message || "Failed to change password", {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
@@ -131,11 +129,10 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
 
   // Non-local provider view
   if (userData?.provider !== "local") {
-    const providerName = userData?.provider === "google" ? "Google" : "GitHub";
     return (
-      <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm border border-gray-200">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-          {t("changePassword.title")}
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <h3 className="text-xl font-semibold text-gray-900 mb-6">
+          Change Password
         </h3>
         <div className="text-center py-8">
           <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -153,14 +150,17 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
               />
             </svg>
           </div>
-          <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            {t("changePassword.notAvailable")}
+          <h4 className="text-lg font-medium text-gray-900 mb-2">
+            Password Not Available
           </h4>
           <p className="text-gray-500 mb-4">
-            {t("changePassword.providerInfo", { provider: providerName })}
+            You signed up with{" "}
+            {userData?.provider === "google" ? "Google" : "GitHub"}. Password
+            changes are managed through your{" "}
+            {userData?.provider === "google" ? "Google" : "GitHub"} account.
           </p>
           <button
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg dark:text-white hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             onClick={() =>
               window.open(
                 userData?.provider === "google"
@@ -170,7 +170,7 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
               )
             }
           >
-            {t("changePassword.manageOn", { provider: providerName })}
+            Manage on {userData?.provider === "google" ? "Google" : "GitHub"}
           </button>
         </div>
       </div>
@@ -180,14 +180,14 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
       <h3 className="text-xl font-semibold text-gray-900 mb-6">
-        {t("changePassword.title")}
+        Change Password
       </h3>
 
       <form onSubmit={handleSubmitPasswordChange} className="space-y-6">
         {/* Current Password */}
         <PasswordInput
-          label={t("changePassword.current")}
-          placeholder={t("changePassword.currentPlaceholder")}
+          label="Current Password"
+          placeholder="Enter your current password"
           value={passwordData.currentPassword}
           showPassword={showPasswords.current}
           onChange={(value) => updatePassword("currentPassword", value)}
@@ -199,15 +199,15 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
         {/* New Password */}
         <div>
           <PasswordInput
-            label={t("changePassword.new")}
-            placeholder={t("changePassword.newPlaceholder")}
+            label="New Password"
+            placeholder="Enter your new password"
             value={passwordData.newPassword}
             showPassword={showPasswords.new}
             onChange={(value) => updatePassword("newPassword", value)}
             onToggleVisibility={() => togglePasswordVisibility("new")}
             error={
               passwordData.newPassword && isSameAsCurrentPassword
-                ? t("changePassword.mustBeDifferent")
+                ? "New password must be different from current password"
                 : undefined
             }
             required
@@ -225,15 +225,15 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
 
         {/* Confirm Password */}
         <PasswordInput
-          label={t("changePassword.confirm")}
-          placeholder={t("changePassword.confirmPlaceholder")}
+          label="Confirm New Password"
+          placeholder="Confirm your new password"
           value={passwordData.confirmPassword}
           showPassword={showPasswords.confirm}
           onChange={(value) => updatePassword("confirmPassword", value)}
           onToggleVisibility={() => togglePasswordVisibility("confirm")}
           error={
             passwordData.confirmPassword && !passwordsMatch
-              ? t("changePassword.notMatch")
+              ? "Passwords do not match"
               : undefined
           }
           required
@@ -250,11 +250,11 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
             isSameAsCurrentPassword
           }
           className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 ${isChangingPassword ||
-            !passwordValidation.isValid ||
-            !passwordsMatch ||
-            isSameAsCurrentPassword
-            ? "bg-gray-400 cursor-not-allowed text-white"
-            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
+              !passwordValidation.isValid ||
+              !passwordsMatch ||
+              isSameAsCurrentPassword
+              ? "bg-gray-400 cursor-not-allowed text-white"
+              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
             }`}
         >
           {isChangingPassword ? (
@@ -279,10 +279,10 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              {t("changePassword.updating")}
+              Updating Password...
             </span>
           ) : (
-            t("changePassword.update")
+            "Update Password"
           )}
         </button>
       </form>

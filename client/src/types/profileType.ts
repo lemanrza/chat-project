@@ -1,5 +1,5 @@
 export interface UserData {
-  id: string;
+  id: string
   profile: {
     firstName: string;
     lastName: string;
@@ -21,7 +21,6 @@ export interface UserData {
 }
 
 export interface FormData {
-  messagePrivacy: string;
   firstName: string;
   lastName: string;
   email: string;

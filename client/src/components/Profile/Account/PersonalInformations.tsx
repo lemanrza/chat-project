@@ -41,7 +41,6 @@ import endpoints from "@/services/api";
 import { getUserIdFromToken } from "@/utils/auth";
 import axios from "axios";
 import type { UserData, FormData } from "@/types/profileType";
-import { useTranslation } from "react-i18next";
 
 interface LocationData {
   id: string;
@@ -54,7 +53,6 @@ interface PersonalInformationsProps {
   handleInputChange: (field: string, value: string) => void;
   userData: UserData | null;
 }
-
 const interests = [
   { name: "Coffee", icon: Coffee },
   { name: "Travel", icon: Plane },
@@ -104,10 +102,10 @@ const PersonalInformations = ({
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [locationSearch, setLocationSearch] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
-  const { t } = useTranslation();
+
   useEffect(() => {
     if (userData?.hobbies) {
-      setSelectedHobbies(userData.hobbies);
+      setSelectedHobbies(userData.hobbies); // Load hobbies from the user data if available
     }
   }, [userData]);
 
@@ -207,86 +205,80 @@ const PersonalInformations = ({
 
   const handleHobbyChange = (hobby: string) => {
     if (selectedHobbies.includes(hobby)) {
+      // Deselect hobby
       setSelectedHobbies((prev) => prev.filter((h) => h !== hobby));
     } else {
       if (selectedHobbies.length < 5) {
+        // Select hobby if under max 5
         setSelectedHobbies((prev) => [...prev, hobby]);
       }
     }
   };
 
+  // Check if hobbies are less than 3, then show validation message
   const isMinHobbiesSelected = selectedHobbies.length >= 3;
 
   return (
-    <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-neutral-700">
-      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+      <h3 className="text-xl font-semibold text-gray-900 mb-6">
         Personal Information
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* First Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t("first_name", "First Name")}
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            First Name
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={formData.firstName}
             onChange={(e) => handleInputChange("firstName", e.target.value)}
             placeholder="Enter your first name"
           />
         </div>
-
-        {/* Last Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t("last_name", "Last Name")}
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Last Name
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={formData.lastName}
             onChange={(e) => handleInputChange("lastName", e.target.value)}
             placeholder="Enter your last name"
           />
         </div>
-
-        {/* Email */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Email
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Email Address
           </label>
           <input
             type="email"
-            className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
             placeholder="Enter your email address"
           />
         </div>
-
-        {/* Username */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t("username", "Username")}
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Username
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-600 rounded-lg bg-gray-50 dark:bg-neutral-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
             value={userData?.username || ""}
             disabled
             placeholder="Username cannot be changed"
           />
         </div>
-
-        {/* Location */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t("account.locationLabel", "Location")}
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Location
           </label>
           <input
             type="text"
-            className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={locationSearch || formData.location}
             onChange={(e) => {
               handleInputChange("location", e.target.value);
@@ -295,53 +287,48 @@ const PersonalInformations = ({
             placeholder="Search and select your location"
           />
           {isSearching && (
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {t("account.searching", "Searching...")}
-            </div>
+            <div className="text-sm text-gray-500">Searching...</div>
           )}
           {locations.length > 0 && (
-            <ul className="bg-white dark:bg-neutral-900 shadow-md border border-gray-300 dark:border-neutral-700 mt-2 rounded-lg max-h-60 overflow-auto">
+            <ul className="bg-white shadow-md border border-gray-300 mt-2 rounded-lg max-h-60 overflow-auto">
               {locations.map((location) => (
                 <li
-                  key={location.id}
+                  key={location.id} // Use the id to key each element in the list
                   className="px-4 py-2 cursor-pointer hover:bg-[#00B878] hover:text-white"
                   onClick={() => {
                     handleInputChange(
                       "location",
                       `${location.city}, ${location.country}`
-                    );
-                    setLocationSearch(`${location.city}, ${location.country}`);
-                    setLocations([]);
+                    ); // You can change this to location.country if you want to display the country
+                    setLocationSearch(`${location.city}, ${location.country}`); // Set the search input to the selected city
+                    setLocations([]); // Clear the list after selection
                   }}
                 >
-                  {location.city}, {location.country}
+                  {location.city}, {location.country}{" "}
+                  {/* Here we are displaying city and country */}
                 </li>
               ))}
             </ul>
           )}
         </div>
-
-        {/* Bio */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Bio
           </label>
           <textarea
-            className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors resize-none"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors resize-none"
             rows={4}
             value={formData.bio}
             onChange={(e) => handleInputChange("bio", e.target.value)}
             placeholder="Tell us about yourself..."
           />
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {formData.bio.length}/{t("500_characters", "characters")}
+          <p className="text-xs text-gray-500 mt-1">
+            {formData.bio.length}/500 characters
           </p>
         </div>
-
-        {/* Hobbies */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t("account.hobbiesLabel", "Hobbies")}
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Hobbies
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {interests.map((interest) => {
@@ -350,18 +337,21 @@ const PersonalInformations = ({
               const isDisabled = selectedHobbies.length >= 5 && !isChecked;
 
               return (
-                <div key={interest.name} className="flex items-center space-x-2">
+                <div
+                  key={interest.name}
+                  className="flex items-center space-x-2"
+                >
                   <input
                     type="checkbox"
                     id={interest.name}
                     checked={isChecked}
-                    disabled={isDisabled}
+                    disabled={isDisabled} // Disable the checkbox if there are already 5 selected hobbies
                     onChange={() => handleHobbyChange(interest.name)}
                     className="h-5 w-5 rounded border-gray-300 text-[#00B878] focus:ring-[#00B878] focus:ring-2 accent-[#00B878]"
                   />
                   <label
                     htmlFor={interest.name}
-                    className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+                    className="text-sm text-gray-700 cursor-pointer"
                   >
                     <span className="mr-2">
                       <IconComponent size={16} className="inline" />
@@ -374,7 +364,7 @@ const PersonalInformations = ({
           </div>
           {!isMinHobbiesSelected && (
             <p className="text-sm text-red-500 mt-2">
-              {t("account.minHobbiesError", "Please select at least 3 hobbies.")}
+              Please select at least 3 hobbies.
             </p>
           )}
         </div>
@@ -385,10 +375,11 @@ const PersonalInformations = ({
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
-              ? "bg-gray-400 dark:bg-neutral-700 cursor-not-allowed text-white"
+          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+            isSaving
+              ? "bg-gray-400 cursor-not-allowed text-white"
               : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
-            }`}
+          }`}
         >
           {isSaving ? (
             <span className="flex items-center">
@@ -412,7 +403,7 @@ const PersonalInformations = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              {t("saving", "Saving...")}
+              Saving...
             </span>
           ) : (
             <>
@@ -429,13 +420,12 @@ const PersonalInformations = ({
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              {t("save_changes", "Save Changes")}
+              Save Changes
             </>
           )}
         </button>
       </div>
     </div>
-
   );
 };
 

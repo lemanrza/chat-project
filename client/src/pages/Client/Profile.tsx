@@ -1,24 +1,22 @@
 import { useState, useRef, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import controller from "@/services/commonRequest";
 import endpoints from "@/services/api";
 import { enqueueSnackbar } from "notistack";
 import Account from "@/components/Profile/Account/Account";
-import Overview from "@/components/Profile/Overview";
 import Privacy from "@/components/Profile/Privacy";
+import Overview from "@/components/Profile/Overview";
 import Navigation from "@/components/Profile/Navigation";
 import Settings from "@/components/Profile/Settings";
 import { getUserIdFromToken, isTokenExpired } from "@/utils/auth";
+import type { FormData } from "@/types/profileType";
 
 const Profile = () => {
-  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("overview");
   const [imagePreview, setImagePreview] = useState<string>("");
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [formData, setFormData] = useState<any>({
-    messagePrivacy: "public",
+  const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
     email: "",
@@ -27,7 +25,7 @@ const Profile = () => {
     hobbies: [],
     connections: [],
     connectionsRequests: [],
-    profileVisibility: "public",
+    profileVisibility: "public"
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,19 +40,16 @@ const Profile = () => {
 
         const userId = getUserIdFromToken();
         if (!userId) {
+          console.log("No user ID found in token, redirecting to login...");
           localStorage.removeItem("token");
           window.location.href = "/auth/login";
           return;
         }
 
-        const response = await controller.getOne(
-          `${endpoints.users}/me`,
-          userId
-        );
+        const response = await controller.getOne(`${endpoints.users}/me`, userId);
         setUserData(response.data);
 
         setFormData({
-          messagePrivacy: response.data.messagePrivacy || "public",
           firstName: response.data.profile?.firstName || "",
           lastName: response.data.profile?.lastName || "",
           email: response.data.email || "",
@@ -63,20 +58,19 @@ const Profile = () => {
           hobbies: response.data.hobbies || [],
           connections: response.data.connections || [],
           connectionsRequests: response.data.connectionsRequests || [],
-          profileVisibility:
-            (response.data.profileVisibility as "public" | "private") ||
-            "public",
+          profileVisibility: (response.data.profileVisibility as "public" | "private") || "public",
         });
       } catch (error: any) {
         console.error("Error fetching user data:", error);
 
         if (error.response?.status === 401 || error.response?.status === 403) {
+          console.log("Authentication failed, redirecting to login...");
           localStorage.removeItem("token");
           window.location.href = "/auth/login";
           return;
         }
 
-        enqueueSnackbar(t("profile_failed_to_load"), {
+        enqueueSnackbar("Failed to load user data", {
           variant: "error",
           autoHideDuration: 2000,
           anchorOrigin: {
@@ -98,7 +92,7 @@ const Profile = () => {
 
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
-      enqueueSnackbar(t("profile_invalid_image"), {
+      enqueueSnackbar("Please select a valid image file (JPEG, PNG, or GIF)", {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -110,7 +104,7 @@ const Profile = () => {
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      enqueueSnackbar(t("profile_image_size_error"), {
+      enqueueSnackbar("Image size must be less than 5MB", {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -163,7 +157,7 @@ const Profile = () => {
       URL.revokeObjectURL(previewUrl);
       setImagePreview("");
 
-      enqueueSnackbar(t("profile_image_updated"), {
+      enqueueSnackbar("Profile image updated successfully!", {
         variant: "success",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -179,7 +173,7 @@ const Profile = () => {
         setImagePreview("");
       }
 
-      enqueueSnackbar(t("profile_failed_upload_image"), {
+      enqueueSnackbar("Failed to upload image. Please try again.", {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -236,7 +230,7 @@ const Profile = () => {
         setImagePreview("");
       }
 
-      enqueueSnackbar(t("profile_image_deleted"), {
+      enqueueSnackbar("Profile image deleted successfully!", {
         variant: "success",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -246,7 +240,7 @@ const Profile = () => {
       });
     } catch (error) {
       console.error("Error deleting image:", error);
-      enqueueSnackbar(t("profile_failed_delete_image"), {
+      enqueueSnackbar("Failed to delete image. Please try again.", {
         variant: "error",
         autoHideDuration: 3000,
         anchorOrigin: {
@@ -260,7 +254,7 @@ const Profile = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -271,7 +265,7 @@ const Profile = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t("profile_loading")}</p>
+          <p className="mt-4 text-gray-600">Loading profile...</p>
         </div>
       </div>
     );
@@ -281,12 +275,11 @@ const Profile = () => {
     <div className="min-h-screen flex">
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-semibold">{t("profile_title")}</h1>
+          <h1 className="text-2xl font-semibold">Profile</h1>
         </div>
 
-        <div className="bg-white dark:bg-neutral-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-neutral-700 mb-8">
+        <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 mb-8">
           <div className="flex items-start gap-6">
-            {/* Profile Image */}
             <div className="relative group">
               <div
                 className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold overflow-hidden transition-all duration-200 group-hover:shadow-xl group-hover:scale-[1.02] mx-auto"
@@ -298,15 +291,15 @@ const Profile = () => {
                     alt="Profile Preview"
                     className="w-full h-full object-cover"
                   />
-                ) : (
+                ) : userData?.profile?.avatar ? (
                   <img
-                    src={
-                      userData?.profile?.avatar ||
-                      "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png"
-                    }
+                    src={userData.profile.avatar}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
+                ) : (
+                  userData?.profile?.firstName?.charAt(0) +
+                  userData?.profile?.lastName?.charAt(0) || "U"
                 )}
               </div>
 
@@ -319,7 +312,6 @@ const Profile = () => {
               />
 
               <div className="mt-3 flex flex-col items-center gap-2">
-                {/* Upload Button */}
                 <button
                   className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
                     isUploadingImage
@@ -332,22 +324,29 @@ const Profile = () => {
                   {isUploadingImage ? (
                     <>
                       <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
-                      <span>{t("profile_uploading")}</span>
+                      <span>Uploading...</span>
                     </>
                   ) : (
                     <>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      >
                         <path d="M12 2L12 22M2 12L22 12" />
                       </svg>
-                      <span>{t("profile_change_photo")}</span>
+                      <span>Change Photo</span>
                     </>
                   )}
                 </button>
 
-                {/* Delete Button */}
                 {userData?.profile?.avatar &&
                   userData.profile.avatar !==
-                    "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
+                  "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png" &&
                   !imagePreview && (
                     <button
                       className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
@@ -363,14 +362,22 @@ const Profile = () => {
                       {isUploadingImage ? (
                         <>
                           <div className="animate-spin rounded-full h-3 w-3 border border-gray-400 border-t-transparent"></div>
-                          <span>{t("profile_removing")}</span>
+                          <span>Removing...</span>
                         </>
                       ) : (
                         <>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          >
                             <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14ZM10 11v6M14 11v6" />
                           </svg>
-                          <span>{t("profile_remove_photo")}</span>
+                          <span>Remove Photo</span>
                         </>
                       )}
                     </button>
@@ -378,25 +385,25 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* User Info */}
             <div className="flex-1">
-              <h2 className="text-3xl font-semibold text-gray-900 dark:text-white mb-1">
-                {userData?.profile?.displayName || `${formData.firstName} ${formData.lastName}`}
+              <h2 className="text-3xl font-semibold text-gray-900 mb-1">
+                {userData?.profile?.displayName ||
+                  `${formData.firstName} ${formData.lastName}`}
               </h2>
               <p className="text-gray-500 mb-4">@{userData?.username}</p>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                {formData.bio || t("profile_no_bio")}
+                {formData.bio || "No bio available"}
               </p>
 
-              <div className="flex items-center gap-6 text-gray-500 dark:text-gray-400 text-sm mb-6">
+              <div className="flex items-center gap-6 text-gray-500 text-sm mb-6">
                 <div className="flex items-center gap-1">
                   <span>📍</span>
-                  <span>{formData.location || t("profile_no_location")}</span>
+                  <span>{formData.location || "Location not set"}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span>📅</span>
                   <span>
-                    {t("profile_joined")}{" "}
+                    Joined{" "}
                     {new Date(userData?.createdAt).toLocaleDateString("en-US", {
                       month: "long",
                       year: "numeric",
@@ -407,34 +414,23 @@ const Profile = () => {
 
               <div className="flex items-center gap-8">
                 <div>
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <span className="text-2xl font-bold text-gray-900">
                     {userData?.connections?.length || 0}
                   </span>
-                  <p className="text-gray-500 text-sm">
-                    {t("profile_connections")}
-                  </p>
+                  <p className="text-gray-500 text-sm">Connections</p>
                 </div>
                 <div>
                   <span className="text-2xl font-bold text-gray-900">23</span>
-                  <p className="text-gray-500 text-sm">
-                    {t("profile_active_chats")}
-                  </p>
+                  <p className="text-gray-500 text-sm">Active Chats</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-
         <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {activeTab === "overview" && (
-          <Overview
-            formData={formData}
-            setFormData={setFormData}
-            userData={userData}
-          />
-        )}
+        {activeTab === "overview" && <Overview formData={formData} setFormData={setFormData} userData={userData} />}
 
         {activeTab === "settings" && <Settings />}
 
@@ -444,7 +440,7 @@ const Profile = () => {
             setUserData={setUserData}
             formData={formData}
             handleInputChange={handleInputChange}
-            setFormData={setFormData}
+            setFormData={setFormData} // Pass setFormData to Privacy
           />
         )}
 
