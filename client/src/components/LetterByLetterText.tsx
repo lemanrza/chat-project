@@ -67,6 +67,7 @@ const LetterByLetterText: React.FC<LetterByLetterTextProps> = ({
     if (displayedText.length === 0 && onDeleted) {
       onDeleted();
       setIsDeletingText(false);
+      setIsAnimating(false);  // Ensure animating is reset after deletion
     }
 
     return () => clearTimeout(timer);
@@ -109,5 +110,4 @@ const LetterByLetterText: React.FC<LetterByLetterTextProps> = ({
     </div>
   );
 };
-
 export default LetterByLetterText;
