@@ -362,18 +362,6 @@ const Feed = () => {
             {filteredUsers.map((userData) => {
               if (!user) return null;
 
-              let userConnections: any = [];
-              if (user.connections && Array.isArray(user.connections) && user.connections.length > 0) {
-                userConnections = user.connections.filter(connection => connection != null).map(connection => typeof connection === 'string' ? connection : connection.id);
-              }
-
-              const isAlreadyConnected = userConnections.includes(userData.id);
-              const targetUserConnectionRequests = Array.isArray(userData.connectionsRequests)
-                ? userData.connectionsRequests.map((req) => (typeof req === 'string' ? req : (req as UserData).id))
-                : [];
-
-              const isRequestPending = user.id ? targetUserConnectionRequests.includes(user.id) : false;
-
               const handleConnectedClick = () => {
                 enqueueSnackbar("You are already connected with this user", {
                   variant: "info",
@@ -391,6 +379,13 @@ const Feed = () => {
               };
 
               const isPublic = userData.profileVisibility === 'public';
+
+              // const response = pendingRequests.find((p): any => p._id == user._id);
+              // console.log(user._id)
+              // console.log(isRequestPending)
+
+
+              // console.log(pendingRequests)
 
               return (
                 <div
@@ -454,7 +449,7 @@ const Feed = () => {
                   </div>
 
                   <div className="flex gap-3">
-                    {isAlreadyConnected ? (
+                    {/* {isAlreadyConnected ? (
                       <button
                         onClick={handleConnectedClick}
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-green-600 hover:bg-green-700 transition-colors cursor-pointer"
@@ -476,7 +471,13 @@ const Feed = () => {
                         <UserPlus className="w-4 h-4" />
                         {t("feed_connect")}
                       </button>
-                    )}
+                    )} */}
+                    <button
+                      onClick={handleConnectedClick}
+                      className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors cursor-pointer"
+                    >
+                      <Clock /> {t("feed_pending")}
+                    </button>
                     <button
                       onClick={() => userData.id && handleMessage(userData.id)}
                       className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 transition-all shadow"
