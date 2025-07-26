@@ -4,7 +4,6 @@ export const setupSocketListeners = (
   socket: any,
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 ) => {
-  // Listen for new messages
   socket.on("message:new", (newMessage: any) => {
     const formattedMessage: Message = {
       id: Date.now(),
@@ -14,12 +13,11 @@ export const setupSocketListeners = (
         hour: "2-digit",
         minute: "2-digit",
       }),
-      isMe: false, // Server messages are from others
+      isMe: false,
     };
     setMessages((prev) => [...prev, formattedMessage]);
   });
 
-  // Listen for typing indicators
   socket.on("message:typing", (data: any) => {
     console.log(`${data.username} is typing...`);
   });
@@ -28,7 +26,6 @@ export const setupSocketListeners = (
     console.log(`${data.username} stopped typing`);
   });
 
-  // Listen for user status changes
   socket.on("user:online", (data: any) => {
     console.log(`${data.username} came online`);
   });
@@ -37,7 +34,6 @@ export const setupSocketListeners = (
     console.log(`${data.username} went offline`);
   });
 
-  // Handle errors
   socket.on("error", (error: any) => {
     console.error("Socket error:", error.message);
   });

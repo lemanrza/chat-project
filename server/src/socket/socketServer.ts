@@ -5,6 +5,7 @@ import config from "../config/config.js";
 import User from "../models/userModel.js";
 import { AuthenticatedSocket } from "../types/socketType.js";
 import { registerMessageHandlers } from "../utils/messageHandlers.js";
+import { registerChatHandlers } from "../utils/chatHandlers.js";
 
 const connectedUsers = new Map<string, AuthenticatedSocket>();
 
@@ -47,22 +48,19 @@ export const initializeSocket = (server: http.Server) => {
 
   io.on("connection", (socket: any) => {
     const authSocket = socket as AuthenticatedSocket;
-    console.log(`User ${authSocket.user.username} connected`);
 
-    // Store connected user
     connectedUsers.set(authSocket.user.id, authSocket);
 
-    // Join user's chats
     authSocket.on("join:chats", async (chatIds: string[]) => {
       chatIds.forEach((chatId) => {
         authSocket.join(`chat:${chatId}`);
       });
     });
 
-    // Register all message handlers
     registerMessageHandlers(io, authSocket);
 
-    // Handle user status
+    registerChatHandlers(io, authSocket);
+
     authSocket.on("status:online", () => {
       authSocket.broadcast.emit("user:online", {
         userId: authSocket.user.id,
@@ -71,7 +69,6 @@ export const initializeSocket = (server: http.Server) => {
     });
 
     authSocket.on("disconnect", () => {
-      console.log(`User ${authSocket.user.username} disconnected`);
       connectedUsers.delete(authSocket.user.id);
 
       authSocket.broadcast.emit("user:offline", {

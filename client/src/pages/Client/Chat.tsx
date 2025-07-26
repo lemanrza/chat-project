@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Send, MessageSquare } from "lucide-react";
-import socket from "@/socket/socket";
+import socket, { reconnectSocket } from "@/socket/socket";
 import { getUserIdFromToken } from "@/utils/auth";
 import type { UserData } from "@/types/profileType";
 
@@ -142,6 +142,16 @@ const Chat = () => {
         const chatsArray = chatsData.data || chatsData;
         setChats(chatsArray);
 
+        if (selectedChat) {
+          const chatStillExists = chatsArray.some(
+            (chat: ChatType) => chat._id === selectedChat._id
+          );
+          if (!chatStillExists) {
+            setSelectedChat(null);
+            setMessages([]);
+          }
+        }
+
         if (chatsArray.length > 0 && !selectedChat) {
           const firstChat = chatsArray[0];
           setSelectedChat(firstChat);
@@ -162,8 +172,12 @@ const Chat = () => {
     if (!currentUserId) return;
 
     if (!socket.connected) {
-      socket.connect();
+      reconnectSocket();
     }
+
+    socket.on("connect_error", (error) => {
+      console.error("❌ Socket connection error:", error);
+    });
 
     socket.emit("auth:join");
 
@@ -203,10 +217,24 @@ const Chat = () => {
       );
     };
 
+    const handleChatDeleted = (data: { chatId: string }) => {
+      setChats((prev) => prev.filter((chat) => chat._id !== data.chatId));
+
+      if (selectedChat && selectedChat._id === data.chatId) {
+        setSelectedChat(null);
+        setMessages([]);
+      }
+    };
+
     socket.on("message:new", handleNewMessage);
+    socket.on("chat:deleted", handleChatDeleted);
 
     return () => {
       socket.off("message:new", handleNewMessage);
+      socket.off("chat:deleted", handleChatDeleted);
+      socket.off("test:broadcast");
+      socket.off("connect");
+      socket.off("connect_error");
     };
   }, [currentUserId, selectedChat?._id]);
 
@@ -222,6 +250,16 @@ const Chat = () => {
       fetchMessages(selectedChat._id);
     }
   }, [selectedChat, currentUserId]);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const interval = setInterval(() => {
+      fetchUserData(currentUserId);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [currentUserId]);
 
   if (isLoading) {
     return (
@@ -265,11 +303,6 @@ const Chat = () => {
         const responseData = await response.json();
         const newMessageObj = responseData.data || responseData;
 
-        socket.emit("message:send", {
-          content: messageContent,
-          chatId: selectedChat._id,
-        });
-
         setChats((prev) =>
           prev.map((chat) =>
             chat._id === selectedChat._id
@@ -278,14 +311,25 @@ const Chat = () => {
           )
         );
       } else {
+        console.error("❌ Failed to send message:", response.status);
         setNewMessage(messageContent);
       }
     } catch (error) {
+      console.error("❌ Error sending message:", error);
       setNewMessage(messageContent);
     }
   };
 
   const handleChatSelect = (chat: ChatType) => {
+    const otherParticipant = getOtherParticipant(chat);
+    if (
+      !otherParticipant ||
+      !otherParticipant.profile ||
+      (!otherParticipant.profile.displayName &&
+        !otherParticipant.profile.firstName)
+    ) {
+      return;
+    }
     setSelectedChat(chat);
   };
 
@@ -310,13 +354,10 @@ const Chat = () => {
         const newChat = await response.json();
         const chatData = newChat.data || newChat;
 
-        // First add chat to list
         setChats((prev) => [...prev, chatData]);
 
-        // Then select it
         setSelectedChat(chatData);
 
-        // Then explicitly fetch its messages
         fetchMessages(chatData._id, currentUserId);
       }
     } catch (error) {
@@ -352,56 +393,65 @@ const Chat = () => {
         <div className="flex-1 overflow-y-auto">
           <div className="p-2">
             {/* Existing Chats */}
-            {chats.map((chat: any) => {
-              const otherParticipant = getOtherParticipant(chat);
-              if (!otherParticipant) return null;
+            {chats
+              .filter((chat: any) => {
+                const otherParticipant = getOtherParticipant(chat);
+                return (
+                  otherParticipant &&
+                  otherParticipant.profile &&
+                  (otherParticipant.profile.displayName ||
+                    otherParticipant.profile.firstName)
+                );
+              })
+              .map((chat: any) => {
+                const otherParticipant = getOtherParticipant(chat);
 
-              return (
-                <div
-                  key={chat._id}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
-                    selectedChat?._id === chat._id
-                      ? "bg-blue-100 border-l-4 border-blue-500"
-                      : "hover:bg-gray-100"
-                  }`}
-                  onClick={() => handleChatSelect(chat)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-                      {otherParticipant?.profile?.avatar ? (
-                        <img
-                          src={otherParticipant.profile.avatar}
-                          alt={otherParticipant.profile.displayName || "User"}
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-gray-600 font-medium">
-                          {otherParticipant?.profile?.displayName
-                            ?.charAt(0)
-                            .toUpperCase() || "U"}
+                return (
+                  <div
+                    key={chat._id}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
+                      selectedChat?._id === chat._id
+                        ? "bg-blue-100 border-l-4 border-blue-500"
+                        : "hover:bg-gray-100"
+                    }`}
+                    onClick={() => handleChatSelect(chat)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                        {otherParticipant?.profile?.avatar ? (
+                          <img
+                            src={otherParticipant.profile.avatar}
+                            alt={otherParticipant.profile.displayName || "User"}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-gray-600 font-medium">
+                            {otherParticipant?.profile?.displayName
+                              ?.charAt(0)
+                              .toUpperCase() || "U"}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 truncate">
+                          {otherParticipant?.profile?.displayName ||
+                            "Unknown User"}
+                        </h3>
+                        {chat.lastMessage && (
+                          <p className="text-sm text-gray-500 truncate">
+                            {chat.lastMessage.content}
+                          </p>
+                        )}
+                      </div>
+                      {chat.lastMessage && chat.lastMessage.message && (
+                        <span className="text-xs text-gray-400">
+                          {formatTime(chat.lastMessage.message.createdAt)}
                         </span>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 truncate">
-                        {otherParticipant?.profile?.displayName ||
-                          "Unknown User"}
-                      </h3>
-                      {chat.lastMessage && (
-                        <p className="text-sm text-gray-500 truncate">
-                          {chat.lastMessage.content}
-                        </p>
-                      )}
-                    </div>
-                    {chat.lastMessage && chat.lastMessage.message && (
-                      <span className="text-xs text-gray-400">
-                        {formatTime(chat.lastMessage.message.createdAt)}
-                      </span>
-                    )}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
             {/* Available Connections */}
             {connections.map((connection) => {
@@ -520,7 +570,6 @@ const Chat = () => {
               <div className="space-y-4">
                 {messages &&
                   messages.map((message) => {
-                    // Add null checks to prevent errors
                     if (!message || !message.sender || !message.sender._id) {
                       return null;
                     }

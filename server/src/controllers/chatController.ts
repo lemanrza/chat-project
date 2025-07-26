@@ -18,9 +18,6 @@ export const createNewChat = async (
   next: NextFunction
 ) => {
   try {
-    console.log("Create chat request body:", req.body);
-    console.log("User from token:", req.user);
-
     const userId = req.user.id;
     const { type, members, name, description } = req.body;
 
@@ -46,7 +43,6 @@ export const createNewChat = async (
     }
 
     const allMembers = [...new Set([...members, userId])];
-    console.log("All members for chat:", allMembers);
 
     const response = await createChat({
       type,
@@ -55,8 +51,6 @@ export const createNewChat = async (
       description,
       createdBy: userId,
     });
-
-    console.log("Create chat response:", response);
 
     if (!response.success) {
       return res.status(400).json(response);

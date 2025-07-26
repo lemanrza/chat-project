@@ -33,26 +33,13 @@ export const registerMessageHandlers = (
         return;
       }
 
-      const result = await createMessage({
-        ...data,
-        senderId: socket.user.id,
-      });
-
-      if (!result.success || !result.data) {
-        socket.emit("error", {
-          message: result.message || "Failed to send message",
-        });
-        return;
-      }
-
-      const message = result.data;
       io.to(`chat:${data.chatId}`).emit("message:new", {
-        id: message._id.toString(),
-        content: message.content,
+        id: data.tempId || new Date().getTime().toString(),
+        content: data.content,
         senderId: socket.user.id,
         senderName: socket.user.username,
         chatId: data.chatId,
-        timestamp: message.createdAt,
+        timestamp: new Date().toISOString(),
         seenBy: [socket.user.id],
         tempId: data.tempId,
       });

@@ -16,10 +16,6 @@ export const registerChatHandlers = (
 
       socket.join(`user:${socket.user.id}`);
 
-      console.log(
-        `👤 User ${socket.user.id} joined ${userChats.length} chat rooms`
-      );
-
       socket.broadcast.emit("user:online", {
         userId: socket.user.id,
         status: "online",
@@ -33,11 +29,9 @@ export const registerChatHandlers = (
 
   socket.on("chat:join", (data: { chatId: string }) => {
     socket.join(`chat:${data.chatId}`);
-    console.log(`👤 User ${socket.user.id} joined chat ${data.chatId}`);
   });
 
   socket.on("chat:leave", (data: { chatId: string }) => {
     socket.leave(`chat:${data.chatId}`);
-    console.log(`👤 User ${socket.user.id} left chat ${data.chatId}`);
   });
 };

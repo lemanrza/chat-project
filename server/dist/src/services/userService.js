@@ -6,7 +6,23 @@ import config from "../config/config.js";
 const CLIENT_URL = config.CLIENT_URL;
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 10 * 60 * 1000;
-export const getAll = async () => await UserModel.find()
+export const getAll = async () => {
+    return await UserModel.find()
+        .select("-password")
+        .populate({
+        path: "connections",
+        select: "-password",
+    })
+        .populate({
+        path: "connectionsRequests",
+        select: "-password",
+    });
+};
+export const getOne = async (id) => await UserModel.findById(id)
+    .select("-password")
+    .populate("connectionsRequests")
+    .populate("connections");
+export const getOneWithConnections = async (id) => await UserModel.findById(id)
     .select("-password")
     .populate({
     path: "connections",
@@ -16,23 +32,56 @@ export const getAll = async () => await UserModel.find()
     path: "connectionsRequests",
     select: "-password",
 });
-export const getOne = async (id) => await UserModel.findById(id).select("-password");
-export const getOneWithConnections = async (id) => await UserModel.findById(id).select("-password").populate({
-    path: "connections",
-    select: "-password",
-});
+// Add a connection between two users (handles both public and private profiles)
 export const addConnection = async (userId, connectionId) => {
     try {
-        await UserModel.findByIdAndUpdate(userId, {
-            $addToSet: { connections: connectionId },
-        });
-        await UserModel.findByIdAndUpdate(connectionId, {
-            $addToSet: { connections: userId },
-        });
-        return {
-            success: true,
-            message: "Connection added successfully",
-        };
+        // Get the target user to check profile visibility
+        const targetUser = await UserModel.findById(connectionId).select("profileVisibility connectionsRequests connections");
+        if (!targetUser) {
+            return {
+                success: false,
+                message: "Target user not found",
+            };
+        }
+        // Check if already connected (convert to string for comparison)
+        if (targetUser.connections.some((conn) => conn.toString() === userId)) {
+            return {
+                success: false,
+                message: "Already connected to this user",
+            };
+        }
+        // Check if request already sent (convert to string for comparison)
+        if (targetUser.connectionsRequests.some((req) => req.toString() === userId)) {
+            return {
+                success: false,
+                message: "Connection request already sent",
+            };
+        }
+        if (targetUser.profileVisibility === "public") {
+            // For public profiles, connect immediately
+            await UserModel.findByIdAndUpdate(userId, {
+                $addToSet: { connections: connectionId },
+            });
+            await UserModel.findByIdAndUpdate(connectionId, {
+                $addToSet: { connections: userId },
+            });
+            return {
+                success: true,
+                message: "Connected successfully",
+                type: "connected",
+            };
+        }
+        else {
+            // For private profiles, send connection request
+            await UserModel.findByIdAndUpdate(connectionId, {
+                $addToSet: { connectionsRequests: userId },
+            });
+            return {
+                success: true,
+                message: "Connection request sent",
+                type: "request_sent",
+            };
+        }
     }
     catch (error) {
         return {
@@ -41,8 +90,52 @@ export const addConnection = async (userId, connectionId) => {
         };
     }
 };
+// Accept a connection request
+export const acceptConnectionRequest = async (userId, requesterId) => {
+    try {
+        // Add connection to both users
+        await UserModel.findByIdAndUpdate(userId, {
+            $addToSet: { connections: requesterId },
+            $pull: { connectionsRequests: requesterId },
+        });
+        await UserModel.findByIdAndUpdate(requesterId, {
+            $addToSet: { connections: userId },
+        });
+        return {
+            success: true,
+            message: "Connection request accepted",
+        };
+    }
+    catch (error) {
+        return {
+            success: false,
+            message: error.message || "Failed to accept connection request",
+        };
+    }
+};
+// Reject a connection request
+export const rejectConnectionRequest = async (userId, requesterId) => {
+    try {
+        // Remove the request from connectionsRequests
+        await UserModel.findByIdAndUpdate(userId, {
+            $pull: { connectionsRequests: requesterId },
+        });
+        return {
+            success: true,
+            message: "Connection request rejected",
+        };
+    }
+    catch (error) {
+        return {
+            success: false,
+            message: error.message || "Failed to reject connection request",
+        };
+    }
+};
+// Remove a connection between two users
 export const removeConnection = async (userId, connectionId) => {
     try {
+        // Remove connection from both users
         await UserModel.findByIdAndUpdate(userId, {
             $pull: { connections: connectionId },
         });
@@ -61,6 +154,7 @@ export const removeConnection = async (userId, connectionId) => {
         };
     }
 };
+// Get all users except current user and their connections
 export const getAvailableUsers = async (userId) => {
     try {
         const currentUser = await UserModel.findById(userId).select("connections");
@@ -106,13 +200,29 @@ export const deleteUser = async (id) => {
 };
 export const updateUser = async (id, payload) => {
     try {
-        const user = await UserModel.findByIdAndUpdate(id, payload, { new: true });
+        const user = await UserModel.findById(id);
         if (!user) {
             return {
                 success: false,
                 message: "User not found",
             };
         }
+        // Handle connectionsRequests specifically (append to existing array)
+        if (payload.connectionsRequests) {
+            const updatedConnectionsRequests = [
+                ...user.connectionsRequests,
+                ...payload.connectionsRequests, // Expecting array of user IDs
+            ];
+            user.connectionsRequests = updatedConnectionsRequests;
+            delete payload.connectionsRequests; // Remove from payload to avoid overwriting
+        }
+        // Update all other fields from payload
+        Object.keys(payload).forEach((key) => {
+            if (payload[key] !== undefined) {
+                user[key] = payload[key];
+            }
+        });
+        await user.save();
         return {
             success: true,
             data: user,
@@ -270,7 +380,7 @@ export const forgotPassword = async (email) => {
             email: user.email,
         }, "30m");
         const resetPasswordLink = `${CLIENT_URL}/auth/reset-password/${token}`;
-        sendForgotPasswordEmail(email, resetPasswordLink);
+        sendForgotPasswordEmail(email, user.profile.displayName, resetPasswordLink);
     }
 };
 export const resetPass = async (newPassword, email) => {

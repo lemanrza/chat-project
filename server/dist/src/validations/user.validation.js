@@ -18,6 +18,7 @@ const userValidationSchema = Joi.object({
         otherwise: Joi.optional(),
     }),
     connections: Joi.array().optional(),
+    connectionsRequests: Joi.array().optional(),
     hobbies: Joi.array().optional(),
     provider: Joi.string().valid("local", "google", "github").default("local"),
     providerId: Joi.string().allow(null, "").optional(),

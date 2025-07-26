@@ -8,19 +8,14 @@ import config from "./config/config.js";
 
 dotenv.config();
 
-console.log("🚀 Starting server...");
-
 const httpServer = createServer(app);
 
-console.log("🔌 Initializing Socket.io...");
 const io = initializeSocket(httpServer);
 
 declare global {
   var io: SocketIOServer;
 }
 global.io = io;
-
-console.log("🗄️ Connecting to database...");
 
 const startServer = async () => {
   try {
