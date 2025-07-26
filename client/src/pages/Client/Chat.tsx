@@ -60,7 +60,7 @@ interface Connection {
 const Chat = () => {
   const [chats, setChats] = useState<ChatType[]>([]);
   const [connections, setConnections] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -346,7 +346,7 @@ const Chat = () => {
             {/* Existing Chats */}
             {chats.map((chat: any) => {
               const otherParticipant = getOtherParticipant(chat);
-              if (!otherParticipant) return null; // Skip if no valid participant found
+              if (!otherParticipant) return null;
 
               return (
                 <div
@@ -385,7 +385,7 @@ const Chat = () => {
                         </p>
                       )}
                     </div>
-                    {chat.lastMessage.message && (
+                    {chat.lastMessage && chat.lastMessage.message && (
                       <span className="text-xs text-gray-400">
                         {formatTime(chat.lastMessage.message.createdAt)}
                       </span>
@@ -498,7 +498,7 @@ const Chat = () => {
                       "Unknown User"}
                   </h3>
 
-                  {getOtherParticipant(selectedChat)?.profile?.isOnline ? (
+                  {getOtherParticipant(selectedChat)?.isOnline == true ? (
                     <p className="text-sm text-green-500">Online</p>
                   ) : (
                     <p className="text-sm text-red-500">Offline</p>
