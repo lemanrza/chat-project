@@ -114,8 +114,27 @@ const Feed = () => {
         selectedHobbies.length === 0 ||
         (userData.hobbies && userData.hobbies.some(hobby => selectedHobbies.includes(hobby)));
 
-      return matchesSearch && matchesHobbies;
+      // Base filter (common for all)
+      const baseMatch = matchesSearch && matchesHobbies;
+
+      if (activeTab === "discover") {
+        return baseMatch;
+      }
+
+      if (activeTab === "trending") {
+        const isPopular = (userData.connections?.length || 0) > 3 || userData.profileVisibility === "public";
+        return baseMatch && isPopular;
+      }
+
+      if (activeTab === "nearby") {
+        const currentUserLocation = user?.profile?.location?.toLowerCase();
+        const otherUserLocation = userData.profile?.location?.toLowerCase();
+        return baseMatch && currentUserLocation && currentUserLocation === otherUserLocation;
+      }
+
+      return false;
     });
+
 
   const handleConnect = async (targetUserId: string) => {
     try {
