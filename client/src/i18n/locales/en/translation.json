@@ -292,5 +292,8 @@
   "chat_status_offline": "Offline",
   "chat_no_content": "No content",
   "chat_send": "Send",
-  "chat_user_unknown": "Unknown User"
+  "chat_user_unknown": "Unknown User",
+  "feed_filters_title": "Filters",
+  "clear_filters": "Clear Filters",
+  "apply_filters": "Apply Filters"
 }
