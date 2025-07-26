@@ -621,10 +621,7 @@ export const getCurrentUser = async (
   }
 };
 
-export const deleteCurrentUser = async (
-  req: Request,
-  res: Response,
-) => {
+export const deleteCurrentUser = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
 
@@ -815,7 +812,7 @@ export const addUserConnection = async (
 
     res.status(200).json({
       message: result.message,
-      type: result.type, // Include the type (connected or request_sent)
+      type: result.type,
     });
   } catch (error) {
     next(error);
@@ -906,7 +903,7 @@ export const getPendingConnectionRequests = async (
   try {
     const userId = req.params.userId;
     const user = await UserModel.findById(userId)
-      .populate('connectionsRequests') // Populate full user data
+      .populate("connectionsRequests")
       .exec();
 
     if (!user) {
@@ -957,7 +954,6 @@ export const acceptConnection = async (
   }
 };
 
-// Reject a connection request
 export const rejectConnection = async (
   req: AuthenticatedRequest,
   res: Response,
