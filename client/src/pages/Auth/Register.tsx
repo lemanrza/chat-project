@@ -237,6 +237,13 @@ function Register() {
 
   const handleInterestToggle = (interest: string, e: React.MouseEvent) => {
     e.preventDefault();
+
+    // If there are already 5 hobbies selected, prevent adding more
+    if (registerFormik.values.hobbies.length >= 5 && !registerFormik.values.hobbies.includes(interest)) {
+      return;
+    }
+
+    // Toggle the interest
     registerFormik.setFieldValue(
       "hobbies",
       registerFormik.values.hobbies.includes(interest)
@@ -244,6 +251,7 @@ function Register() {
         : [...registerFormik.values.hobbies, interest]
     );
   };
+
 
   const handleCaptchaChange = (value: string | null) => {
     setCaptchaValue(value);
@@ -330,33 +338,40 @@ function Register() {
                 <div className="grid grid-cols-6 gap-3 mb-6">
                   {interests.map((interest) => {
                     const IconComponent = interest.icon;
-                    const isSelected = registerFormik.values.hobbies.includes(
-                      interest.name
-                    );
+                    const isSelected = registerFormik.values.hobbies.includes(interest.name);
+                    const isDisabled = registerFormik.values.hobbies.length >= 5 && !isSelected; // Disable if 5 interests are selected
+
                     return (
                       <button
                         key={interest.name}
                         onClick={(e) => handleInterestToggle(interest.name, e)}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
-                          isSelected
-                            ? "bg-[#00B878] border-[#00B878] text-white shadow-lg"
+                        disabled={isDisabled}
+                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${isSelected
+                          ? "bg-[#00B878] border-[#00B878] text-white shadow-lg"
+                          : isDisabled
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-white border-gray-200 text-gray-600 hover:border-[#00B878] hover:text-[#00B878]"
-                        }`}
+                          }`}
                       >
                         <IconComponent className="w-6 h-6 mb-2" />
-                        <span className="text-xs font-medium">
-                          {interest.name}
-                        </span>
+                        <span className="text-xs font-medium">{interest.name}</span>
                       </button>
                     );
                   })}
+
                 </div>
 
                 <div className="text-center mb-6">
                   <p className="text-sm text-gray-500">
-                    {t("register_step2_selected", { count: registerFormik.values.hobbies.length })}
+                    {t("register_step2_selected", { count: registerFormik.values.hobbies.length })}{" "}
+                    {registerFormik.values.hobbies.length < 3
+                      ? t("register_select_minimum_3")
+                      : registerFormik.values.hobbies.length > 5
+                        ? t("register_select_maximum_5")
+                        : ""}
                   </p>
                 </div>
+
 
                 <div className="flex gap-3">
                   <button
@@ -371,11 +386,10 @@ function Register() {
                     type="button"
                     onClick={handleNextStep}
                     disabled={registerFormik.values.hobbies.length < 3}
-                    className={`flex-1 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                      registerFormik.values.hobbies.length >= 3
-                        ? "bg-[#00B878] hover:bg-[#00a76d] text-white shadow-lg"
-                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
+                    className={`flex-1 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${registerFormik.values.hobbies.length >= 3
+                      ? "bg-[#00B878] hover:bg-[#00a76d] text-white shadow-lg"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      }`}
                   >
                     {t("register_step2_continue")}
                     <ChevronRight className="w-5 h-5" />
@@ -424,12 +438,14 @@ function Register() {
                           </span>
                         </div>
                         <p className="text-sm text-green-600 mt-1">
-                          {t("register_step3_born", { date: dateOfBirth.toLocaleDateString("en-US", {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          }) })}
+                          {t("register_step3_born", {
+                            date: dateOfBirth.toLocaleDateString("en-US", {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          })}
                         </p>
                       </div>
                     )}
@@ -461,9 +477,8 @@ function Register() {
                   <button
                     type="button"
                     onClick={() => {
-                      window.location.href = `${
-                        import.meta.env.VITE_SERVER_URL
-                      }/auth/google`;
+                      window.location.href = `${import.meta.env.VITE_SERVER_URL
+                        }/auth/google`;
                     }}
                     className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
                   >
@@ -475,9 +490,8 @@ function Register() {
                   <button
                     type="button"
                     onClick={() => {
-                      window.location.href = `${
-                        import.meta.env.VITE_SERVER_URL
-                      }/auth/github`;
+                      window.location.href = `${import.meta.env.VITE_SERVER_URL
+                        }/auth/github`;
                     }}
                     className="flex items-center justify-center w-full gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition cursor-pointer"
                   >

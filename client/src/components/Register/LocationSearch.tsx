@@ -18,50 +18,56 @@ function LocationSearch({ value, onChange, onSelect, selectedLocation }: Locatio
   const [results, setResults] = useState<LocationResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [isLocationSelected, setIsLocationSelected] = useState(false);
 
-const fetchData = async (searchTerm: string) => {
-  if (!searchTerm || searchTerm.length < 2) {
-    setResults([]);
-    setShowResults(false);
-    return;
-  }
-
-  setLoading(true);
-  setShowResults(true);
-
-  try {
-    const [city, country] = searchTerm.split(',').map((item) => item.trim());
-
-    const cityResponse = await fetch(`https://6802fd740a99cb7408ead6e1.mockapi.io/cities/location?city=${city}`);
-    const cityData = await cityResponse.json();
-
-    if (Array.isArray(cityData) && cityData.length === 0 && country) {
-      const countryResponse = await fetch(`https://6802fd740a99cb7408ead6e1.mockapi.io/cities/location?country=${country}`);
-      const countryData = await countryResponse.json();
-      setResults(Array.isArray(countryData) ? countryData : []);
-    } else {
-      setResults(Array.isArray(cityData) ? cityData : []);
+  const fetchData = async (searchTerm: string) => {
+    if (!searchTerm || searchTerm.length < 2) {
+      setResults([]);
+      setShowResults(false);
+      return;
     }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    setResults([]);
-  } finally {
-    setLoading(false);
-  }
-};
 
+    setLoading(true);
+    setShowResults(true);
+
+    try {
+      const [city, country] = searchTerm.split(',').map((item) => item.trim());
+
+      const cityResponse = await fetch(`https://6802fd740a99cb7408ead6e1.mockapi.io/cities/location?city=${city}`);
+      const cityData = await cityResponse.json();
+
+      if (Array.isArray(cityData) && cityData.length === 0 && country) {
+        const countryResponse = await fetch(`https://6802fd740a99cb7408ead6e1.mockapi.io/cities/location?country=${country}`);
+        const countryData = await countryResponse.json();
+        setResults(Array.isArray(countryData) ? countryData : []);
+      } else {
+        setResults(Array.isArray(cityData) ? cityData : []);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
+
+    // If the user starts typing again, reset selection
+    if (isLocationSelected) {
+      setIsLocationSelected(false);
+    }
   };
 
   const handleSelectCity = (item: LocationResult) => {
     const locationString = `${item.city}, ${item.country}`;
     onChange(locationString);
     onSelect(item);
-    setResults([]);
-    setShowResults(false);
+    setIsLocationSelected(true); // Mark location as selected
+    setResults([]); // Clear the search results
+    setShowResults(false); // Hide the dropdown
   };
 
   // Debounced search effect
@@ -97,7 +103,7 @@ const fetchData = async (searchTerm: string) => {
           name="location"
           value={value}
           onChange={handleInputChange}
-          onFocus={() => value.length >= 2 && setShowResults(true)}
+          onFocus={() => value.length >= 2 && !isLocationSelected && setShowResults(true)}
           placeholder="Search for your city or country..."
           className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-[#00B878] focus:ring-opacity-20 focus:border-[#00B878] transition-all bg-gray-50 text-lg"
           autoComplete="off"
@@ -113,7 +119,7 @@ const fetchData = async (searchTerm: string) => {
       </div>
 
       {/* Search Results Dropdown */}
-      {showResults && (
+      {showResults && !isLocationSelected && (
         <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-8">
