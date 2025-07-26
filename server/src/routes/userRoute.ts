@@ -20,11 +20,8 @@ import {
   updateUserController,
   acceptConnection,
   rejectConnection,
-  forgotPassword,
-  resetPassword,
 } from "../controllers/userController.js";
 import userValidate from "../middlewares/userValidate.js";
-import { authenticateToken } from "../middlewares/authMiddleware.js";
 
 const userRouter = express.Router();
 
@@ -34,45 +31,26 @@ userRouter.post("/login", loginUser);
 userRouter.get("/unlock-account", unlockAccount);
 userRouter.get("/verify-email", verifyUserEmail);
 
-userRouter.get("/me/:userId", authenticateToken, getCurrentUser);
-userRouter.put("/me/:userId", authenticateToken, updateCurrentUser);
-userRouter.delete("/me/:userId", authenticateToken, deleteCurrentUser);
-userRouter.post(
-  "/me/:userId/change-password",
-  authenticateToken,
-  changePassword
-);
+userRouter.get("/me/:userId", getCurrentUser);
+userRouter.put("/me/:userId", updateCurrentUser);
+userRouter.delete("/me/:userId", deleteCurrentUser);
+userRouter.post("/me/:userId/change-password", changePassword);
 userRouter.post(
   "/me/:userId/upload-image",
-  authenticateToken,
   upload.single("avatar"),
   uploadProfileImage
 );
-userRouter.post('/forgot-password', forgotPassword);
-userRouter.post("/reset-password", resetPassword);
+userRouter.delete("/me/:userId/delete-image", deleteProfileImage);
 
-userRouter.delete(
-  "/me/:userId/delete-image",
-  authenticateToken,
-  deleteProfileImage
-);
-
-userRouter.get(
-  "/me/:userId/available",
-  authenticateToken,
-  getAvailableUsersToConnect
-);
-userRouter.post(
-  "/me/:userId/connections",
-  authenticateToken,
-  addUserConnection
-);
+// Connection management routes
+userRouter.get("/me/:userId/available", getAvailableUsersToConnect);
+userRouter.post("/me/:userId/connections", addUserConnection);
 userRouter.delete(
   "/me/:userId/connections/:connectionId",
-  authenticateToken,
   removeUserConnection
 );
 
+// Connection request management routes
 userRouter.post("/me/:userId/connections/accept", acceptConnection);
 userRouter.post("/me/:userId/connections/reject", rejectConnection);
 

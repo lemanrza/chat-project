@@ -1,6 +1,8 @@
 export interface UserData {
-  id: string;
+  id: string
   profile: {
+    [x: string]: any;
+    country: any;
     firstName: string;
     lastName: string;
     bio: string;
@@ -21,7 +23,6 @@ export interface UserData {
 }
 
 export interface FormData {
-  messagePrivacy: string;
   firstName: string;
   lastName: string;
   email: string;

@@ -15,42 +15,34 @@ const CLIENT_URL = config.CLIENT_URL;
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 10 * 60 * 1000;
 
-export const getAll = async () =>
-  await UserModel.find()
-    .select("-password")
-    .populate({
-      path: "connections",
-      select: "-password",
-    })
-    .populate({
-      path: "connectionsRequests",
-      select: "-password",
-    });
+export const getAll = async () => {
+  return await UserModel.find().select("-password").populate({
+    path: "connections",
+    select: "-password",
+  }).populate({
+    path: "connectionsRequests",
+    select: "-password",
+  });
+};
 
 export const getOne = async (id: any) =>
-  await UserModel.findById(id)
-    .select("-password")
-    .populate("connectionsRequests")
-    .populate("connections");
+  await UserModel.findById(id).select("-password").populate('connectionsRequests').populate('connections');
 
 export const getOneWithConnections = async (id: any) =>
-  await UserModel.findById(id)
-    .select("-password")
-    .populate({
-      path: "connections",
-      select: "-password",
-    })
-    .populate({
-      path: "connectionsRequests",
-      select: "-password",
-    });
+  await UserModel.findById(id).select("-password").populate({
+    path: "connections",
+    select: "-password",
+  }).populate({
+    path: "connectionsRequests",
+    select: "-password",
+  });
 
+// Add a connection between two users (handles both public and private profiles)
 export const addConnection = async (userId: string, connectionId: string) => {
   try {
-    const targetUser = await UserModel.findById(connectionId).select(
-      "profileVisibility connectionsRequests connections"
-    );
-
+    // Get the target user to check profile visibility
+    const targetUser = await UserModel.findById(connectionId).select('profileVisibility connectionsRequests connections');
+    
     if (!targetUser) {
       return {
         success: false,
@@ -58,23 +50,24 @@ export const addConnection = async (userId: string, connectionId: string) => {
       };
     }
 
-    if (targetUser.connections.some((conn) => conn.toString() === userId)) {
+    // Check if already connected (convert to string for comparison)
+    if (targetUser.connections.some(conn => conn.toString() === userId)) {
       return {
         success: false,
         message: "Already connected to this user",
       };
     }
 
-    if (
-      targetUser.connectionsRequests.some((req) => req.toString() === userId)
-    ) {
+    // Check if request already sent (convert to string for comparison)
+    if (targetUser.connectionsRequests.some(req => req.toString() === userId)) {
       return {
         success: false,
         message: "Connection request already sent",
       };
     }
 
-    if (targetUser.profileVisibility === "public") {
+    if (targetUser.profileVisibility === 'public') {
+      // For public profiles, connect immediately
       await UserModel.findByIdAndUpdate(userId, {
         $addToSet: { connections: connectionId },
       });
@@ -86,9 +79,10 @@ export const addConnection = async (userId: string, connectionId: string) => {
       return {
         success: true,
         message: "Connected successfully",
-        type: "connected",
+        type: 'connected'
       };
     } else {
+      // For private profiles, send connection request
       await UserModel.findByIdAndUpdate(connectionId, {
         $addToSet: { connectionsRequests: userId },
       });
@@ -96,7 +90,7 @@ export const addConnection = async (userId: string, connectionId: string) => {
       return {
         success: true,
         message: "Connection request sent",
-        type: "request_sent",
+        type: 'request_sent'
       };
     }
   } catch (error: any) {
@@ -107,11 +101,10 @@ export const addConnection = async (userId: string, connectionId: string) => {
   }
 };
 
-export const acceptConnectionRequest = async (
-  userId: string,
-  requesterId: string
-) => {
+// Accept a connection request
+export const acceptConnectionRequest = async (userId: string, requesterId: string) => {
   try {
+    // Add connection to both users
     await UserModel.findByIdAndUpdate(userId, {
       $addToSet: { connections: requesterId },
       $pull: { connectionsRequests: requesterId },
@@ -133,11 +126,10 @@ export const acceptConnectionRequest = async (
   }
 };
 
-export const rejectConnectionRequest = async (
-  userId: string,
-  requesterId: string
-) => {
+// Reject a connection request
+export const rejectConnectionRequest = async (userId: string, requesterId: string) => {
   try {
+    // Remove the request from connectionsRequests
     await UserModel.findByIdAndUpdate(userId, {
       $pull: { connectionsRequests: requesterId },
     });
@@ -154,11 +146,13 @@ export const rejectConnectionRequest = async (
   }
 };
 
+// Remove a connection between two users
 export const removeConnection = async (
   userId: string,
   connectionId: string
 ) => {
   try {
+    // Remove connection from both users
     await UserModel.findByIdAndUpdate(userId, {
       $pull: { connections: connectionId },
     });
@@ -179,6 +173,7 @@ export const removeConnection = async (
   }
 };
 
+// Get all users except current user and their connections
 export const getAvailableUsers = async (userId: string) => {
   try {
     const currentUser = await UserModel.findById(userId).select("connections");
@@ -238,38 +233,20 @@ export const updateUser = async (id: string, payload: any) => {
       };
     }
 
+    // Handle connectionsRequests specifically (append to existing array)
     if (payload.connectionsRequests) {
       const updatedConnectionsRequests = [
         ...user.connectionsRequests,
-        ...payload.connectionsRequests,
+        ...payload.connectionsRequests, // Expecting array of user IDs
       ];
       user.connectionsRequests = updatedConnectionsRequests;
-      delete payload.connectionsRequests;
+      delete payload.connectionsRequests; // Remove from payload to avoid overwriting
     }
 
+    // Update all other fields from payload
     Object.keys(payload).forEach((key) => {
       if (payload[key] !== undefined) {
-        if (key.includes(".")) {
-          const keys = key.split(".");
-          let current = user as any;
-          for (let i = 0; i < keys.length - 1; i++) {
-            if (!current[keys[i]]) {
-              current[keys[i]] = {};
-            }
-            current = current[keys[i]];
-          }
-          if (payload[key] === null) {
-            delete current[keys[keys.length - 1]];
-          } else {
-            current[keys[keys.length - 1]] = payload[key];
-          }
-        } else {
-          if (payload[key] === null) {
-            delete (user as any)[key];
-          } else {
-            (user as any)[key] = payload[key];
-          }
-        }
+        (user as any)[key] = payload[key];
       }
     });
 
@@ -467,7 +444,7 @@ export const forgotPassword = async (email: string) => {
       "30m"
     );
     const resetPasswordLink = `${CLIENT_URL}/auth/reset-password/${token}`;
-    sendForgotPasswordEmail(email, user.profile.displayName, resetPasswordLink);
+    sendForgotPasswordEmail(email, resetPasswordLink);
   }
 };
 
@@ -477,6 +454,7 @@ export const resetPass = async (newPassword: string, email: string) => {
 
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+  console.log("inside service: ", newPassword);
   user.password = hashedPassword;
   await user.save();
   return user;
