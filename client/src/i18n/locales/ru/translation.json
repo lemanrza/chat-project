@@ -269,5 +269,13 @@
   "500_characters": "Максимум 500 символов для каждого поля",
   "deletion_failed": "Удаление не удалось",
   "save_changes": "Сохранить изменения",
-  "saving": "Сохранение..."
+  "saving": "Сохранение...",
+  "chat_welcome_title": "Добро пожаловать в чат",
+  "chat_welcome_subtext": "Выберите чат или соединение, чтобы начать общение",
+  "chat_input_placeholder": "Введите сообщение...",
+  "chat_status_online": "В сети",
+  "chat_status_offline": "Не в сети",
+  "chat_no_content": "Нет контента",
+  "chat_send": "Отправить",
+  "chat_user_unknown": "Неизвестный пользователь"
 }

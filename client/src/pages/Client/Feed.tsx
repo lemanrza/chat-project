@@ -293,7 +293,7 @@ const Feed = () => {
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-semibold text-[#00B878] dark:text-[#00E89E]">
-                Filters
+                {t("feed_filters_title")}
               </h2>
               <button
                 onClick={() => setShowFilters(false)}
@@ -318,7 +318,7 @@ const Feed = () => {
             <div className="flex-grow overflow-y-auto">
               <div className="mb-6">
                 <h3 className="font-medium text-gray-800 dark:text-white mb-3 text-base">
-                  Hobbies
+                  {t("hobbies")}
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {hobbiesList.map((hobby) => (
@@ -331,11 +331,10 @@ const Feed = () => {
                             : [...selectedHobbies, hobby]
                         )
                       }
-                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${
-                        selectedHobbies.includes(hobby)
-                          ? "bg-[#00B878] text-white border-[#00B878]"
-                          : "bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700"
-                      }`}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${selectedHobbies.includes(hobby)
+                        ? "bg-[#00B878] text-white border-[#00B878]"
+                        : "bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700"
+                        }`}
                     >
                       {hobby}
                     </button>
@@ -351,13 +350,13 @@ const Feed = () => {
                 }}
                 className="flex-1 py-3 rounded-lg bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-white font-medium hover:bg-gray-200 dark:hover:bg-neutral-700 transition"
               >
-                Clear All
+                {t("clear_filters")}
               </button>
               <button
                 onClick={() => setShowFilters(false)}
                 className="flex-1 py-3 rounded-lg bg-[#00B878] text-white font-medium hover:bg-[#00a76d] transition"
               >
-                Apply
+                {t("apply_filters")}
               </button>
             </div>
           </motion.aside>
@@ -390,11 +389,10 @@ const Feed = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
-                ${
-                  activeTab === tab.id
+                ${activeTab === tab.id
                     ? "shadow-md scale-105 text-[#00B878]"
                     : "bg-transparent text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700"
-                }`}
+                  }`}
               >
                 {tab.icon}
                 {tab.label}
@@ -434,20 +432,20 @@ const Feed = () => {
               const isAlreadyConnected =
                 userData.connections && Array.isArray(userData.connections)
                   ? userData.connections.some((conn: any) => {
-                      const connId =
-                        typeof conn === "string" ? conn : conn.id || conn._id;
-                      return connId === currentUserId;
-                    })
+                    const connId =
+                      typeof conn === "string" ? conn : conn.id || conn._id;
+                    return connId === currentUserId;
+                  })
                   : false;
 
               const isRequestPending =
                 userData.connectionsRequests &&
-                Array.isArray(userData.connectionsRequests)
+                  Array.isArray(userData.connectionsRequests)
                   ? userData.connectionsRequests.some((req: any) => {
-                      const reqId =
-                        typeof req === "string" ? req : req.id || req._id;
-                      return reqId === currentUserId;
-                    })
+                    const reqId =
+                      typeof req === "string" ? req : req.id || req._id;
+                    return reqId === currentUserId;
+                  })
                   : false;
 
               const handleConnectedClick = () => {

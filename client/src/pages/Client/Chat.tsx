@@ -90,8 +90,7 @@ const Chat = () => {
     const userIdToUse = userId || currentUserId;
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL
+        `${import.meta.env.VITE_SERVER_URL
         }/api/messages/chat/${chatId}?userId=${userIdToUse}`,
         {
           headers: {
@@ -115,8 +114,7 @@ const Chat = () => {
   const fetchChatData = async (chatId: string) => {
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL
+        `${import.meta.env.VITE_SERVER_URL
         }/api/chats/${chatId}?userId=${currentUserId}`,
         {
           headers: {
@@ -473,8 +471,7 @@ const Chat = () => {
         displayName:
           user.profile?.displayName ||
           (user.profile?.firstName || user.profile?.lastName
-            ? `${user.profile.firstName || ""} ${
-                user.profile.lastName || ""
+            ? `${user.profile.firstName || ""} ${user.profile.lastName || ""
               }`.trim()
             : user.username || "Unknown User"),
       },
@@ -560,11 +557,10 @@ const Chat = () => {
                 return (
                   <div
                     key={chat._id}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
-                      selectedChat?._id === chat._id
+                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${selectedChat?._id === chat._id
                         ? "bg-blue-100 border-l-4 border-blue-500"
                         : "hover:bg-gray-100"
-                    }`}
+                      }`}
                     onClick={() => handleChatSelect(chat)}
                   >
                     <div className="flex items-center gap-3">
@@ -648,9 +644,8 @@ const Chat = () => {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 truncate">
                         {connection.profile?.displayName ||
-                          `${connection.firstName || ""} ${
-                            connection.lastName || ""
-                          }`.trim() ||
+                          `${connection.firstName || ""} ${connection.lastName || ""
+                            }`.trim() ||
                           "Unknown User"}
                       </h3>
                       <p className="text-sm text-green-600">
@@ -728,23 +723,7 @@ const Chat = () => {
                     const isOwn = message.sender._id === currentUserId;
                     return (
                       <div
-                        key={message._id}
-                        className={`flex message-container ${
-                          isOwn ? "justify-end" : "justify-start"
-                        }`}
-                      >
-                        <div
-                          className={`max-w-xs lg:max-w-md rounded-2xl overflow-hidden ${
-                            message.content &&
-                            (message.content.includes("giphy.com") ||
-                              message.content.includes(".gif") ||
-                              message.content.startsWith("https://media"))
-                              ? "bg-transparent p-1"
-                              : isOwn
-                              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2"
-                              : "bg-gray-100 text-gray-900 px-4 py-2"
-                          }`}
-                        >
+                        key={message._id}>
                           {/* Check if message content is a GIF URL */}
                           {message.content &&
                           (message.content.includes("giphy.com") ||
@@ -787,20 +766,7 @@ const Chat = () => {
                             </p>
                           )}
 
-                          <p
-                            className={`text-xs mt-1 ${
-                              message.content &&
-                              (message.content.includes("giphy.com") ||
-                                message.content.includes(".gif") ||
-                                message.content.startsWith("https://media"))
-                                ? isOwn
-                                  ? "text-gray-600 bg-white/80 px-2 py-1 rounded-full inline-block ml-auto"
-                                  : "text-white bg-gray-800/80 px-2 py-1 rounded-full inline-block"
-                                : isOwn
-                                ? "text-blue-100"
-                                : "text-gray-500"
-                            }`}
-                          >
+                          <p>
                             {message.createdAt
                               ? formatTime(message.createdAt)
                               : ""}
