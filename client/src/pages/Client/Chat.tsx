@@ -3,6 +3,8 @@ import { Send, MessageSquare } from "lucide-react";
 import socket, { reconnectSocket } from "@/socket/socket";
 import { getUserIdFromToken } from "@/utils/auth";
 import type { UserData } from "@/types/profileType";
+import GifPicker from "@/components/GifPicker";
+import { Image } from "lucide-react";
 
 interface Message {
   _id: string;
@@ -66,6 +68,7 @@ const Chat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showGifPicker, setShowGifPicker] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -484,6 +487,47 @@ const Chat = () => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  const sendGifMessage = async (gifUrl: string) => {
+    if (!gifUrl || !selectedChat || !currentUserId) return;
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/api/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            content: gifUrl,
+            chatId: selectedChat._id,
+            isGif: true,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const responseData = await response.json();
+        const newMessageObj = responseData.data || responseData;
+
+        setChats((prev) =>
+          prev.map((chat) =>
+            chat._id === selectedChat._id
+              ? { ...chat, lastMessage: newMessageObj }
+              : chat
+          )
+        );
+
+        setShowGifPicker(false);
+      } else {
+        console.error("❌ Failed to send GIF:", response.status);
+      }
+    } catch (err) {
+      console.error("❌ Error sending GIF:", err);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -679,21 +723,50 @@ const Chat = () => {
                     const isOwn = message.sender._id === currentUserId;
                     return (
                       <div
-                        key={message._id}
-                        className={`flex ${isOwn ? "justify-end" : "justify-start"
-                          }`}
-                      >
-                        <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isOwn
-                              ? "bg-blue-500 text-white"
-                              : "bg-gray-200 text-gray-900"
-                            }`}
-                        >
-                          <p>{message.content || "No content"}</p>
-                          <p
-                            className={`text-xs mt-1 ${isOwn ? "text-blue-100" : "text-gray-500"
-                              }`}
-                          >
+                        key={message._id}>
+                          {/* Check if message content is a GIF URL */}
+                          {message.content &&
+                          (message.content.includes("giphy.com") ||
+                            message.content.includes(".gif") ||
+                            message.content.startsWith("https://media")) ? (
+                            <div className="gif-message">
+                              <img
+                                src={message.content}
+                                alt="GIF"
+                                className="w-full h-auto rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                                style={{
+                                  maxHeight: "250px",
+                                  minWidth: "200px",
+                                }}
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  const fallback =
+                                    target.nextElementSibling as HTMLElement;
+                                  target.style.display = "none";
+                                  if (fallback) {
+                                    fallback.style.display = "block";
+                                    fallback.className = `px-4 py-2 rounded-2xl ${
+                                      isOwn
+                                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+                                        : "bg-gray-100 text-gray-900"
+                                    }`;
+                                  }
+                                }}
+                              />
+                              <p
+                                style={{ display: "none" }}
+                                className="text-sm"
+                              >
+                                Failed to load GIF: {message.content}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="break-words">
+                              {message.content || "No content"}
+                            </p>
+                          )}
+
+                          <p>
                             {message.createdAt
                               ? formatTime(message.createdAt)
                               : ""}
@@ -708,23 +781,42 @@ const Chat = () => {
 
             {/* Message Input */}
             <div className="p-4 bg-white border-t border-gray-200">
-              <div className="flex gap-2">
+              <div className="flex gap-3 items-center">
+                <button
+                  onClick={() => setShowGifPicker(true)}
+                  className={`p-2.5 rounded-full transition-all duration-200 ${
+                    showGifPicker
+                      ? "bg-blue-500 text-white shadow-lg"
+                      : "hover:bg-gray-100 text-gray-600 hover:text-blue-500"
+                  }`}
+                  title="Send GIF"
+                >
+                  <Image className="w-5 h-5" />
+                </button>
+
                 <input
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                 />
                 <button
                   onClick={sendMessage}
                   disabled={!newMessage.trim()}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 disabled:hover:from-blue-500 disabled:hover:to-blue-600"
                 >
                   <Send className="h-4 w-4" />
                 </button>
               </div>
+
+              {showGifPicker && (
+                <GifPicker
+                  onSelect={(gifUrl) => sendGifMessage(gifUrl)}
+                  onClose={() => setShowGifPicker(false)}
+                />
+              )}
             </div>
           </>
         ) : (
