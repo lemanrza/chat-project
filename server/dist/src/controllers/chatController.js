@@ -35,6 +35,7 @@ export const createNewChat = async (req, res, next) => {
         res.status(201).json(response);
     }
     catch (error) {
+        console.error("Error in createNewChat:", error);
         next(error);
     }
 };

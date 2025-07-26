@@ -2,7 +2,6 @@ import express from "express";
 import { createNewChat, getCurrentUserChats, getChatDetails, updateChatDetails, addChatMember, removeChatMember, archiveChatById, deleteChatById, searchUserChats, } from "../controllers/chatController.js";
 import { authenticateToken } from "../middlewares/authMiddleware.js";
 const chatRouter = express.Router();
-// Apply authentication middleware to all routes
 chatRouter.use(authenticateToken);
 chatRouter.post("/", createNewChat);
 chatRouter.get("/", getCurrentUserChats);

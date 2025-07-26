@@ -7,13 +7,13 @@ import config from "./config/config.js";
 dotenv.config();
 console.log("🚀 Starting server...");
 const httpServer = createServer(app);
-console.log("🔌 Initializing Socket.io...");
-const io = initializeSocket(httpServer);
-global.io = io;
-console.log("🗄️ Connecting to database...");
+console.log("️ Connecting to database...");
 const startServer = async () => {
     try {
         await connectToDB();
+        console.log("🔌 Initializing Socket.io...");
+        const io = await initializeSocket(httpServer);
+        global.io = io;
         httpServer.listen(config.PORT, () => {
             console.log(`✅ Server running on http://localhost:${config.PORT}`);
         });

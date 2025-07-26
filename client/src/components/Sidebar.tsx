@@ -71,11 +71,8 @@ const Sidebar = () => {
         isOnline: false,
       });
     }
-    await controller.update(`${endpoints.users}/me`, "", {
-      isOnline: false,
-    });
-    localStorage.removeItem("token");
 
+    localStorage.removeItem("token");
     enqueueSnackbar("Logged out successfully", {
       variant: "success",
       autoHideDuration: 2000,
@@ -84,7 +81,6 @@ const Sidebar = () => {
         horizontal: "right",
       },
     });
-
     window.location.href = "/auth/login";
   };
 

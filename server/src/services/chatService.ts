@@ -23,15 +23,12 @@ export interface UpdateChatData {
 
 export const createChat = async (data: CreateChatData) => {
   try {
-    console.log("Creating chat with data:", data);
-
     if (data.type === "direct" && data.members.length !== 2) {
       console.error("Direct chat validation failed. Members:", data.members);
       throw new Error("Direct chat must have exactly 2 members");
     }
 
     if (data.type === "direct") {
-      console.log("Checking for existing direct chat between:", data.members);
       const existingChat = await ChatModel.findOne({
         type: "direct",
         "members.user": { $all: data.members },
@@ -40,7 +37,6 @@ export const createChat = async (data: CreateChatData) => {
       });
 
       if (existingChat) {
-        console.log("Found existing chat:", existingChat._id);
         return {
           success: true,
           data: existingChat,
@@ -56,8 +52,6 @@ export const createChat = async (data: CreateChatData) => {
       isActive: true,
     }));
 
-    console.log("Members with metadata:", membersWithMetadata);
-
     const chat = new ChatModel({
       type: data.type,
       members: membersWithMetadata,
@@ -72,15 +66,11 @@ export const createChat = async (data: CreateChatData) => {
       },
     });
 
-    console.log("Saving chat to database...");
     await chat.save();
-    console.log("Chat saved with ID:", chat._id);
 
     const populatedChat = await ChatModel.findById(chat._id)
       .populate("members.user", "username email profile")
       .populate("createdBy", "username email profile");
-
-    console.log("Populated chat:", populatedChat);
 
     return {
       success: true,

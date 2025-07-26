@@ -1,14 +1,12 @@
 import ChatModel from "../models/chatModel.js";
 import MessageModel from "../models/messageModel.js";
 import { Types } from "mongoose";
-// Create a new chat
 export const createChat = async (data) => {
     try {
-        // For direct chats, ensure only 2 members
         if (data.type === "direct" && data.members.length !== 2) {
+            console.error("Direct chat validation failed. Members:", data.members);
             throw new Error("Direct chat must have exactly 2 members");
         }
-        // Check if direct chat already exists
         if (data.type === "direct") {
             const existingChat = await ChatModel.findOne({
                 type: "direct",
@@ -24,7 +22,6 @@ export const createChat = async (data) => {
                 };
             }
         }
-        // Create members array with metadata
         const membersWithMetadata = data.members.map((memberId) => ({
             user: new Types.ObjectId(memberId),
             role: memberId === data.createdBy ? "admin" : "member",
@@ -45,7 +42,6 @@ export const createChat = async (data) => {
             },
         });
         await chat.save();
-        // Populate the created chat
         const populatedChat = await ChatModel.findById(chat._id)
             .populate("members.user", "username email profile")
             .populate("createdBy", "username email profile");
@@ -56,13 +52,13 @@ export const createChat = async (data) => {
         };
     }
     catch (error) {
+        console.error("Error in createChat service:", error);
         return {
             success: false,
             message: error.message || "Failed to create chat",
         };
     }
 };
-// Get user's chats
 export const getUserChats = async (userId) => {
     try {
         const chats = await ChatModel.find({
@@ -87,7 +83,6 @@ export const getUserChats = async (userId) => {
         };
     }
 };
-// Get chat by ID
 export const getChatById = async (chatId, userId) => {
     try {
         const chat = await ChatModel.findOne({
@@ -117,10 +112,8 @@ export const getChatById = async (chatId, userId) => {
         };
     }
 };
-// Update chat
 export const updateChat = async (chatId, updateData, userId) => {
     try {
-        // Check if user is admin or moderator
         const chat = await ChatModel.findOne({
             _id: new Types.ObjectId(chatId),
             "members.user": new Types.ObjectId(userId),
@@ -148,10 +141,8 @@ export const updateChat = async (chatId, updateData, userId) => {
         };
     }
 };
-// Add member to chat
 export const addMemberToChat = async (chatId, newMemberId, addedBy) => {
     try {
-        // Check if user has permission to add members
         const chat = await ChatModel.findOne({
             _id: new Types.ObjectId(chatId),
             "members.user": new Types.ObjectId(addedBy),
@@ -169,7 +160,6 @@ export const addMemberToChat = async (chatId, newMemberId, addedBy) => {
                 message: "Cannot add members to direct chat",
             };
         }
-        // Check if member already exists
         const existingMember = chat.members.find((member) => member.user.toString() === newMemberId && member.isActive);
         if (existingMember) {
             return {
@@ -177,7 +167,6 @@ export const addMemberToChat = async (chatId, newMemberId, addedBy) => {
                 message: "User is already a member of this chat",
             };
         }
-        // Add new member
         const updatedChat = await ChatModel.findByIdAndUpdate(chatId, {
             $push: {
                 members: {
@@ -201,7 +190,6 @@ export const addMemberToChat = async (chatId, newMemberId, addedBy) => {
         };
     }
 };
-// Remove member from chat
 export const removeMemberFromChat = async (chatId, memberId, removedBy) => {
     try {
         const chat = await ChatModel.findOne({
@@ -221,7 +209,6 @@ export const removeMemberFromChat = async (chatId, memberId, removedBy) => {
                 message: "Cannot remove members from direct chat",
             };
         }
-        // Update member status
         const updatedChat = await ChatModel.findOneAndUpdate({
             _id: new Types.ObjectId(chatId),
             "members.user": new Types.ObjectId(memberId),
@@ -244,7 +231,6 @@ export const removeMemberFromChat = async (chatId, memberId, removedBy) => {
         };
     }
 };
-// Archive chat
 export const archiveChat = async (chatId, userId) => {
     try {
         const chat = await ChatModel.findOneAndUpdate({
@@ -276,7 +262,6 @@ export const archiveChat = async (chatId, userId) => {
         };
     }
 };
-// Delete chat (only for admins)
 export const deleteChat = async (chatId, userId) => {
     try {
         const chat = await ChatModel.findOne({
@@ -290,9 +275,7 @@ export const deleteChat = async (chatId, userId) => {
                 message: "Chat not found or insufficient permissions",
             };
         }
-        // Delete all messages in the chat
         await MessageModel.deleteMany({ chat: new Types.ObjectId(chatId) });
-        // Delete the chat
         await ChatModel.findByIdAndDelete(chatId);
         return {
             success: true,
@@ -306,7 +289,6 @@ export const deleteChat = async (chatId, userId) => {
         };
     }
 };
-// Search chats
 export const searchChats = async (userId, query) => {
     try {
         const chats = await ChatModel.find({
