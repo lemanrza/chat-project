@@ -1,5 +1,5 @@
 export interface UserData {
-  id: string;
+  id: string
   profile: {
     [x: string]: any;
     country: any;
@@ -23,7 +23,6 @@ export interface UserData {
 }
 
 export interface FormData {
-  messagePrivacy: string;
   firstName: string;
   lastName: string;
   email: string;
