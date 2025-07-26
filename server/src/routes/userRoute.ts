@@ -20,6 +20,8 @@ import {
   updateUserController,
   acceptConnection,
   rejectConnection,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/userController.js";
 import userValidate from "../middlewares/userValidate.js";
 
@@ -30,6 +32,9 @@ userRouter.post("/register", userValidate, registerUser);
 userRouter.post("/login", loginUser);
 userRouter.get("/unlock-account", unlockAccount);
 userRouter.get("/verify-email", verifyUserEmail);
+
+userRouter.post("/forgot-password", forgotPassword);
+userRouter.post("/reset-password", resetPassword);
 
 userRouter.get("/me/:userId", getCurrentUser);
 userRouter.put("/me/:userId", updateCurrentUser);
@@ -42,7 +47,6 @@ userRouter.post(
 );
 userRouter.delete("/me/:userId/delete-image", deleteProfileImage);
 
-// Connection management routes
 userRouter.get("/me/:userId/available", getAvailableUsersToConnect);
 userRouter.post("/me/:userId/connections", addUserConnection);
 userRouter.delete(
@@ -50,7 +54,6 @@ userRouter.delete(
   removeUserConnection
 );
 
-// Connection request management routes
 userRouter.post("/me/:userId/connections/accept", acceptConnection);
 userRouter.post("/me/:userId/connections/reject", rejectConnection);
 

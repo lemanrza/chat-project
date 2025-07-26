@@ -309,10 +309,19 @@ const Chat = () => {
       if (response.ok) {
         const newChat = await response.json();
         const chatData = newChat.data || newChat;
+
+        // First add chat to list
         setChats((prev) => [...prev, chatData]);
-        handleChatSelect(chatData);
+
+        // Then select it
+        setSelectedChat(chatData);
+
+        // Then explicitly fetch its messages
+        fetchMessages(chatData._id, currentUserId);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to create chat:", error);
+    }
   };
 
   const getOtherParticipant = (chat: any) => {
@@ -511,6 +520,11 @@ const Chat = () => {
               <div className="space-y-4">
                 {messages &&
                   messages.map((message) => {
+                    // Add null checks to prevent errors
+                    if (!message || !message.sender || !message.sender._id) {
+                      return null;
+                    }
+
                     const isOwn = message.sender._id === currentUserId;
                     return (
                       <div
@@ -526,13 +540,15 @@ const Chat = () => {
                               : "bg-gray-200 text-gray-900"
                           }`}
                         >
-                          <p>{message.content}</p>
+                          <p>{message.content || "No content"}</p>
                           <p
                             className={`text-xs mt-1 ${
                               isOwn ? "text-blue-100" : "text-gray-500"
                             }`}
                           >
-                            {formatTime(message.createdAt)}
+                            {message.createdAt
+                              ? formatTime(message.createdAt)
+                              : ""}
                           </p>
                         </div>
                       </div>

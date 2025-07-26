@@ -16,33 +16,44 @@ const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 10 * 60 * 1000;
 
 export const getAll = async () => {
-  return await UserModel.find().select("-password").populate({
-    path: "connections",
-    select: "-password",
-  }).populate({
-    path: "connectionsRequests",
-    select: "-password",
-  });
+  return await UserModel.find()
+    .select("-password")
+    .populate({
+      path: "connections",
+      select: "-password",
+    })
+    .populate({
+      path: "connectionsRequests",
+      select: "-password",
+    });
 };
 
 export const getOne = async (id: any) =>
-  await UserModel.findById(id).select("-password").populate('connectionsRequests').populate('connections');
+  await UserModel.findById(id)
+    .select("-password")
+    .populate("connectionsRequests")
+    .populate("connections");
 
 export const getOneWithConnections = async (id: any) =>
-  await UserModel.findById(id).select("-password").populate({
-    path: "connections",
-    select: "-password",
-  }).populate({
-    path: "connectionsRequests",
-    select: "-password",
-  });
+  await UserModel.findById(id)
+    .select("-password")
+    .populate({
+      path: "connections",
+      select: "-password",
+    })
+    .populate({
+      path: "connectionsRequests",
+      select: "-password",
+    });
 
 // Add a connection between two users (handles both public and private profiles)
 export const addConnection = async (userId: string, connectionId: string) => {
   try {
     // Get the target user to check profile visibility
-    const targetUser = await UserModel.findById(connectionId).select('profileVisibility connectionsRequests connections');
-    
+    const targetUser = await UserModel.findById(connectionId).select(
+      "profileVisibility connectionsRequests connections"
+    );
+
     if (!targetUser) {
       return {
         success: false,
@@ -51,7 +62,7 @@ export const addConnection = async (userId: string, connectionId: string) => {
     }
 
     // Check if already connected (convert to string for comparison)
-    if (targetUser.connections.some(conn => conn.toString() === userId)) {
+    if (targetUser.connections.some((conn) => conn.toString() === userId)) {
       return {
         success: false,
         message: "Already connected to this user",
@@ -59,14 +70,16 @@ export const addConnection = async (userId: string, connectionId: string) => {
     }
 
     // Check if request already sent (convert to string for comparison)
-    if (targetUser.connectionsRequests.some(req => req.toString() === userId)) {
+    if (
+      targetUser.connectionsRequests.some((req) => req.toString() === userId)
+    ) {
       return {
         success: false,
         message: "Connection request already sent",
       };
     }
 
-    if (targetUser.profileVisibility === 'public') {
+    if (targetUser.profileVisibility === "public") {
       // For public profiles, connect immediately
       await UserModel.findByIdAndUpdate(userId, {
         $addToSet: { connections: connectionId },
@@ -79,7 +92,7 @@ export const addConnection = async (userId: string, connectionId: string) => {
       return {
         success: true,
         message: "Connected successfully",
-        type: 'connected'
+        type: "connected",
       };
     } else {
       // For private profiles, send connection request
@@ -90,7 +103,7 @@ export const addConnection = async (userId: string, connectionId: string) => {
       return {
         success: true,
         message: "Connection request sent",
-        type: 'request_sent'
+        type: "request_sent",
       };
     }
   } catch (error: any) {
@@ -102,7 +115,10 @@ export const addConnection = async (userId: string, connectionId: string) => {
 };
 
 // Accept a connection request
-export const acceptConnectionRequest = async (userId: string, requesterId: string) => {
+export const acceptConnectionRequest = async (
+  userId: string,
+  requesterId: string
+) => {
   try {
     // Add connection to both users
     await UserModel.findByIdAndUpdate(userId, {
@@ -127,7 +143,10 @@ export const acceptConnectionRequest = async (userId: string, requesterId: strin
 };
 
 // Reject a connection request
-export const rejectConnectionRequest = async (userId: string, requesterId: string) => {
+export const rejectConnectionRequest = async (
+  userId: string,
+  requesterId: string
+) => {
   try {
     // Remove the request from connectionsRequests
     await UserModel.findByIdAndUpdate(userId, {
@@ -444,7 +463,7 @@ export const forgotPassword = async (email: string) => {
       "30m"
     );
     const resetPasswordLink = `${CLIENT_URL}/auth/reset-password/${token}`;
-    sendForgotPasswordEmail(email, resetPasswordLink);
+    sendForgotPasswordEmail(email, user.profile.displayName, resetPasswordLink);
   }
 };
 
