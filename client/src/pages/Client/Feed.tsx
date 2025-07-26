@@ -87,7 +87,6 @@ const Feed = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        // Check token directly from localStorage
         if (isTokenExpired()) {
           localStorage.removeItem("token");
           setLoading(false);
@@ -119,14 +118,13 @@ const Feed = () => {
       }
     };
 
-    // Check if user is authenticated using token directly
     if (!isTokenExpired() && getUserIdFromToken()) {
       fetchUsers();
       fetchUser();
     } else {
       setLoading(false);
     }
-  }, []); // Remove dependency on reduxUser.id
+  }, []);
 
   const currentUserId = getUserIdFromToken() || reduxUser?.id;
 
@@ -149,7 +147,6 @@ const Feed = () => {
         (userData.hobbies &&
           userData.hobbies.some((hobby) => selectedHobbies.includes(hobby)));
 
-      // Base filter (common for all)
       const baseMatch = matchesSearch && matchesHobbies;
 
       if (activeTab === "discover") {
@@ -164,9 +161,8 @@ const Feed = () => {
       }
 
       if (activeTab === "nearby") {
-        // Use user data if available, otherwise skip nearby filtering
         if (!user?.profile?.location) {
-          return baseMatch; // Show all users if current user location is not available
+          return baseMatch;
         }
         const currentUserLocation = user.profile.location.toLowerCase();
         const otherUserLocation = userData.profile?.location?.toLowerCase();
@@ -430,7 +426,6 @@ const Feed = () => {
         <div className="flex-1 overflow-auto p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredUsers.map((userData) => {
-              // Use token-based ID as primary, fallback to user data or redux state
               const currentUserId =
                 getUserIdFromToken() || user?.id || reduxUser.id;
 
