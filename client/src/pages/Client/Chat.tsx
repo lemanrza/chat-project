@@ -577,13 +577,13 @@ const Chat = () => {
     }
   };
 
-  return (
-    <div className="flex h-screen bg-gray-50">
+ return (
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-800">
       {/* Sidebar */}
-      <div className="w-1/3 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-1/3 bg-white dark:bg-[#262626] border-r border-gray-200 dark:border-gray-700 flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Chats</h2>
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Chats</h2>
         </div>
 
         {/* Chat List */}
@@ -606,15 +606,14 @@ const Chat = () => {
                 return (
                   <div
                     key={chat._id}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
-                      selectedChat?._id === chat._id
-                        ? "bg-blue-100 border-l-4 border-blue-500"
-                        : "hover:bg-gray-100"
-                    }`}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${selectedChat?._id === chat._id
+                      ? "bg-blue-100 dark:bg-blue-600 border-l-4 border-blue-500"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                      }`}
                     onClick={() => handleChatSelect(chat)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                      <div className="h-10 w-10 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
                         {otherParticipant?.profile?.avatar ? (
                           <img
                             src={otherParticipant.profile.avatar}
@@ -622,26 +621,23 @@ const Chat = () => {
                             className="h-10 w-10 rounded-full object-cover"
                           />
                         ) : (
-                          <span className="text-gray-600 font-medium">
-                            {otherParticipant?.profile?.displayName
-                              ?.charAt(0)
-                              .toUpperCase() || "U"}
+                          <span className="text-gray-600 dark:text-gray-300 font-medium">
+                            {otherParticipant?.profile?.displayName?.charAt(0).toUpperCase() || "U"}
                           </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 truncate">
-                          {otherParticipant?.profile?.displayName ||
-                            "Unknown User"}
+                        <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                          {otherParticipant?.profile?.displayName || "Unknown User"}
                         </h3>
                         {chat.lastMessage && (
-                          <p className="text-sm text-gray-500 truncate">
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                             {chat.lastMessage.content}
                           </p>
                         )}
                       </div>
                       {chat.lastMessage && chat.lastMessage.createdAt && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
                           {formatTime(chat.lastMessage.createdAt)}
                         </span>
                       )}
@@ -670,11 +666,11 @@ const Chat = () => {
               return (
                 <div
                   key={`connection-${connection._id}`}
-                  className="p-3 rounded-lg cursor-pointer transition-colors mb-2 hover:bg-gray-100 border-l-4 border-green-400"
+                  className="p-3 rounded-lg cursor-pointer transition-colors mb-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-l-4 border-green-400"
                   onClick={() => createChatWithConnection(connection)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                    <div className="h-10 w-10 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
                       {connection?.profile?.avatar ? (
                         <img
                           src={connection.profile.avatar}
@@ -682,24 +678,20 @@ const Chat = () => {
                           className="h-10 w-10 rounded-full object-cover"
                         />
                       ) : (
-                        <span className="text-gray-600 font-medium">
-                          {connection.profile?.displayName
-                            ?.charAt(0)
-                            .toUpperCase() ||
+                        <span className="text-gray-600 dark:text-gray-300 font-medium">
+                          {connection.profile?.displayName?.charAt(0).toUpperCase() ||
                             connection.firstName?.charAt(0).toUpperCase() ||
                             "U"}
                         </span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 truncate">
+                      <h3 className="font-medium text-gray-900 dark:text-white truncate">
                         {connection.profile?.displayName ||
-                          `${connection.firstName || ""} ${
-                            connection.lastName || ""
-                          }`.trim() ||
+                          `${connection.firstName || ""} ${connection.lastName || ""}`.trim() ||
                           "Unknown User"}
                       </h3>
-                      <p className="text-sm text-green-600">
+                      <p className="text-sm text-green-600 dark:text-green-400">
                         Click to start chat
                       </p>
                     </div>
@@ -710,12 +702,10 @@ const Chat = () => {
 
             {/* Empty State */}
             {chats.length === 0 && connections.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No connections yet</p>
-                <p className="text-sm">
-                  Add some connections to start chatting
-                </p>
+                <p className="text-sm">Add some connections to start chatting</p>
               </div>
             )}
           </div>
@@ -727,43 +717,37 @@ const Chat = () => {
         {selectedChat ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 bg-white border-b border-gray-200">
+            <div className="p-4 bg-white dark:bg-[#262626] border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                <div className="h-10 w-10 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
                   {getOtherParticipant(selectedChat)?.profile?.avatar ? (
                     <img
                       src={getOtherParticipant(selectedChat)?.profile.avatar}
-                      alt={
-                        getOtherParticipant(selectedChat)?.profile
-                          ?.displayName || "User"
-                      }
+                      alt={getOtherParticipant(selectedChat)?.profile?.displayName || "User"}
                       className="h-10 w-10 rounded-full object-cover"
                     />
                   ) : (
-                    <span className="text-gray-600 font-medium">
-                      {getOtherParticipant(selectedChat)
-                        ?.profile?.displayName?.charAt(0)
-                        .toUpperCase() || "U"}
+                    <span className="text-gray-600 dark:text-gray-300 font-medium">
+                      {getOtherParticipant(selectedChat)?.profile?.displayName?.charAt(0).toUpperCase() || "U"}
                     </span>
                   )}
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">
-                    {getOtherParticipant(selectedChat)?.profile?.displayName ||
-                      "Unknown User"}
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    {getOtherParticipant(selectedChat)?.profile?.displayName || "Unknown User"}
                   </h3>
 
                   {getOtherParticipant(selectedChat)?.isOnline === true ? (
-                    <p className="text-sm text-green-500">Online</p>
+                    <p className="text-sm text-green-500 dark:text-green-400">Online</p>
                   ) : (
-                    <p className="text-sm text-red-500">Offline</p>
+                    <p className="text-sm text-red-500 dark:text-red-400">Offline</p>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-[#262626]">
               <div className="space-y-4">
                 {messages &&
                   messages.map((message) => {
@@ -775,20 +759,17 @@ const Chat = () => {
                     return (
                       <div
                         key={message._id}
-                        className={`flex message-container ${
-                          isOwn ? "justify-end" : "justify-start"
-                        }`}
+                        className={`flex message-container ${isOwn ? "justify-end" : "justify-start"}`}
                       >
                         <div
-                          className={`max-w-xs lg:max-w-md rounded-2xl overflow-hidden ${
-                            message.content &&
+                          className={`max-w-xs lg:max-w-md rounded-2xl overflow-hidden ${message.content &&
                             (message.content.includes("giphy.com") ||
                               message.content.includes(".gif") ||
                               message.content.startsWith("https://media"))
-                              ? "bg-transparent p-1"
-                              : isOwn
-                              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2"
-                              : "bg-gray-100 text-gray-900 px-4 py-2"
+                            ? "bg-transparent p-1"
+                            : isOwn
+                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2"
+                            : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2"
                           }`}
                         >
                           {/* Check if message content is a GIF URL */}
@@ -815,7 +796,7 @@ const Chat = () => {
                                     fallback.className = `px-4 py-2 rounded-2xl ${
                                       isOwn
                                         ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-                                        : "bg-gray-100 text-gray-900"
+                                        : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
                                     }`;
                                   }
                                 }}
@@ -828,9 +809,7 @@ const Chat = () => {
                               </p>
                             </div>
                           ) : (
-                            <p className="break-words">
-                              {message.content || "No content"}
-                            </p>
+                            <p className="break-words">{message.content || "No content"}</p>
                           )}
 
                           <p
@@ -860,7 +839,7 @@ const Chat = () => {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 bg-white border-t border-gray-200">
+            <div className="p-4 bg-white dark:bg-[#262626] border-t border-gray-200 dark:border-gray-700">
               <div className="flex gap-3 items-center">
                 <button
                   onClick={() => setShowGifPicker(true)}
@@ -879,7 +858,7 @@ const Chat = () => {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                 />
                 <button
@@ -900,13 +879,13 @@ const Chat = () => {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
+          <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-[#262626]">
             <div className="text-center">
-              <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
+              <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
                 Welcome to Chat
               </h3>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 Select a chat or connection to start messaging
               </p>
             </div>

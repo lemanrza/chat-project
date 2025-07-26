@@ -8,9 +8,7 @@ const validateMessageData = (data) => {
     }
     return { isValid: true };
 };
-export const registerMessageHandlers = (io, // Using any to avoid TypeScript issues
-socket // Using any to avoid TypeScript issues
-) => {
+export const registerMessageHandlers = (io, socket) => {
     socket.on("message:send", async (data) => {
         try {
             const validation = validateMessageData(data);
@@ -18,8 +16,6 @@ socket // Using any to avoid TypeScript issues
                 socket.emit("error", { message: validation.error });
                 return;
             }
-            // Just broadcast the message - don't create it again
-            // The message was already created by the API call
             io.to(`chat:${data.chatId}`).emit("message:new", {
                 id: data.tempId || new Date().getTime().toString(),
                 content: data.content,

@@ -13,7 +13,11 @@ userRouter.get("/me/:userId", getCurrentUser);
 userRouter.put("/me/:userId", updateCurrentUser);
 userRouter.delete("/me/:userId", deleteCurrentUser);
 userRouter.post("/me/:userId/change-password", changePassword);
-userRouter.post("/me/:userId/upload-image", upload.single("avatar"), uploadProfileImage);
+userRouter.post("/me/:userId/upload-image", (req, res, next) => {
+    next();
+}, upload.single("avatar"), (req, res, next) => {
+    next();
+}, uploadProfileImage);
 userRouter.delete("/me/:userId/delete-image", deleteProfileImage);
 userRouter.get("/me/:userId/available", getAvailableUsersToConnect);
 userRouter.post("/me/:userId/connections", addUserConnection);
