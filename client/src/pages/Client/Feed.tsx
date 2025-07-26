@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
-import endpoints from '@/services/api';
-import controller from '@/services/commonRequest';
-import { useNavigate } from 'react-router-dom';
-import { enqueueSnackbar } from 'notistack';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import endpoints from "@/services/api";
+import controller from "@/services/commonRequest";
+import { enqueueSnackbar } from "notistack";
 import type { UserData } from "@/types/profileType";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
+import { getUserIdFromToken, isTokenExpired } from "@/utils/auth";
 import {
   Search,
   Filter,
@@ -25,40 +25,38 @@ interface Tab {
   icon: React.ReactNode;
 }
 
-
 const hobbiesList = [
-  'Coffee',
-  'Travel',
-  'Netflix',
-  'Coding',
-  'Dogs',
-  'Cats',
-  'Music',
-  'Fitness',
-  'Cooking',
-  'Photo',
-  'Gaming',
-  'Hiking',
-  'Swimming',
-  'Theater',
-  'Sports',
-  'Garden',
-  'Guitar',
-  'Dancing',
-  'Soccer',
-  'Darts',
-  'Games',
-  'Wine',
-  'Beer',
-  'Beach',
-  'Cars',
-  'Comedy',
-  'Movies',
-  'Nature',
+  "Coffee",
+  "Travel",
+  "Netflix",
+  "Coding",
+  "Dogs",
+  "Cats",
+  "Music",
+  "Fitness",
+  "Cooking",
+  "Photo",
+  "Gaming",
+  "Hiking",
+  "Swimming",
+  "Theater",
+  "Sports",
+  "Garden",
+  "Guitar",
+  "Dancing",
+  "Soccer",
+  "Darts",
+  "Games",
+  "Wine",
+  "Beer",
+  "Beach",
+  "Cars",
+  "Comedy",
+  "Movies",
+  "Nature",
 ];
 
 const Feed = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("discover");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -70,15 +68,39 @@ const Feed = () => {
   const { t } = useTranslation();
   const reduxUser = useSelector((state: RootState) => state.user);
   const tabs: Tab[] = [
-    { id: "discover", label: t("feed_tab_discover"), icon: <Search className="w-4 h-4" /> },
-    { id: "trending", label: t("feed_tab_trending"), icon: <div className="w-4 h-4 flex items-center">📈</div> },
-    { id: "nearby", label: t("feed_tab_nearby"), icon: <MapPin className="w-4 h-4" /> },
+    {
+      id: "discover",
+      label: t("feed_tab_discover"),
+      icon: <Search className="w-4 h-4" />,
+    },
+    {
+      id: "trending",
+      label: t("feed_tab_trending"),
+      icon: <div className="w-4 h-4 flex items-center">📈</div>,
+    },
+    {
+      id: "nearby",
+      label: t("feed_tab_nearby"),
+      icon: <MapPin className="w-4 h-4" />,
+    },
   ];
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        if (!reduxUser.id) return;
-        const response = await controller.getOne(endpoints.users, reduxUser.id);
+        // Check token directly from localStorage
+        if (isTokenExpired()) {
+          localStorage.removeItem("token");
+          setLoading(false);
+          return;
+        }
+
+        const userId = getUserIdFromToken();
+        if (!userId) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await controller.getOne(endpoints.users, userId);
         setUser(response.data);
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -96,23 +118,36 @@ const Feed = () => {
         setLoading(false);
       }
     };
-    fetchUsers();
-    fetchUser();
-  }, [navigate]);
 
-  const currentUserId = reduxUser?.id;
+    // Check if user is authenticated using token directly
+    if (!isTokenExpired() && getUserIdFromToken()) {
+      fetchUsers();
+      fetchUser();
+    } else {
+      setLoading(false);
+    }
+  }, []); // Remove dependency on reduxUser.id
+
+  const currentUserId = getUserIdFromToken() || reduxUser?.id;
 
   const filteredUsers = users
-    .filter(user => user.id !== currentUserId)
-    .filter(userData => {
+    .filter((user) => user.id !== currentUserId)
+    .filter((userData) => {
       const matchesSearch =
-        userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase());
+        userData.profile?.firstName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        userData.profile?.lastName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        userData.profile?.location
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase());
 
       const matchesHobbies =
         selectedHobbies.length === 0 ||
-        (userData.hobbies && userData.hobbies.some(hobby => selectedHobbies.includes(hobby)));
+        (userData.hobbies &&
+          userData.hobbies.some((hobby) => selectedHobbies.includes(hobby)));
 
       // Base filter (common for all)
       const baseMatch = matchesSearch && matchesHobbies;
@@ -122,23 +157,33 @@ const Feed = () => {
       }
 
       if (activeTab === "trending") {
-        const isPopular = (userData.connections?.length || 0) > 3 || userData.profileVisibility === "public";
+        const isPopular =
+          (userData.connections?.length || 0) > 3 ||
+          userData.profileVisibility === "public";
         return baseMatch && isPopular;
       }
 
       if (activeTab === "nearby") {
-        const currentUserLocation = user?.profile?.location?.toLowerCase();
+        // Use user data if available, otherwise skip nearby filtering
+        if (!user?.profile?.location) {
+          return baseMatch; // Show all users if current user location is not available
+        }
+        const currentUserLocation = user.profile.location.toLowerCase();
         const otherUserLocation = userData.profile?.location?.toLowerCase();
-        return baseMatch && currentUserLocation && currentUserLocation === otherUserLocation;
+        return (
+          baseMatch &&
+          currentUserLocation &&
+          currentUserLocation === otherUserLocation
+        );
       }
 
       return false;
     });
 
-
   const handleConnect = async (targetUserId: string) => {
     try {
-      if (!reduxUser.id) {
+      const currentUserId = getUserIdFromToken();
+      if (!currentUserId) {
         enqueueSnackbar("Please log in to connect with users", {
           variant: "warning",
           autoHideDuration: 2000,
@@ -152,7 +197,10 @@ const Feed = () => {
 
       if (targetUser.profileVisibility === "private") {
         await controller.update(`${endpoints.users}/update`, targetUserId, {
-          connectionsRequests: [...(targetUser.connectionsRequests || []), reduxUser.id],
+          connectionsRequests: [
+            ...(targetUser.connectionsRequests || []),
+            currentUserId,
+          ],
         });
 
         enqueueSnackbar("Connection request sent! Waiting for approval.", {
@@ -162,13 +210,16 @@ const Feed = () => {
         });
       } else {
         await controller.update(`${endpoints.users}/update`, targetUserId, {
-          connections: [...(targetUser.connections || []), reduxUser.id],
+          connections: [...(targetUser.connections || []), currentUserId],
         });
 
-        const currentUserResponse = await controller.getOne(endpoints.users, reduxUser.id);
+        const currentUserResponse = await controller.getOne(
+          endpoints.users,
+          currentUserId
+        );
         const currentUser = currentUserResponse.data;
 
-        await controller.update(`${endpoints.users}/update`, reduxUser.id, {
+        await controller.update(`${endpoints.users}/update`, currentUserId, {
           connections: [...(currentUser.connections || []), targetUserId],
         });
 
@@ -179,12 +230,14 @@ const Feed = () => {
         });
       }
 
-      const updatedUserResponse = await controller.getOne(endpoints.users, reduxUser.id);
+      const updatedUserResponse = await controller.getOne(
+        endpoints.users,
+        currentUserId
+      );
       setUser(updatedUserResponse.data);
 
       const updatedUsersResponse = await controller.getAll(endpoints.users);
       setUsers(updatedUsersResponse.data);
-
     } catch (error: any) {
       console.error("Error in handleConnect:", error);
 
@@ -199,32 +252,32 @@ const Feed = () => {
         anchorOrigin: { vertical: "bottom", horizontal: "right" },
       });
     }
-  }
+  };
 
   const handleMessage = (userId: string) => {
     console.log("Messaging user:", userId);
   };
-
-  if (users.length === 0) return null;
-
 
   if (loading) {
     return (
       <div className="w-full flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">{t("feed_loading")}</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            {t("feed_loading")}
+          </p>
         </div>
       </div>
     );
   }
 
-  if (!user) {
+  if (isTokenExpired() || !getUserIdFromToken()) {
     return (
       <div className="w-full flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00B878] mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">{t("feed_loading")}</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            Please log in to view the feed
+          </p>
         </div>
       </div>
     );
@@ -238,18 +291,28 @@ const Feed = () => {
             initial={{ x: 400, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 400, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 25 }}
+            transition={{ type: "spring", stiffness: 280, damping: 25 }}
             className="fixed top-0 right-0 h-full w-full max-w-sm z-40 flex flex-col p-6 backdrop-blur-lg bg-white/80 dark:bg-neutral-900/70 border-l border-gray-200 dark:border-neutral-700 shadow-xl"
-            style={{ boxShadow: '0 12px 32px rgba(0,0,0,0.15)' }}
+            style={{ boxShadow: "0 12px 32px rgba(0,0,0,0.15)" }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-[#00B878] dark:text-[#00E89E]">Filters</h2>
+              <h2 className="text-2xl font-semibold text-[#00B878] dark:text-[#00E89E]">
+                Filters
+              </h2>
               <button
                 onClick={() => setShowFilters(false)}
                 className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-neutral-800 transition"
                 aria-label="Close sidebar"
               >
-                <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -258,22 +321,25 @@ const Feed = () => {
 
             <div className="flex-grow overflow-y-auto">
               <div className="mb-6">
-                <h3 className="font-medium text-gray-800 dark:text-white mb-3 text-base">Hobbies</h3>
+                <h3 className="font-medium text-gray-800 dark:text-white mb-3 text-base">
+                  Hobbies
+                </h3>
                 <div className="flex flex-wrap gap-2">
-                  {hobbiesList.map(hobby => (
+                  {hobbiesList.map((hobby) => (
                     <button
                       key={hobby}
                       onClick={() =>
                         setSelectedHobbies(
                           selectedHobbies.includes(hobby)
-                            ? selectedHobbies.filter(h => h !== hobby)
+                            ? selectedHobbies.filter((h) => h !== hobby)
                             : [...selectedHobbies, hobby]
                         )
                       }
-                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${selectedHobbies.includes(hobby)
-                        ? 'bg-[#00B878] text-white border-[#00B878]'
-                        : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700'
-                        }`}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all shadow-sm ${
+                        selectedHobbies.includes(hobby)
+                          ? "bg-[#00B878] text-white border-[#00B878]"
+                          : "bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-neutral-600 hover:bg-[#f1faf6] dark:hover:bg-neutral-700"
+                      }`}
                     >
                       {hobby}
                     </button>
@@ -328,10 +394,11 @@ const Feed = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
-                ${activeTab === tab.id
+                ${
+                  activeTab === tab.id
                     ? "shadow-md scale-105 text-[#00B878]"
                     : "bg-transparent text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700"
-                  }`}
+                }`}
               >
                 {tab.icon}
                 {tab.label}
@@ -363,23 +430,30 @@ const Feed = () => {
         <div className="flex-1 overflow-auto p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredUsers.map((userData) => {
-              if (!user) return null;
+              // Use token-based ID as primary, fallback to user data or redux state
+              const currentUserId =
+                getUserIdFromToken() || user?.id || reduxUser.id;
 
-              const currentUserId = user.id || reduxUser.id;
-              
-              const isAlreadyConnected = userData.connections && Array.isArray(userData.connections) 
-                ? userData.connections.some((conn: any) => {
-                    const connId = typeof conn === 'string' ? conn : conn.id || conn._id;
-                    return connId === currentUserId;
-                  })
-                : false;
+              if (!currentUserId) return null;
 
-              const isRequestPending = userData.connectionsRequests && Array.isArray(userData.connectionsRequests)
-                ? userData.connectionsRequests.some((req: any) => {
-                    const reqId = typeof req === 'string' ? req : req.id || req._id;
-                    return reqId === currentUserId;
-                  })
-                : false;
+              const isAlreadyConnected =
+                userData.connections && Array.isArray(userData.connections)
+                  ? userData.connections.some((conn: any) => {
+                      const connId =
+                        typeof conn === "string" ? conn : conn.id || conn._id;
+                      return connId === currentUserId;
+                    })
+                  : false;
+
+              const isRequestPending =
+                userData.connectionsRequests &&
+                Array.isArray(userData.connectionsRequests)
+                  ? userData.connectionsRequests.some((req: any) => {
+                      const reqId =
+                        typeof req === "string" ? req : req.id || req._id;
+                      return reqId === currentUserId;
+                    })
+                  : false;
 
               const handleConnectedClick = () => {
                 enqueueSnackbar("You are already connected with this user", {
@@ -397,7 +471,7 @@ const Feed = () => {
                 });
               };
 
-              const isPublic = userData.profileVisibility === 'public';
+              const isPublic = userData.profileVisibility === "public";
 
               return (
                 <div
@@ -414,7 +488,10 @@ const Feed = () => {
                         />
                       </div>
                       {userData.isOnline && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white dark:border-neutral-800 rounded-full" style={{ backgroundColor: "#00B878" }}></div>
+                        <div
+                          className="absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white dark:border-neutral-800 rounded-full"
+                          style={{ backgroundColor: "#00B878" }}
+                        ></div>
                       )}
                     </div>
                   </div>
@@ -434,7 +511,11 @@ const Feed = () => {
                       </div>
                       <div className="flex items-center text-sm text-gray-500 dark:text-gray-300">
                         <Users className="w-4 h-4 mr-2" />
-                        <span>{t("feed_connections", { count: userData.connections.length })}</span>
+                        <span>
+                          {t("feed_connections", {
+                            count: userData.connections.length,
+                          })}
+                        </span>
                       </div>
                     </div>
 
@@ -454,10 +535,13 @@ const Feed = () => {
                     </div>
                   </div>
 
-                  <div className="absolute top-5 right-3 px-5 py-2 text-sm font-medium text-white rounded-full"
-                    style={{ backgroundColor: isPublic ? '#a8d08d' : '#2c6e49' }}
+                  <div
+                    className="absolute top-5 right-3 px-5 py-2 text-sm font-medium text-white rounded-full"
+                    style={{
+                      backgroundColor: isPublic ? "#a8d08d" : "#2c6e49",
+                    }}
                   >
-                    {isPublic ? 'Public' : 'Private'}
+                    {isPublic ? "Public" : "Private"}
                   </div>
 
                   <div className="flex gap-3">
@@ -477,7 +561,9 @@ const Feed = () => {
                       </button>
                     ) : (
                       <button
-                        onClick={() => userData.id && handleConnect(userData.id)}
+                        onClick={() =>
+                          userData.id && handleConnect(userData.id)
+                        }
                         className="flex-1 py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 font-medium text-white bg-[#00B878] hover:bg-[#00a76d] cursor-pointer"
                       >
                         <UserPlus className="w-4 h-4" />
@@ -503,7 +589,9 @@ const Feed = () => {
               <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-2">
                 {t("feed_no_users")}
               </h3>
-              <p className="text-gray-500 dark:text-gray-300">{t("feed_no_users_sub")}</p>
+              <p className="text-gray-500 dark:text-gray-300">
+                {t("feed_no_users_sub")}
+              </p>
             </div>
           )}
         </div>
