@@ -71,19 +71,38 @@ const Feed = () => {
   }, [navigate]);
 
   const filteredUsers = users
-    .filter(
-      (userData) =>
-        userData.profile?.firstName
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        userData.profile?.lastName
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        userData.profile?.location
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase())
-    )
-    .filter((userData) => userData.id !== user.id);
+    .filter(user => user.id !== currentUserId)
+    .filter(userData => {
+      const matchesSearch =
+        userData.profile?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        userData.profile?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        userData.profile?.location?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesHobbies =
+        selectedHobbies.length === 0 ||
+        (userData.hobbies && userData.hobbies.some(hobby => selectedHobbies.includes(hobby)));
+
+      // Base filter (common for all)
+      const baseMatch = matchesSearch && matchesHobbies;
+
+      if (activeTab === "discover") {
+        return baseMatch;
+      }
+
+      if (activeTab === "trending") {
+        const isPopular = (userData.connections?.length || 0) > 3 || userData.profileVisibility === "public";
+        return baseMatch && isPopular;
+      }
+
+      if (activeTab === "nearby") {
+        const currentUserLocation = user?.profile?.location?.toLowerCase();
+        const otherUserLocation = userData.profile?.location?.toLowerCase();
+        return baseMatch && currentUserLocation && currentUserLocation === otherUserLocation;
+      }
+
+      return false;
+    });
+
 
   // Handle connection request logic
   const handleConnect = async (targetUserId: string) => {
