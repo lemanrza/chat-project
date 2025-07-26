@@ -14,7 +14,7 @@ import { authenticateToken } from "../middlewares/authMiddleware.js";
 
 const chatRouter = express.Router();
 
-// chatRouter.use(authenticateToken);
+chatRouter.use(authenticateToken);
 
 chatRouter.post("/", createNewChat);
 chatRouter.get("/", getCurrentUserChats);
