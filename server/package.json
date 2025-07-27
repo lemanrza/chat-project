@@ -7,6 +7,10 @@
     "build": "tsc",
     "start": "node dist/src/server.js"
   },
+  "main": "dist/src/server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
