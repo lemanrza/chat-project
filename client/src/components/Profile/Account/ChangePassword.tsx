@@ -4,6 +4,7 @@ import PasswordRequirements from "./components/PasswordRequirements";
 import type { UserData } from "@/types/profileType";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
 import { validatePassword } from "@/lib/validatePassword";
+import { getUserIdFromToken } from "@/utils/auth";
 import { t } from "i18next";
 
 interface ChangePasswordProps {
@@ -21,7 +22,6 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
     setIsChangingPassword,
   } = usePasswordForm();
 
-  // If userData is null, show loading or return early
   if (!userData) {
     return (
       <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
@@ -89,8 +89,13 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
     try {
       setIsChangingPassword(true);
 
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/me/change-password`,
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/${userId}/change-password`,
         {
           method: "POST",
           headers: {
@@ -104,12 +109,50 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
         }
       );
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.message || "Failed to change password");
+        let errorMessage = "Failed to change password";
+        try {
+          const result = await response.json();
+          errorMessage = result.message || errorMessage;
+        } catch {
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
+      try {
+        await response.json();
+      } catch {
+        console.log("✅ Password changed successfully (no JSON response)");
+      }
+
+      try {
+        const testResponse = await fetch(
+          `${import.meta.env.VITE_SERVER_URL}/auth/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: userData?.email || "unknown@email.com",
+              password: passwordData.newPassword,
+            }),
+          }
+        );
+
+        if (testResponse.ok) {
+          console.log("✅ NEW PASSWORD WORKS! Password was actually updated.");
+        } else {
+          const errorResult = await testResponse.json();
+          console.log("❌ NEW PASSWORD DOESN'T WORK:", errorResult.message);
+          console.log(
+            "❌ This means the password wasn't actually updated in the database"
+          );
+        }
+      } catch (testError) {
+        console.log("❌ Error testing new password:", testError);
+      }
       resetForm();
       enqueueSnackbar("Password changed successfully!", {
         variant: "success",
@@ -250,13 +293,14 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
             !passwordsMatch ||
             isSameAsCurrentPassword
           }
-          className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 ${isChangingPassword ||
+          className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+            isChangingPassword ||
             !passwordValidation.isValid ||
             !passwordsMatch ||
             isSameAsCurrentPassword
-            ? "bg-gray-400 cursor-not-allowed text-white"
-            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
-            }`}
+              ? "bg-gray-400 cursor-not-allowed text-white"
+              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105"
+          }`}
         >
           {isChangingPassword ? (
             <span className="flex items-center">
