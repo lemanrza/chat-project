@@ -757,6 +757,7 @@ export const changePassword = async (
     }
 
     const user = await getOneWithPassword(userId);
+
     if (!user) {
       return res.status(404).json({
         message: "User not found",
@@ -790,15 +791,21 @@ export const changePassword = async (
     const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
 
     const response = await updateUser(userId, {
-      $set: {
-        password: hashedNewPassword,
-      },
+      password: hashedNewPassword,
     });
 
     if (!response.success) {
       return res.status(500).json({
         message: response.message,
       });
+    }
+
+    const updatedUser = await getOneWithPassword(userId);
+
+    if (updatedUser && updatedUser.password) {
+      await bcrypt.compare(newPassword, updatedUser.password);
+
+      await bcrypt.compare(currentPassword, updatedUser.password);
     }
 
     res.status(200).json({
