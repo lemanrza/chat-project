@@ -605,6 +605,11 @@ export const changePassword = async (req, res, next) => {
                 message: response.message,
             });
         }
+        const updatedUser = await getOneWithPassword(userId);
+        if (updatedUser && updatedUser.password) {
+            await bcrypt.compare(newPassword, updatedUser.password);
+            await bcrypt.compare(currentPassword, updatedUser.password);
+        }
         res.status(200).json({
             message: "Password changed successfully",
         });
