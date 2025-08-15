@@ -598,14 +598,17 @@ export const changePassword = async (req, res, next) => {
         const saltRounds = 10;
         const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
         const response = await updateUser(userId, {
-            $set: {
-                password: hashedNewPassword,
-            },
+            password: hashedNewPassword,
         });
         if (!response.success) {
             return res.status(500).json({
                 message: response.message,
             });
+        }
+        const updatedUser = await getOneWithPassword(userId);
+        if (updatedUser && updatedUser.password) {
+            await bcrypt.compare(newPassword, updatedUser.password);
+            await bcrypt.compare(currentPassword, updatedUser.password);
         }
         res.status(200).json({
             message: "Password changed successfully",

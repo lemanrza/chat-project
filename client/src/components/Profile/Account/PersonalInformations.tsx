@@ -41,6 +41,7 @@ import endpoints from "@/services/api";
 import { getUserIdFromToken } from "@/utils/auth";
 import axios from "axios";
 import type { UserData, FormData } from "@/types/profileType";
+import { t } from "i18next";
 
 interface LocationData {
   id: string;
@@ -221,60 +222,60 @@ const PersonalInformations = ({
   return (
     <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-        Personal Information
+        {t("personal_info")}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-            First Name
+            {t("first_name")}
           </label>
           <input
             type="text"
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={formData.firstName}
             onChange={(e) => handleInputChange("firstName", e.target.value)}
-            placeholder="Enter your first name"
+            placeholder={t("placeholder_first_name")}
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-            Last Name
+            {t("last_name")}
           </label>
           <input
             type="text"
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={formData.lastName}
             onChange={(e) => handleInputChange("lastName", e.target.value)}
-            placeholder="Enter your last name"
+            placeholder={t("placeholder_last_name")}
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-            Email Address
+            {t("email_address")}
           </label>
           <input
             type="email"
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors"
             value={formData.email}
             onChange={(e) => handleInputChange("email", e.target.value)}
-            placeholder="Enter your email address"
+            placeholder={t("placeholder_email")}
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-            Username
+            {t("username")}
           </label>
           <input
             type="text"
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed"
             value={userData?.username || ""}
             disabled
-            placeholder="Username cannot be changed"
+            placeholder={t("username_disabled")}
           />
         </div>
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-            Location
+            {t("location")}
           </label>
           <input
             type="text"
@@ -284,10 +285,12 @@ const PersonalInformations = ({
               handleInputChange("location", e.target.value);
               handleLocationSearch(e);
             }}
-            placeholder="Search and select your location"
+            placeholder={t("placeholder_location")}
           />
           {isSearching && (
-            <div className="text-sm text-gray-500 dark:text-gray-300">Searching...</div>
+            <div className="text-sm text-gray-500 dark:text-gray-300">
+              {t("searching")}
+            </div>
           )}
           {locations.length > 0 && (
             <ul className="bg-white dark:bg-[#262626] shadow-md border border-gray-300 dark:border-gray-600 mt-2 rounded-lg max-h-60 overflow-auto">
@@ -312,22 +315,22 @@ const PersonalInformations = ({
         </div>
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-            Bio
+            {t("bio")}
           </label>
           <textarea
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#00B878] focus:border-[#00B878] transition-colors resize-none"
             rows={4}
             value={formData.bio}
             onChange={(e) => handleInputChange("bio", e.target.value)}
-            placeholder="Tell us about yourself..."
+            placeholder={t("placeholder_bio")}
           />
           <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
-            {formData.bio.length}/500 characters
+            {formData.bio.length}/500 {t("characters")}
           </p>
         </div>
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
-            Hobbies
+            {t("hobbies")}
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {interests.map((interest) => {
@@ -336,10 +339,7 @@ const PersonalInformations = ({
               const isDisabled = selectedHobbies.length >= 5 && !isChecked;
 
               return (
-                <div
-                  key={interest.name}
-                  className="flex items-center space-x-2"
-                >
+                <div key={interest.name} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     id={interest.name}
@@ -362,7 +362,9 @@ const PersonalInformations = ({
             })}
           </div>
           {!isMinHobbiesSelected && (
-            <p className="text-sm text-red-500 mt-2">Please select at least 3 hobbies.</p>
+            <p className="text-sm text-red-500 mt-2">
+              {t("min_hobbies_warning")}
+            </p>
           )}
         </div>
       </div>
@@ -372,11 +374,10 @@ const PersonalInformations = ({
         <button
           onClick={handleSaveChanges}
           disabled={isSaving}
-          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-            isSaving
-              ? "bg-gray-400 cursor-not-allowed text-white"
-              : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
-          }`}
+          className={`px-3.5 py-2.5 rounded-lg font-medium transition-all duration-200 ${isSaving
+            ? "bg-gray-400 cursor-not-allowed text-white"
+            : "bg-[#00B878] hover:bg-[#00a76d] text-white hover:shadow-lg transform hover:scale-105 cursor-pointer"
+            }`}
         >
           {isSaving ? (
             <span className="flex items-center">
@@ -400,7 +401,7 @@ const PersonalInformations = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Saving...
+              {t("saving")}
             </span>
           ) : (
             <>
@@ -417,7 +418,7 @@ const PersonalInformations = ({
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              Save Changes
+              {t("save_changes")}
             </>
           )}
         </button>

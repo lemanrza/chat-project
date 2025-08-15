@@ -6,6 +6,7 @@ import { getUserIdFromToken } from "@/utils/auth";
 import type { UserData } from "@/types/profileType";
 import GifPicker from "@/components/GifPicker";
 import { Image } from "lucide-react";
+import { t } from "i18next";
 
 interface Message {
   _id: string;
@@ -176,15 +177,17 @@ const Chat = () => {
         const chat = chatData.data || chatData;
 
         setChats((prev) => {
-          const exists = prev.some(
+          const existingIndex = prev.findIndex(
             (existingChat) => existingChat._id === chat._id
           );
-          if (exists) {
-            return prev.map((existingChat) =>
-              existingChat._id === chat._id ? chat : existingChat
-            );
+          if (existingIndex !== -1) {
+            // Update existing chat
+            const updatedChats = [...prev];
+            updatedChats[existingIndex] = chat;
+            return updatedChats;
           } else {
-            return [chat, ...prev];
+            // Add new chat to the end, not beginning to avoid auto-selection
+            return [...prev, chat];
           }
         });
 
@@ -209,14 +212,14 @@ const Chat = () => {
           "⚠️ Failed to fetch individual chat, refreshing all chats"
         );
         if (currentUserId) {
-          fetchUserData(currentUserId);
+          refreshChatsData(currentUserId);
         }
         return null;
       }
     } catch (error) {
       console.error("❌ Error fetching chat data:", error);
       if (currentUserId) {
-        fetchUserData(currentUserId);
+        refreshChatsData(currentUserId);
       }
       return null;
     }
@@ -236,7 +239,17 @@ const Chat = () => {
 
       if (userResponse.ok) {
         const userData = await userResponse.json();
-        setConnections(userData.data.connections || []);
+        const connections = userData.data.connections || [];
+
+        // Simple deduplication using Map
+        const connectionMap = new Map();
+        connections.forEach((conn: any) => {
+          if (conn && conn._id) {
+            connectionMap.set(conn._id, conn);
+          }
+        });
+
+        setConnections(Array.from(connectionMap.values()));
       } else {
         setConnections([]);
       }
@@ -253,10 +266,20 @@ const Chat = () => {
       if (chatsResponse.ok) {
         const chatsData = await chatsResponse.json();
         const chatsArray = chatsData.data || chatsData;
-        setChats(chatsArray);
+
+        // Simple deduplication using Map
+        const chatMap = new Map();
+        chatsArray.forEach((chat: any) => {
+          if (chat && chat._id) {
+            chatMap.set(chat._id, chat);
+          }
+        });
+        const uniqueChats = Array.from(chatMap.values());
+
+        setChats(uniqueChats);
 
         if (selectedChat) {
-          const chatStillExists = chatsArray.some(
+          const chatStillExists = uniqueChats.some(
             (chat: ChatType) => chat._id === selectedChat._id
           );
           if (!chatStillExists) {
@@ -265,8 +288,13 @@ const Chat = () => {
           }
         }
 
-        if (chatsArray.length > 0 && !selectedChat) {
-          const firstChat = chatsArray[0];
+        // Only auto-select first chat on initial load, not on periodic updates
+        if (
+          uniqueChats.length > 0 &&
+          !selectedChat &&
+          !navigationState?.targetUserId
+        ) {
+          const firstChat = uniqueChats[0];
           setSelectedChat(firstChat);
           fetchMessages(firstChat._id, userId);
         }
@@ -278,6 +306,73 @@ const Chat = () => {
       setChats([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Separate function for periodic updates that doesn't interfere with chat selection
+  const refreshChatsData = async (userId: string) => {
+    try {
+      const userResponse = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        const connections = userData.data.connections || [];
+
+        // Simple deduplication using Map
+        const connectionMap = new Map();
+        connections.forEach((conn: any) => {
+          if (conn && conn._id) {
+            connectionMap.set(conn._id, conn);
+          }
+        });
+
+        setConnections(Array.from(connectionMap.values()));
+      }
+
+      const chatsResponse = await fetch(
+        `${import.meta.env.VITE_SERVER_URL}/api/chats?userId=${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (chatsResponse.ok) {
+        const chatsData = await chatsResponse.json();
+        const chatsArray = chatsData.data || chatsData;
+
+        // Simple deduplication using Map
+        const chatMap = new Map();
+        chatsArray.forEach((chat: any) => {
+          if (chat && chat._id) {
+            chatMap.set(chat._id, chat);
+          }
+        });
+        const uniqueChats = Array.from(chatMap.values());
+
+        setChats(uniqueChats);
+
+        // Don't change selected chat during periodic updates
+        if (selectedChat) {
+          const chatStillExists = uniqueChats.some(
+            (chat: ChatType) => chat._id === selectedChat._id
+          );
+          if (!chatStillExists) {
+            setSelectedChat(null);
+            setMessages([]);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing chats data:", error);
     }
   };
 
@@ -381,17 +476,19 @@ const Chat = () => {
   useEffect(() => {
     if (!currentUserId) return;
 
-    const interval = setInterval(() => {
-      fetchUserData(currentUserId);
-    }, 30000);
+    // Disable periodic refresh to prevent auto-switching
+    // Users can manually refresh by navigating away and back
+    // const interval = setInterval(() => {
+    //   refreshChatsData(currentUserId);
+    // }, 30000);
 
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, [currentUserId]);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        Loading chats...
+        {t("loading")}
       </div>
     );
   }
@@ -430,6 +527,10 @@ const Chat = () => {
         const responseData = await response.json();
         const newMessageObj = responseData.data || responseData;
 
+        // Don't update messages immediately - let socket handle it to avoid duplicates
+        // The server will broadcast the message back via socket
+
+        // Update the chat list with the new last message
         setChats((prev) =>
           prev.map((chat) =>
             chat._id === selectedChat._id
@@ -560,6 +661,10 @@ const Chat = () => {
         const responseData = await response.json();
         const newMessageObj = responseData.data || responseData;
 
+        // Don't update messages immediately - let socket handle it to avoid duplicates
+        // The server will broadcast the message back via socket
+
+        // Update the chat list with the new last message
         setChats((prev) =>
           prev.map((chat) =>
             chat._id === selectedChat._id
@@ -577,13 +682,15 @@ const Chat = () => {
     }
   };
 
- return (
+  return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-800">
       {/* Sidebar */}
       <div className="w-1/3 bg-white dark:bg-[#262626] border-r border-gray-200 dark:border-gray-700 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Chats</h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+            Chats
+          </h2>
         </div>
 
         {/* Chat List */}
@@ -592,6 +699,7 @@ const Chat = () => {
             {/* Existing Chats */}
             {chats
               .filter((chat: any) => {
+                if (!chat || !chat._id) return false;
                 const otherParticipant = getOtherParticipant(chat);
                 return (
                   otherParticipant &&
@@ -605,11 +713,12 @@ const Chat = () => {
 
                 return (
                   <div
-                    key={chat._id}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${selectedChat?._id === chat._id
-                      ? "bg-blue-100 dark:bg-blue-600 border-l-4 border-blue-500"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                      }`}
+                    key={`chat-${chat._id}`}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
+                      selectedChat?._id === chat._id
+                        ? "bg-blue-100 dark:bg-blue-600 border-l-4 border-blue-500"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
                     onClick={() => handleChatSelect(chat)}
                   >
                     <div className="flex items-center gap-3">
@@ -622,13 +731,16 @@ const Chat = () => {
                           />
                         ) : (
                           <span className="text-gray-600 dark:text-gray-300 font-medium">
-                            {otherParticipant?.profile?.displayName?.charAt(0).toUpperCase() || "U"}
+                            {otherParticipant?.profile?.displayName
+                              ?.charAt(0)
+                              .toUpperCase() || "U"}
                           </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-gray-900 dark:text-white truncate">
-                          {otherParticipant?.profile?.displayName || "Unknown User"}
+                          {otherParticipant?.profile?.displayName ||
+                            "Unknown User"}
                         </h3>
                         {chat.lastMessage && (
                           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
@@ -647,65 +759,73 @@ const Chat = () => {
               })}
 
             {/* Available Connections */}
-            {connections.map((connection) => {
-              if (!connection || !connection._id) return null;
+            {connections
+              .filter((connection: any) => connection && connection._id)
+              .map((connection: any) => {
+                if (!connection || !connection._id) return null;
 
-              const hasExistingChat = chats.some(
-                (chat) =>
-                  chat.members &&
-                  chat.members.some(
-                    (member) =>
-                      member &&
-                      member.user &&
-                      member.user._id === connection._id
-                  )
-              );
+                const hasExistingChat = chats.some(
+                  (chat) =>
+                    chat.members &&
+                    chat.members.some(
+                      (member) =>
+                        member &&
+                        member.user &&
+                        member.user._id === connection._id
+                    )
+                );
 
-              if (hasExistingChat) return null;
+                if (hasExistingChat) return null;
 
-              return (
-                <div
-                  key={`connection-${connection._id}`}
-                  className="p-3 rounded-lg cursor-pointer transition-colors mb-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-l-4 border-green-400"
-                  onClick={() => createChatWithConnection(connection)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                      {connection?.profile?.avatar ? (
-                        <img
-                          src={connection.profile.avatar}
-                          alt={connection.name || "User"}
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-gray-600 dark:text-gray-300 font-medium">
-                          {connection.profile?.displayName?.charAt(0).toUpperCase() ||
-                            connection.firstName?.charAt(0).toUpperCase() ||
-                            "U"}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 dark:text-white truncate">
-                        {connection.profile?.displayName ||
-                          `${connection.firstName || ""} ${connection.lastName || ""}`.trim() ||
-                          "Unknown User"}
-                      </h3>
-                      <p className="text-sm text-green-600 dark:text-green-400">
-                        Click to start chat
-                      </p>
+                return (
+                  <div
+                    key={`connection-${connection._id}`}
+                    className="p-3 rounded-lg cursor-pointer transition-colors mb-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-l-4 border-green-400"
+                    onClick={() => createChatWithConnection(connection)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                        {connection?.profile?.avatar ? (
+                          <img
+                            src={connection.profile.avatar}
+                            alt={connection.name || "User"}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-gray-600 dark:text-gray-300 font-medium">
+                            {connection.profile?.displayName
+                              ?.charAt(0)
+                              .toUpperCase() ||
+                              connection.firstName?.charAt(0).toUpperCase() ||
+                              "U"}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                          {connection.profile?.displayName ||
+                            `${connection.firstName || ""} ${
+                              connection.lastName || ""
+                            }`.trim() ||
+                            "Unknown User"}
+                        </h3>
+                        <p className="text-sm text-green-600 dark:text-green-400">
+                          {t("click_to_start")}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
             {/* Empty State */}
             {chats.length === 0 && connections.length === 0 && (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No connections yet</p>
-                <p className="text-sm">Add some connections to start chatting</p>
+                <p className="text-sm">
+                  {t("add_connections_to_start_chatting")}
+                </p>
               </div>
             )}
           </div>
@@ -723,24 +843,34 @@ const Chat = () => {
                   {getOtherParticipant(selectedChat)?.profile?.avatar ? (
                     <img
                       src={getOtherParticipant(selectedChat)?.profile.avatar}
-                      alt={getOtherParticipant(selectedChat)?.profile?.displayName || "User"}
+                      alt={
+                        getOtherParticipant(selectedChat)?.profile
+                          ?.displayName || "User"
+                      }
                       className="h-10 w-10 rounded-full object-cover"
                     />
                   ) : (
                     <span className="text-gray-600 dark:text-gray-300 font-medium">
-                      {getOtherParticipant(selectedChat)?.profile?.displayName?.charAt(0).toUpperCase() || "U"}
+                      {getOtherParticipant(selectedChat)
+                        ?.profile?.displayName?.charAt(0)
+                        .toUpperCase() || "U"}
                     </span>
                   )}
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">
-                    {getOtherParticipant(selectedChat)?.profile?.displayName || "Unknown User"}
+                    {getOtherParticipant(selectedChat)?.profile?.displayName ||
+                      "Unknown User"}
                   </h3>
 
                   {getOtherParticipant(selectedChat)?.isOnline === true ? (
-                    <p className="text-sm text-green-500 dark:text-green-400">Online</p>
+                    <p className="text-sm text-green-500 dark:text-green-400">
+                      {t("online")}
+                    </p>
                   ) : (
-                    <p className="text-sm text-red-500 dark:text-red-400">Offline</p>
+                    <p className="text-sm text-red-500 dark:text-red-400">
+                      {t("offline")}
+                    </p>
                   )}
                 </div>
               </div>
@@ -759,17 +889,20 @@ const Chat = () => {
                     return (
                       <div
                         key={message._id}
-                        className={`flex message-container ${isOwn ? "justify-end" : "justify-start"}`}
+                        className={`flex message-container ${
+                          isOwn ? "justify-end" : "justify-start"
+                        }`}
                       >
                         <div
-                          className={`max-w-xs lg:max-w-md rounded-2xl overflow-hidden ${message.content &&
+                          className={`max-w-xs lg:max-w-md rounded-2xl overflow-hidden ${
+                            message.content &&
                             (message.content.includes("giphy.com") ||
                               message.content.includes(".gif") ||
                               message.content.startsWith("https://media"))
-                            ? "bg-transparent p-1"
-                            : isOwn
-                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2"
+                              ? "bg-transparent p-1"
+                              : isOwn
+                              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2"
                           }`}
                         >
                           {/* Check if message content is a GIF URL */}
@@ -809,7 +942,9 @@ const Chat = () => {
                               </p>
                             </div>
                           ) : (
-                            <p className="break-words">{message.content || "No content"}</p>
+                            <p className="break-words">
+                              {message.content || "No content"}
+                            </p>
                           )}
 
                           <p
@@ -883,10 +1018,10 @@ const Chat = () => {
             <div className="text-center">
               <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
               <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
-                Welcome to Chat
+                {t("welcome_to_chat")}
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Select a chat or connection to start messaging
+                {t("start_messaging")}
               </p>
             </div>
           </div>

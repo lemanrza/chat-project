@@ -46,10 +46,8 @@ export const getOneWithConnections = async (id: any) =>
       select: "-password",
     });
 
-// Add a connection between two users (handles both public and private profiles)
 export const addConnection = async (userId: string, connectionId: string) => {
   try {
-    // Get the target user to check profile visibility
     const targetUser = await UserModel.findById(connectionId).select(
       "profileVisibility connectionsRequests connections"
     );
@@ -61,7 +59,6 @@ export const addConnection = async (userId: string, connectionId: string) => {
       };
     }
 
-    // Check if already connected (convert to string for comparison)
     if (targetUser.connections.some((conn) => conn.toString() === userId)) {
       return {
         success: false,
@@ -69,7 +66,6 @@ export const addConnection = async (userId: string, connectionId: string) => {
       };
     }
 
-    // Check if request already sent (convert to string for comparison)
     if (
       targetUser.connectionsRequests.some((req) => req.toString() === userId)
     ) {
@@ -80,7 +76,6 @@ export const addConnection = async (userId: string, connectionId: string) => {
     }
 
     if (targetUser.profileVisibility === "public") {
-      // For public profiles, connect immediately
       await UserModel.findByIdAndUpdate(userId, {
         $addToSet: { connections: connectionId },
       });
@@ -95,7 +90,6 @@ export const addConnection = async (userId: string, connectionId: string) => {
         type: "connected",
       };
     } else {
-      // For private profiles, send connection request
       await UserModel.findByIdAndUpdate(connectionId, {
         $addToSet: { connectionsRequests: userId },
       });
@@ -114,13 +108,11 @@ export const addConnection = async (userId: string, connectionId: string) => {
   }
 };
 
-// Accept a connection request
 export const acceptConnectionRequest = async (
   userId: string,
   requesterId: string
 ) => {
   try {
-    // Add connection to both users
     await UserModel.findByIdAndUpdate(userId, {
       $addToSet: { connections: requesterId },
       $pull: { connectionsRequests: requesterId },
@@ -142,13 +134,11 @@ export const acceptConnectionRequest = async (
   }
 };
 
-// Reject a connection request
 export const rejectConnectionRequest = async (
   userId: string,
   requesterId: string
 ) => {
   try {
-    // Remove the request from connectionsRequests
     await UserModel.findByIdAndUpdate(userId, {
       $pull: { connectionsRequests: requesterId },
     });
@@ -165,13 +155,11 @@ export const rejectConnectionRequest = async (
   }
 };
 
-// Remove a connection between two users
 export const removeConnection = async (
   userId: string,
   connectionId: string
 ) => {
   try {
-    // Remove connection from both users
     await UserModel.findByIdAndUpdate(userId, {
       $pull: { connections: connectionId },
     });
@@ -192,7 +180,6 @@ export const removeConnection = async (
   }
 };
 
-// Get all users except current user and their connections
 export const getAvailableUsers = async (userId: string) => {
   try {
     const currentUser = await UserModel.findById(userId).select("connections");
@@ -252,17 +239,15 @@ export const updateUser = async (id: string, payload: any) => {
       };
     }
 
-    // Handle connectionsRequests specifically (append to existing array)
     if (payload.connectionsRequests) {
       const updatedConnectionsRequests = [
         ...user.connectionsRequests,
-        ...payload.connectionsRequests, // Expecting array of user IDs
+        ...payload.connectionsRequests,
       ];
       user.connectionsRequests = updatedConnectionsRequests;
-      delete payload.connectionsRequests; // Remove from payload to avoid overwriting
+      delete payload.connectionsRequests;
     }
 
-    // Update all other fields from payload
     Object.keys(payload).forEach((key) => {
       if (payload[key] !== undefined) {
         (user as any)[key] = payload[key];
@@ -270,6 +255,7 @@ export const updateUser = async (id: string, payload: any) => {
     });
 
     await user.save();
+
     return {
       success: true,
       data: user,
@@ -373,7 +359,6 @@ export const login = async (credentials: {
       user.lockUntil = new Date(Date.now() + LOCK_TIME);
       await user.save();
 
-      //send email
       const token = generateAccessToken(
         {
           id: user.id,
@@ -473,7 +458,6 @@ export const resetPass = async (newPassword: string, email: string) => {
 
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-  console.log("inside service: ", newPassword);
   user.password = hashedPassword;
   await user.save();
   return user;

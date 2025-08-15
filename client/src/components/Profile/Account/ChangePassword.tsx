@@ -4,6 +4,8 @@ import PasswordRequirements from "./components/PasswordRequirements";
 import type { UserData } from "@/types/profileType";
 import { usePasswordForm } from "@/hooks/usePasswordForm";
 import { validatePassword } from "@/lib/validatePassword";
+import { getUserIdFromToken } from "@/utils/auth";
+import { t } from "i18next";
 
 interface ChangePasswordProps {
   userData: UserData | null;
@@ -20,7 +22,6 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
     setIsChangingPassword,
   } = usePasswordForm();
 
-  // If userData is null, show loading or return early
   if (!userData) {
     return (
       <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
@@ -88,8 +89,13 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
     try {
       setIsChangingPassword(true);
 
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
       const response = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/me/change-password`,
+        `${import.meta.env.VITE_SERVER_URL}/auth/me/${userId}/change-password`,
         {
           method: "POST",
           headers: {
@@ -103,12 +109,50 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
         }
       );
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.message || "Failed to change password");
+        let errorMessage = "Failed to change password";
+        try {
+          const result = await response.json();
+          errorMessage = result.message || errorMessage;
+        } catch {
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
+      try {
+        await response.json();
+      } catch {
+        console.log("✅ Password changed successfully (no JSON response)");
+      }
+
+      try {
+        const testResponse = await fetch(
+          `${import.meta.env.VITE_SERVER_URL}/auth/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: userData?.email || "unknown@email.com",
+              password: passwordData.newPassword,
+            }),
+          }
+        );
+
+        if (testResponse.ok) {
+          console.log("✅ NEW PASSWORD WORKS! Password was actually updated.");
+        } else {
+          const errorResult = await testResponse.json();
+          console.log("❌ NEW PASSWORD DOESN'T WORK:", errorResult.message);
+          console.log(
+            "❌ This means the password wasn't actually updated in the database"
+          );
+        }
+      } catch (testError) {
+        console.log("❌ Error testing new password:", testError);
+      }
       resetForm();
       enqueueSnackbar("Password changed successfully!", {
         variant: "success",
@@ -132,7 +176,7 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
     return (
       <div className="bg-white dark:bg-[#262626] rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-          Change Password
+          {t("change_password")}
         </h3>
         <div className="text-center py-8">
           <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
@@ -151,10 +195,10 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
             </svg>
           </div>
           <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Password Not Available
+            {t("change_password_not_available")}
           </h4>
           <p className="text-gray-500 dark:text-gray-300 mb-4">
-            You signed up with{" "}
+            {t("change_password_provider_info")}{" "}
             {userData?.provider === "google" ? "Google" : "GitHub"}. Password
             changes are managed through your{" "}
             {userData?.provider === "google" ? "Google" : "GitHub"} account.
@@ -170,7 +214,7 @@ const ChangePassword = ({ userData }: ChangePasswordProps) => {
               )
             }
           >
-            Manage on {userData?.provider === "google" ? "Google" : "GitHub"}
+            {t("")} {userData?.provider === "google" ? "Google" : "GitHub"}
           </button>
         </div>
       </div>

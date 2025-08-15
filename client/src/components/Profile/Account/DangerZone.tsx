@@ -8,27 +8,27 @@ import { t } from "i18next";
 const DangerZone = () => {
   const handleDeleteAccount = async () => {
     const result = await Swal.fire({
-      title: "Delete Account?",
+      title: t("delete_account.title"),
       html: `
-        <div class="text-left">
-          <p class="mb-4 text-gray-700 dark:text-gray-300">Are you absolutely sure you want to delete your account?</p>
-          <div class="bg-red-50 dark:bg-red-700 p-3 rounded-lg mb-4">
-            <p class="text-sm text-red-700 dark:text-red-300 font-medium mb-2">This action will:</p>
-            <ul class="text-sm text-red-600 dark:text-red-400 space-y-1">
-              <li>• Permanently delete all your chat history</li>
-              <li>• Remove your profile and personal information</li>
-              <li>• Make account recovery impossible</li>
-            </ul>
-          </div>
-          <p class="text-sm text-gray-600 dark:text-gray-300">This action cannot be undone.</p>
-        </div>
-      `,
+    <div class="text-left">
+      <p class="mb-4 text-gray-700 dark:text-gray-300">${t("delete_account.warning_text")}</p>
+      <div class="bg-red-50 dark:bg-red-700 p-3 rounded-lg mb-4">
+        <p class="text-sm text-red-700 dark:text-red-300 font-medium mb-2">${t("delete_account.consequences_title")}</p>
+        <ul class="text-sm text-red-600 dark:text-red-400 space-y-1">
+          <li>• ${t("delete_account.consequences.delete_history")}</li>
+          <li>• ${t("delete_account.consequences.remove_profile")}</li>
+          <li>• ${t("delete_account.consequences.no_recovery")}</li>
+        </ul>
+      </div>
+      <p class="text-sm text-gray-600 dark:text-gray-300">${t("delete_account.irreversible")}</p>
+    </div>
+  `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#dc2626",
       cancelButtonColor: "#6b7280",
-      confirmButtonText: "Yes, delete my account",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("delete_account.confirm"),
+      cancelButtonText: t("delete_account.cancel"),
       focusCancel: true,
       customClass: {
         popup: "!rounded-xl",
@@ -39,6 +39,7 @@ const DangerZone = () => {
         cancelButton: "!px-6 !py-2.5 !rounded-lg !font-medium",
       },
     });
+
 
     if (result.isConfirmed) {
       try {
